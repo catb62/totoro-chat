@@ -188,10 +188,6 @@ body.standalone .pwa-only{display:inline-flex}
 .ptr-indicator .ptr-icon{display:inline-block;margin-right:8px;font-size:16px;transition:transform .2s}
 .ptr-indicator.ready .ptr-icon{transform:rotate(180deg);color:var(--accent)}
 .ptr-indicator.refreshing .ptr-icon{animation:reloadspin .9s linear infinite;color:var(--accent)}
-.scenario-presets{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:6px}
-.scenario-preset{display:flex;align-items:center;gap:6px;padding:8px 10px;background:var(--bg-2);border:1px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer;text-align:left}
-.scenario-preset:hover{background:var(--bg-3);border-color:var(--accent)}
-.scenario-preset .emoji{font-size:15px}
 .chat-list{flex:1;overflow-y:auto;padding:4px 8px}
 .chat-item{padding:8px 10px;border-radius:8px;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--fg);margin-bottom:2px;cursor:pointer;position:relative}
 .chat-item:hover{background:var(--bg-3)}
@@ -347,7 +343,6 @@ html[data-theme="dark"] .composer{background:var(--bg-2);box-shadow:none}
 .composer-actions{display:flex;align-items:center;gap:4px;padding:0 4px}
 .composer-actions .spacer{flex:1}
 .composer-actions .hint{font-size:11px;color:var(--fg-2)}
-.composer-sep{display:inline-block;width:1px;height:18px;background:var(--border);margin:0 6px;align-self:center;flex-shrink:0}
 .send-btn{background:var(--brand-grad);color:#fff;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none;box-shadow:0 4px 12px var(--accent-ring);transition:filter .15s}
 .send-btn:hover{filter:brightness(1.06)}
 .send-btn .fi{width:18px;height:18px}
@@ -497,9 +492,6 @@ html[data-theme="dark"] .alert{background:#3a2e10;color:#f5d57a;border-color:#5a
 .new-chat{flex:1;min-width:0;padding:9px 12px;background:var(--brand-grad);color:#fff;border-radius:11px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:14px;font-weight:600;box-shadow:0 4px 14px var(--accent-ring);transition:filter .15s,transform .1s}
 .new-chat:hover{filter:brightness(1.06)}
 .new-chat:active{transform:translateY(1px)}
-.new-scenario{width:42px;flex:none;border-radius:11px;background:var(--bg);border:1px solid var(--border);color:var(--fg-2);display:flex;align-items:center;justify-content:center;transition:border-color .15s,background .15s}
-.new-scenario:hover{border-color:var(--accent-bright);background:var(--accent-soft);color:var(--accent)}
-.new-scenario .fi{width:17px;height:17px}
 .chat-item .ci{width:15px;height:15px;color:var(--fg-2);flex:none}
 .chat-item.active .ci{color:var(--accent)}
 .account-card{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:11px;background:var(--bg);border:1px solid var(--border);text-align:left;width:100%;transition:border-color .15s}
@@ -566,8 +558,9 @@ html[data-theme="dark"] .alert{background:#3a2e10;color:#f5d57a;border-color:#5a
 .model-item .mi-text{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.3}
 .model-item .mi-name{font-size:13.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .model-item .mi-id{font-size:11px;color:var(--fg-2);font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.model-item .fi{width:16px;height:16px;color:var(--accent);visibility:hidden}
-.model-item.active .fi{visibility:visible}
+.model-item .fi{width:16px;height:16px;color:var(--fg-2);flex:none}
+.model-item > .fi:last-child{color:var(--accent);visibility:hidden}
+.model-item.active > .fi:last-child{visibility:visible}
 .model-empty{padding:20px 14px;text-align:center;color:var(--fg-2);font-size:13px;display:flex;flex-direction:column;gap:12px;align-items:center}
 .model-menu-foot{border-top:1px solid var(--border);padding:4px}
 .model-menu-foot button{width:100%;display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:9px;font-size:12.5px;color:var(--fg-2)}
@@ -735,6 +728,33 @@ html[data-theme="dark"] .key-row-status.ok{color:#34d399}
   .app.sidebar-collapsed .menu-btn{display:inline-flex}
 }
 
+/* ------- Folders ------- */
+.new-folder{width:42px;flex:none;border-radius:11px;background:var(--bg);border:1px solid var(--border);color:var(--fg-2);display:flex;align-items:center;justify-content:center;transition:border-color .15s,background .15s,color .15s}
+.new-folder:hover{border-color:var(--accent-bright);background:var(--accent-soft);color:var(--accent)}
+.new-folder .fi{width:17px;height:17px}
+.folder-head{display:flex;align-items:center;gap:6px;padding:7px 8px;border-radius:8px;font-size:13px;font-weight:600;color:var(--fg);cursor:pointer;user-select:none;margin-top:2px}
+.folder-head:hover{background:var(--bg-3)}
+.folder-head .chev{width:14px;height:14px;color:var(--fg-2);transition:transform .15s;flex:none}
+.folder-head.open .chev{transform:rotate(90deg)}
+.folder-head .fi.fd{width:15px;height:15px;color:var(--accent);flex:none}
+.folder-head .name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.folder-head .count{font-size:11px;font-weight:500;color:var(--fg-2)}
+.folder-head .actions{display:none;gap:2px}
+.folder-head:hover .actions{display:flex}
+.folder-head:hover .count{display:none}
+.folder-head .actions .icon-btn,.chat-item .actions .icon-btn{width:24px;height:24px}
+.folder-head .actions .fi,.chat-item .actions .fi{width:14px;height:14px}
+.folder-head.drop,.list-section.drop{background:var(--accent-soft);box-shadow:inset 0 0 0 1.5px var(--accent-bright)}
+.chat-item.in-folder{margin-left:14px}
+.folder-empty{font-size:11.5px;color:var(--fg-2);padding:4px 10px 6px 30px}
+.list-section{font-size:10.5px;font-weight:600;color:var(--fg-2);text-transform:uppercase;letter-spacing:.07em;padding:12px 10px 4px;border-radius:8px}
+#folderMenu{width:220px}
+/* memory */
+.memory-hint{margin:0 0 10px;font-size:12.5px;color:var(--fg-2);line-height:1.6}
+#memoryText{width:100%;font-size:13px;line-height:1.6}
+.msg-divider.memory .lbl{border-style:solid;border-color:var(--accent-bright);color:var(--accent)}
+.set-section .form-row .hint{display:block}
+@media (hover:none){ .folder-head .actions{display:flex} .folder-head .count{display:none} .chat-item.active .actions{display:flex} }
 /* iPad portrait & phones: collapse sidebar into off-canvas */
 @media (max-width:768px){
   .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:50;transform:translateX(-100%);transition:transform .2s;width:84vw;max-width:300px;padding-left:env(safe-area-inset-left);padding-top:env(safe-area-inset-top)}
@@ -819,7 +839,7 @@ html[data-theme="dark"] .key-row-status.ok{color:#34d399}
   .composer-foot .keys{display:none}
   .footer-row>button,.footer-row>a{padding:10px 4px}
   .account-card{padding:11px 10px}
-  .new-scenario{width:46px}
+  .new-folder{width:46px}
   .key-modal{justify-content:center;background:var(--hero-grad),var(--bg)}
   .key-hero{padding:40px 22px 6px;background:none}
   .key-body{padding:18px 22px max(24px, env(safe-area-inset-bottom))}
@@ -871,7 +891,7 @@ html[data-theme="dark"] .key-row-status.ok{color:#34d399}
         <svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
         <span data-i18n="sidebar.newChat">New chat</span>
       </button>
-      <button class="new-scenario" id="newScenarioBtn" data-i18n-title="sidebar.newScenario.title" title="New scenario chat"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3Z"/><path d="m6.2 5.3 3.1 3.9"/><path d="m12.4 3.4 3.1 4"/><path d="M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg></button>
+      <button class="new-folder" id="newFolderBtn" data-i18n-title="folder.new" title="New folder"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 10v6"/><path d="M9 13h6"/><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg></button>
     </div>
     <div class="chat-list" id="chatList"></div>
     <div class="sidebar-footer">
@@ -906,7 +926,7 @@ html[data-theme="dark"] .key-row-status.ok{color:#34d399}
         <svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
       </button>
       <span class="title" id="chatTitle">New chat</span>
-      <button class="icon-btn" id="scenarioBtn" data-i18n-title="scenario.edit.title" title="Edit scenario" style="display:none"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3Z"/><path d="m6.2 5.3 3.1 3.9"/><path d="m12.4 3.4 3.1 4"/><path d="M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg></button>
+      <button class="icon-btn" id="memoryBtn" data-i18n-title="memory.open" title="Chat memory" style="display:none"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/><path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/><path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"/><path d="M17.599 6.5a3 3 0 0 0 .399-1.375"/><path d="M6.003 5.125A3 3 0 0 0 6.401 6.5"/><path d="M3.477 10.896a4 4 0 0 1 .585-.396"/><path d="M19.938 10.5a4 4 0 0 1 .585.396"/><path d="M6 18a4 4 0 0 1-1.967-.516"/><path d="M19.967 17.484A4 4 0 0 1 18 18"/></svg></button>
       <button class="icon-btn menu-btn" id="topNewChatBtn" data-i18n-title="sidebar.newChat" title="New chat">
         <svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"/></svg>
       </button>
@@ -1069,11 +1089,6 @@ html[data-theme="dark"] .key-row-status.ok{color:#34d399}
           <div class="form-row"><label data-i18n="general.maxTokens.label">Max output tokens</label><input id="cfg_max_tokens" type="number" min="1" step="1" inputmode="numeric" data-i18n-placeholder="general.maxTokens.placeholder" placeholder="Empty = automatic" /></div>
         </div>
         <div class="form-row"><span class="hint" data-i18n="general.temperature.hint"></span></div>
-        <div class="row-2">
-          <div class="form-row"><label data-i18n="general.historyN.label">History messages kept</label><input id="cfg_history_n" type="number" min="2" step="1" value="40" inputmode="numeric" /></div>
-          <div class="form-row"><label data-i18n="general.ctxBudget.label">Context token budget</label><input id="cfg_ctx_budget" type="number" min="0" step="256" inputmode="numeric" data-i18n-placeholder="general.ctxBudget.placeholder" placeholder="Leave empty to disable" /></div>
-        </div>
-        <div class="form-row"><span class="hint" data-i18n="general.ctxBudget.hint"></span></div>
         <div class="form-row">
           <label data-i18n="general.imageDetail.label">Image upload quality</label>
           <select id="cfg_image_detail">
@@ -1083,19 +1098,19 @@ html[data-theme="dark"] .key-row-status.ok{color:#34d399}
           </select>
           <span class="hint" data-i18n="general.imageDetail.hint"></span>
         </div>
-        <div class="form-row"><label data-i18n="general.attachKeepRecent.label">Keep attachments for the latest N messages</label><input id="cfg_attach_keep_recent" type="number" min="0" step="1" value="1" inputmode="numeric" /><span class="hint" data-i18n="general.attachKeepRecent.hint"></span></div>
+        <section class="set-section">
+          <div class="set-head"><h4 data-i18n="general.memory">Context &amp; memory</h4></div>
+          <div class="row-2">
+            <div class="form-row"><label data-i18n="general.ctxBudget.label">Context limit (tokens)</label><input id="cfg_ctx_budget" type="number" min="1000" step="1000" inputmode="numeric" placeholder="200000" /></div>
+            <div class="form-row"><label data-i18n="general.attachKeepRecent.label">Attachments kept</label><input id="cfg_attach_keep_recent" type="number" min="0" step="1" inputmode="numeric" placeholder="10" /></div>
+          </div>
+          <div class="form-row"><span class="hint" data-i18n="general.ctxBudget.hint"></span><span class="hint" data-i18n="general.attachKeepRecent.hint"></span></div>
+          <div class="form-row"><label class="check-label"><input id="cfg_auto_memory" type="checkbox" /><span data-i18n="general.autoMemory.label">Automatic memory</span></label><span class="hint" data-i18n="general.autoMemory.hint"></span></div>
+          <div class="form-row"><label data-i18n="general.memoryMaxChars.label">Memory size limit (characters)</label><input id="cfg_memory_max_chars" type="number" min="500" step="500" inputmode="numeric" placeholder="8000" /><span class="hint" data-i18n="general.memoryMaxChars.hint"></span></div>
+        </section>
         <section class="set-section">
           <div class="set-head"><h4 data-i18n="general.image">Image generation</h4></div>
           <div class="form-row"><label class="check-label"><input id="cfg_auto_image" type="checkbox" /><span data-i18n="general.autoImage.label">Let chat models draw automatically</span></label><span class="hint" data-i18n="general.autoImage.hint"></span></div>
-        </section>
-        <section class="set-section">
-          <div class="set-head"><h4 data-i18n="general.scenario">Scenario chat memory</h4></div>
-          <div class="form-row"><label class="check-label"><input id="cfg_scenario_autocompress" type="checkbox" /><span data-i18n="general.autoCompress.label">Auto-compress scenario memory</span></label><span class="hint" data-i18n="general.autoCompress.hint"></span></div>
-          <div class="row-2">
-            <div class="form-row"><label data-i18n="general.compressChars.label">Auto-compress threshold</label><input id="cfg_scenario_compress_chars" type="number" min="500" step="100" value="4000" inputmode="numeric" /></div>
-            <div class="form-row"><label data-i18n="general.memoryMaxChars.label">Memory size cap</label><input id="cfg_scenario_memory_max_chars" type="number" min="200" step="100" value="800" inputmode="numeric" /></div>
-          </div>
-          <div class="form-row"><span class="hint" data-i18n="general.memoryMaxChars.hint"></span></div>
         </section>
       </div>
 
@@ -1115,47 +1130,29 @@ html[data-theme="dark"] .key-row-status.ok{color:#34d399}
   </div>
 </div>
 
-<!-- Scenario Modal -->
-<div class="modal-mask hide" id="scenarioModal">
+<!-- Memory modal: what the chat remembers from its earlier, summarized part -->
+<div class="modal-mask hide" id="memoryModal">
   <div class="modal">
-    <div class="modal-header"><h3 id="scenarioModalTitle" data-i18n="scenario.modal.titleNew">New scenario chat</h3><button class="icon-btn" id="closeScenario">✕</button></div>
+    <div class="modal-header"><h3 data-i18n="memory.title">Chat memory</h3><button class="icon-btn" id="closeMemory" data-i18n-title="modal.close" title="Close">✕</button></div>
     <div class="modal-body">
-      <div class="form-row">
-        <label data-i18n="scenario.presets.label">💡 Golden presets (click to apply)</label>
-        <div class="scenario-presets" id="scenarioPresets"></div>
-      </div>
-      <div class="form-row"><label data-i18n="scenario.title.label">Chat title</label><input id="sc_title" data-i18n-placeholder="scenario.title.placeholder" placeholder="e.g. 🎮 Discord gaming" /></div>
-      <div class="form-row">
-        <label data-i18n="scenario.lang.label">Target language (for translation scenarios)</label>
-        <select id="sc_lang">
-          <option value="">—</option>
-          <option value="English">English</option>
-          <option value="日本語 (Japanese)">日本語 (Japanese)</option>
-          <option value="한국어 (Korean)">한국어 (Korean)</option>
-          <option value="Español (Spanish)">Español (Spanish)</option>
-          <option value="Français (French)">Français (French)</option>
-          <option value="Deutsch (German)">Deutsch (German)</option>
-          <option value="Русский (Russian)">Русский (Russian)</option>
-          <option value="中文 (Chinese)">中文 (Chinese)</option>
-        </select>
-      </div>
-      <div class="form-row"><label data-i18n="scenario.desc.label">Scenario & tone instructions (the AI's persona/rules)</label><textarea id="sc_desc" rows="6" data-i18n-placeholder="scenario.desc.placeholder" placeholder="e.g. Casual Discord chat with overseas gamers; very colloquial tone, use abbreviations (lol) and emojis."></textarea></div>
-      <div class="form-row" id="sc_summaryRow" style="display:none">
-        <label data-i18n="scenario.summary.label">🧠 Compressed memory (auto-generated, editable)</label>
-        <textarea id="sc_summary" rows="4" data-i18n-placeholder="scenario.summary.placeholder" placeholder="No memory compressed yet. Use the 🧠 button in the composer to compress history."></textarea>
-        <div class="memory-history-row" id="sc_memoryHistoryRow" style="display:none">
-          <select id="sc_memory_history"></select>
-          <button type="button" class="btn ghost" id="sc_memory_restore" data-i18n="scenario.summary.restore">Restore this version</button>
-        </div>
-        <span class="hint" data-i18n="scenario.summary.history.hint">Every past memory version (from auto-compression or manual edits) is kept here so you can roll back if something important got summarized away. Restoring loads it into the box above — click Save to apply.</span>
+      <p class="hint memory-hint" data-i18n="memory.hint"></p>
+      <div class="form-row"><textarea id="memoryText" rows="10"></textarea></div>
+      <div class="memory-history-row" id="memoryHistoryRow" style="display:none">
+        <select id="memoryHistory"></select>
+        <button type="button" class="btn ghost" id="memoryRestore" data-i18n="memory.restore">Restore this version</button>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn ghost" id="cancelScenario" data-i18n="modal.cancel">Cancel</button>
-      <button class="btn primary" id="saveScenario" data-i18n="scenario.save">Create chat</button>
+      <button class="btn ghost danger" id="memoryClear" data-i18n="memory.clear">Clear memory</button>
+      <span class="footer-status"></span>
+      <button class="btn ghost" id="cancelMemory" data-i18n="modal.cancel">Cancel</button>
+      <button class="btn primary" id="saveMemory" data-i18n="modal.save">Save</button>
     </div>
   </div>
 </div>
+
+<!-- Folder picker for "move chat to folder" -->
+<div class="model-menu hide" id="folderMenu"><div class="model-list"></div></div>
 
 <!-- Notepad — full-screen overlay, fully independent of the chat -->
 <div class="notepad-overlay hide" id="notepadOverlay">
@@ -1305,22 +1302,55 @@ const DEFAULT_STATE = {
     temperature:"",     // empty = model default (most new models reject custom values)
     maxTokens:"",       // empty = automatic
     deepThink:false,    // the composer's "Deep think" switch
-    contextTokenBudget:"", // empty = disabled
-    historyN:40,
+    contextTokenBudget:"200000", // tokens sent per request at most (older turns become memory)
+    historyN:1000,
     userName:"",
     aiName:"",
-    scenarioAutoCompress:true,
-    scenarioCompressChars:4000,
-    scenarioMemoryMaxChars:800,
+    autoMemory:true,     // fold older turns into a summary before they fall out of the context
+    memoryMaxChars:8000,
+    settingsVersion:2,
     imageDetail:"standard",
-    attachmentKeepRecent:1
+    attachmentKeepRecent:10
   },
-  lastModel:""
+  lastModel:"",
+  folders:[]            // [{id, name, collapsed}] — chats point at them via chat.folderId
 };
 
 /* ------------------------- i18n ------------------------- */
 const I18N = {
   en: {
+    "folder.new":"New folder",
+    "folder.prompt.name":"Folder name:",
+    "folder.prompt.rename":"Rename folder:",
+    "folder.default":"New folder",
+    "folder.confirm.delete":"Delete the folder \"{0}\"? The chats inside are kept and moved out of it.",
+    "folder.newChat":"New chat in this folder",
+    "folder.rename":"Rename",
+    "folder.delete":"Delete folder",
+    "folder.empty":"Empty — drag chats here",
+    "folder.loose":"Chats",
+    "folder.move":"Move to folder",
+    "folder.moveTo":"Move to",
+    "folder.removeFrom":"Take out of the folder",
+    "folder.newAndMove":"New folder…",
+    "memory.open":"Chat memory",
+    "memory.title":"Chat memory",
+    "memory.hint":"When a chat gets close to the context limit, its earlier part is summarized here automatically and sent along with every message, so the model doesn't forget it. You can edit it.",
+    "memory.restore":"Restore this version",
+    "memory.clear":"Clear memory",
+    "memory.running":"Summarizing earlier messages into memory…",
+    "memory.done":"Memory updated — earlier messages were summarized",
+    "memory.failed":"Memory update failed: {0}",
+    "memory.divider":"Earlier messages were summarized into memory (🧠 at the top to view)",
+    "general.memory":"Context & memory",
+    "general.ctxBudget.label":"Context limit (tokens)",
+    "general.ctxBudget.hint":"How much of the conversation is sent with each message, at most (default 200,000). When a chat gets close, its earlier part is summarized into memory automatically.",
+    "general.attachKeepRecent.label":"Messages that keep attachments",
+    "general.attachKeepRecent.hint":"Images and files from the latest N messages with attachments are sent to the model again (default 10); older attachments are no longer sent.",
+    "general.autoMemory.label":"Automatic memory (recommended)",
+    "general.autoMemory.hint":"When a chat nears the context limit, earlier messages are summarized into memory instead of silently dropping out, so the model keeps remembering them.",
+    "general.memoryMaxChars.label":"Memory size limit (characters)",
+    "general.memoryMaxChars.hint":"Upper bound for one chat's memory (default 8000). Memory only stores text, never attachment content.",
     "sidebar.collapse":"Collapse sidebar",
     "model.family.image":"Image",
     "draw.label":"Image",
@@ -1385,29 +1415,6 @@ const I18N = {
     "mermaid.download.svg":"Download as SVG (lossless)",
     "mermaid.close":"Close",
     "mermaid.error":"Diagram render error",
-    "mermaid.loading":"Rendering diagram…",
-    "scenario.modal.titleNew":"New scenario chat",
-    "scenario.modal.titleEdit":"Edit scenario",
-    "scenario.presets.label":"💡 Golden presets (click to apply)",
-    "scenario.title.label":"Chat title",
-    "scenario.title.placeholder":"e.g. 🎮 Discord gaming",
-    "scenario.lang.label":"Target language (optional — for translation scenarios)",
-    "scenario.desc.label":"Scenario & tone instructions (the AI's persona / rules)",
-    "scenario.desc.placeholder":"e.g. Casual Discord chat with overseas gamers; very colloquial tone, use abbreviations (lol) and emojis.",
-    "scenario.summary.label":"🧠 Compressed memory (auto-generated, editable)",
-    "scenario.summary.placeholder":"No memory compressed yet — this fills in automatically once the conversation grows large enough, or you can type your own.",
-    "scenario.summary.restore":"Restore this version",
-    "scenario.summary.history.hint":"Every past memory version (from auto-compression or manual edits) is kept here so you can roll back if something important got summarized away. Restoring loads it into the box above — click Save to apply.",
-    "scenario.save":"Create chat",
-    "scenario.save.edit":"Save",
-    "scenario.edit.title":"Edit scenario settings",
-    "scenario.desc.required":"Please enter the scenario / tone instructions.",
-    "scenario.compress.title":"Compress earlier messages into memory",
-    "scenario.compress.running":"Compressing memory…",
-    "scenario.compress.tooFew":"Need at least 2 messages to compress.",
-    "scenario.compress.done":"Memory updated · earlier context compressed",
-    "scenario.compress.failed":"Compression failed: {0}",
-    "scenario.badge":"Scenario",
     "notepad.title":"📝 Notepad",
     "notepad.tab.notes":"Knowledge",
     "notepad.tab.todos":"To-do",
@@ -1454,22 +1461,11 @@ const I18N = {
     "status.connecting":"Connecting…",
     "status.generating":"Generating…",
     "settings.title":"Settings",
-    "general.historyN.label":"History messages kept (context length)",
-    "general.ctxBudget.label":"Context token budget (rough estimate)",
-    "general.ctxBudget.placeholder":"Leave empty to disable",
-    "general.ctxBudget.hint":"Second-stage trimming on top of the message count above: the oldest messages are dropped until the estimated prompt fits. Estimation is rough (CJK about 1 char/token, other text about 4 chars/token). Set it somewhat below your model real context window.",
-    "general.autoCompress.label":"Auto-compress scenario memory",
-    "general.autoCompress.hint":"For 🎬 scenario chats: when the live context exceeds the size below, older messages are automatically summarized into long-term memory.",
-    "general.compressChars.label":"Auto-compress threshold (characters of live context)",
     "general.imageDetail.label":"Image upload quality (input tokens)",
     "general.imageDetail.high":"High · up to 1568px (max detail, most tokens)",
     "general.imageDetail.standard":"Standard · up to 1024px (near-lossless, recommended)",
     "general.imageDetail.low":"Saver · up to 640px (fewest tokens; OpenAI low-detail = flat 85)",
     "general.imageDetail.hint":"Vision tokens depend on image resolution, not file size — downscaling is what actually saves input tokens. Standard is visually near-lossless for most photos and screenshots.",
-    "general.attachKeepRecent.label":"Keep attachments in context for the latest N messages",
-    "general.attachKeepRecent.hint":"Images/files are never carried forward as \"memory\": once a message with an attachment falls outside this many most-recent messages, only its text is resent — the attachment itself is dropped from the request. 1 = only the newest attachment is ever sent; 0 = never send attachments to the model at all.",
-    "general.memoryMaxChars.label":"Scenario memory size cap (characters)",
-    "general.memoryMaxChars.hint":"Hard limit on the compressed long-term memory itself — it is hard-truncated to this length after every compression, so memory can never grow without bound. Memory only ever stores text; attachments are never included.",
     "modal.cancel":"Cancel",
     "modal.save":"Save",
     "msg.copy":"Copy",
@@ -1495,14 +1491,12 @@ const I18N = {
     "msg.timeout.connect":"Timed out waiting for the server to respond.",
     "msg.timeout.stall":"The response stalled (no new tokens for a while).",
     "attach.label":"[Attachment: {0}]",
-    "context.clear":"Clear context",
     "context.divider":"Context cleared — previous messages won't be sent to the model",
     "context.divider.remove":"Remove this divider — restore prior context",
     "context.empty":"Nothing to clear — context is already fresh.",
     "app.title":"Totoro Chat",
     "theme.toggle.title":"Light / dark theme",
     "sidebar.newChat":"New chat",
-    "sidebar.newScenario.title":"New scenario chat — translation, role-play, language practice",
     "sidebar.settings":"Settings",
     "sidebar.notepad":"Notes",
     "sidebar.console":"Console",
@@ -1574,7 +1568,7 @@ const I18N = {
     "general.aiName.placeholder":"Totoro",
     "general.aiName.hint":"Shown above the assistant's replies.",
     "general.system.label":"Default system prompt",
-    "general.system.hint":"Used by every regular chat. Scenario chats use their own persona instead.",
+    "general.system.hint":"Used by every chat. When a chat gets long, its earlier part is added automatically as memory.",
     "model.family.other":"Other",
     "general.data.export":"⬇ Export data",
     "general.data.import":"⬆ Import data",
@@ -1584,8 +1578,7 @@ const I18N = {
     "general.temperature.hint":"Many new models only accept their default temperature — if a model rejects a custom value, it is dropped automatically.",
     "general.maxTokens.label":"Max output tokens",
     "general.maxTokens.placeholder":"Empty = automatic",
-    "general.scenario":"Scenario chat memory",
-    "about.body":"<b style=\"color:var(--fg)\">Totoro Chat</b> — the web chat client for <a href=\"https://api.to-to.cc\" target=\"_blank\" rel=\"noopener noreferrer\">Totoro API</a>. Paste one key and talk to Claude, GPT, Gemini and more.<br><br><b>Features</b>: streaming replies · deep think · image generation (automatic or manual, with partial edits) · Markdown, code highlighting, math and Mermaid diagrams · image and file input (PDF / Word / code) · scenario chats with long-term memory · notepad · light and dark themes · installable as an app.<br><br><b>Privacy</b>: keys and chats are stored only in this browser's localStorage. Requests go straight from your browser to Totoro API.<br><br><b>Shortcuts</b>: Enter to send · Shift+Enter for a new line · Ctrl/⌘+Shift+O new chat · Ctrl/⌘+K clear context.<br><br><b>Source</b>: <a href=\"https://github.com/catb62/totoro-chat\" target=\"_blank\" rel=\"noopener noreferrer\">github.com/catb62/totoro-chat</a> · based on the open-source <a href=\"https://github.com/lfbear/chatbox-lite\" target=\"_blank\" rel=\"noopener noreferrer\">chatbox-lite</a>.<br><b>Contact</b>: admin@to-to.cc",
+    "about.body":"<b style=\"color:var(--fg)\">Totoro Chat</b> — the web chat client for <a href=\"https://api.to-to.cc\" target=\"_blank\" rel=\"noopener noreferrer\">Totoro API</a>. Paste one key and talk to Claude, GPT, Gemini and more.<br><br><b>Features</b>: streaming replies · deep think · image generation (automatic or manual, with partial edits) · Markdown, code highlighting, math and Mermaid diagrams · image and file input (PDF / Word / code) · folders · automatic memory for long chats · notepad · light and dark themes · installable as an app.<br><br><b>Privacy</b>: keys and chats are stored only in this browser's localStorage. Requests go straight from your browser to Totoro API.<br><br><b>Shortcuts</b>: Enter to send · Shift+Enter for a new line · Ctrl/⌘+Shift+O new chat · Ctrl/⌘+K clear context.<br><br><b>Source</b>: <a href=\"https://github.com/catb62/totoro-chat\" target=\"_blank\" rel=\"noopener noreferrer\">github.com/catb62/totoro-chat</a> · based on the open-source <a href=\"https://github.com/lfbear/chatbox-lite\" target=\"_blank\" rel=\"noopener noreferrer\">chatbox-lite</a>.<br><b>Contact</b>: admin@to-to.cc",
     "modal.close":"Close",
     "drag.overlay":"Drop files to add them to the conversation",
     "empty.greet.morning":"Good morning",
@@ -1637,6 +1630,38 @@ const I18N = {
     "aiName.default":"Totoro"
   },
   zh: {
+    "folder.new":"新建文件夹",
+    "folder.prompt.name":"文件夹名称：",
+    "folder.prompt.rename":"重命名文件夹：",
+    "folder.default":"新文件夹",
+    "folder.confirm.delete":"删除文件夹「{0}」？里面的对话不会删除，会移到文件夹外。",
+    "folder.newChat":"在此文件夹新建对话",
+    "folder.rename":"重命名",
+    "folder.delete":"删除文件夹",
+    "folder.empty":"空文件夹，可以把对话拖进来",
+    "folder.loose":"对话",
+    "folder.move":"移到文件夹",
+    "folder.moveTo":"移动到",
+    "folder.removeFrom":"移出文件夹",
+    "folder.newAndMove":"新建文件夹…",
+    "memory.open":"对话记忆",
+    "memory.title":"对话记忆",
+    "memory.hint":"对话快到上下文上限时，较早的部分会自动总结到这里，并随每条消息一起发给模型，所以不会“失忆”。你也可以手动修改。",
+    "memory.restore":"恢复此版本",
+    "memory.clear":"清空记忆",
+    "memory.running":"正在把较早的对话整理进记忆…",
+    "memory.done":"记忆已更新：较早的对话已整理",
+    "memory.failed":"记忆整理失败：{0}",
+    "memory.divider":"较早的对话已整理进记忆（点顶部 🧠 查看）",
+    "general.memory":"上下文与记忆",
+    "general.ctxBudget.label":"上下文上限（tokens）",
+    "general.ctxBudget.hint":"每次最多把多少对话内容发给模型（默认 20 万）。快到上限时，较早的部分会自动整理成记忆。",
+    "general.attachKeepRecent.label":"保留附件的消息数",
+    "general.attachKeepRecent.hint":"最近 N 条带附件的消息，其图片和文件会继续发给模型（默认 10）；更早的附件不再发送。",
+    "general.autoMemory.label":"自动记忆（推荐）",
+    "general.autoMemory.hint":"对话接近上下文上限时，自动把较早的消息整理成记忆，而不是悄悄丢掉，模型会一直记得。",
+    "general.memoryMaxChars.label":"记忆上限（字符）",
+    "general.memoryMaxChars.hint":"单个对话记忆的最大长度（默认 8000）。记忆只保存文字，不包含附件内容。",
     "sidebar.collapse":"收起侧栏",
     "model.family.image":"画图",
     "draw.label":"画图",
@@ -1701,29 +1726,6 @@ const I18N = {
     "mermaid.download.svg":"下载 SVG（矢量无损）",
     "mermaid.close":"关闭",
     "mermaid.error":"图表渲染失败",
-    "mermaid.loading":"渲染图表中…",
-    "scenario.modal.titleNew":"新建场景对话",
-    "scenario.modal.titleEdit":"编辑场景配置",
-    "scenario.presets.label":"💡 推荐黄金场景模版（点击一键套用）",
-    "scenario.title.label":"对话标题",
-    "scenario.title.placeholder":"例如：🎮 Discord 游戏联机",
-    "scenario.lang.label":"目标语言（可选 —— 用于翻译类场景）",
-    "scenario.desc.label":"翻译场景 & 语气润色设定（定制 AI 的角色 / 规则）",
-    "scenario.desc.placeholder":"例如：在 Discord 上和老外联机聊天，语气极度口语化，多用缩写(lol)和表情。",
-    "scenario.summary.label":"🧠 压缩记忆（自动生成，可编辑）",
-    "scenario.summary.placeholder":"尚未压缩任何记忆——对话长到一定程度会自动生成，你也可以自己手动填写。",
-    "scenario.summary.restore":"恢复此版本",
-    "scenario.summary.history.hint":"这里保留了每一个历史记忆版本（无论来自自动压缩还是手动编辑），如果某次压缩不小心把重要内容概括没了，可以在这里回滚。恢复只是把选中的版本载入上方输入框，点「保存」才会真正生效。",
-    "scenario.save":"创建对话",
-    "scenario.save.edit":"保存",
-    "scenario.edit.title":"编辑场景设定",
-    "scenario.desc.required":"请填写场景 / 语气设定。",
-    "scenario.compress.title":"将较早的消息压缩进记忆",
-    "scenario.compress.running":"正在压缩记忆…",
-    "scenario.compress.tooFew":"至少需要 2 条消息才能压缩。",
-    "scenario.compress.done":"记忆已更新 · 较早的上下文已压缩",
-    "scenario.compress.failed":"压缩失败：{0}",
-    "scenario.badge":"场景",
     "notepad.title":"📝 记事本",
     "notepad.tab.notes":"知识",
     "notepad.tab.todos":"待办",
@@ -1770,22 +1772,11 @@ const I18N = {
     "status.connecting":"连接中…",
     "status.generating":"生成中…",
     "settings.title":"设置",
-    "general.historyN.label":"历史消息保留条数（控制上下文长度）",
-    "general.ctxBudget.label":"上下文 token 预算（估算）",
-    "general.ctxBudget.placeholder":"留空表示不启用",
-    "general.ctxBudget.hint":"在上面的条数窗口之上再做一层裁剪：从最旧的消息开始丢，直到估算长度装得下。估算是粗略的（中日韩文字约 1 字/token，其余约 4 字符/token），建议填得比模型真实上下文窗口略小。",
-    "general.autoCompress.label":"自动压缩场景记忆",
-    "general.autoCompress.hint":"针对 🎬 场景对话：当实时上下文超过下方设定的大小时，自动把较早的消息总结进长期记忆。",
-    "general.compressChars.label":"自动压缩阈值（实时上下文字符数）",
     "general.imageDetail.label":"图片上传画质（输入 token）",
     "general.imageDetail.high":"高清 · 最长边 1568px（细节最全，token 最多）",
     "general.imageDetail.standard":"标准 · 最长边 1024px（近乎无损，推荐）",
     "general.imageDetail.low":"省流 · 最长边 640px（token 最少；OpenAI 低清=固定 85）",
     "general.imageDetail.hint":"视觉 token 取决于图片分辨率而非文件大小——只有缩小分辨率才能真正节省输入 token。标准档对大多数照片和截图来说肉眼几乎无损。",
-    "general.attachKeepRecent.label":"附件仅在最近 N 条消息内随上下文发送",
-    "general.attachKeepRecent.hint":"图片/文件不会再作为「记忆」被反复携带：一条带附件的消息一旦超出这里设定的最近消息数，之后请求里只保留它的文字，附件本身会被丢弃、不再重发。设为 1 = 只发送最新一次的附件；设为 0 = 完全不把附件发给模型。",
-    "general.memoryMaxChars.label":"场景记忆大小上限（字符数）",
-    "general.memoryMaxChars.hint":"对压缩出的长期记忆本身设置硬上限——每次压缩后都会强制截断到这个长度，记忆不会无限增长。记忆只存文字，绝不包含附件内容。",
     "modal.cancel":"取消",
     "modal.save":"保存",
     "msg.copy":"复制",
@@ -1811,14 +1802,12 @@ const I18N = {
     "msg.timeout.connect":"等待服务端响应超时。",
     "msg.timeout.stall":"响应停顿（较长时间没有新 token）。",
     "attach.label":"【附件: {0}】",
-    "context.clear":"清除上下文",
     "context.divider":"上下文已清除 —— 之前的消息不会再发送给模型",
     "context.divider.remove":"移除这条分隔线 —— 恢复之前的上下文",
     "context.empty":"无需清除 —— 上下文已是新的。",
     "app.title":"Totoro Chat",
     "theme.toggle.title":"切换浅色 / 深色",
     "sidebar.newChat":"新对话",
-    "sidebar.newScenario.title":"新建场景对话 —— 翻译、角色扮演、语言陪练",
     "sidebar.settings":"设置",
     "sidebar.notepad":"记事本",
     "sidebar.console":"控制台",
@@ -1890,7 +1879,7 @@ const I18N = {
     "general.aiName.placeholder":"Totoro",
     "general.aiName.hint":"显示在助手回复的上方。",
     "general.system.label":"默认系统提示词",
-    "general.system.hint":"对所有普通对话生效；场景对话使用自己的人设设定。",
+    "general.system.hint":"对所有对话生效。对话变长后，较早的部分会自动作为记忆附加进去。",
     "model.family.other":"其他",
     "general.data.export":"⬇ 导出数据",
     "general.data.import":"⬆ 导入数据",
@@ -1900,8 +1889,7 @@ const I18N = {
     "general.temperature.hint":"很多新模型只接受默认温度；如果模型拒绝自定义值，会自动忽略该参数。",
     "general.maxTokens.label":"最大输出 tokens",
     "general.maxTokens.placeholder":"留空 = 自动",
-    "general.scenario":"场景对话记忆",
-    "about.body":"<b style=\"color:var(--fg)\">Totoro Chat</b> —— <a href=\"https://api.to-to.cc\" target=\"_blank\" rel=\"noopener noreferrer\">Totoro API</a> 的网页聊天客户端。填一个 Key，就能和 Claude、GPT、Gemini 等模型对话。<br><br><b>功能</b>：流式输出 · 深度思考 · 画图（自动调用 / 涂抹局部修改）· Markdown / 代码高亮 / 数学公式 / Mermaid 图表 · 图片与文件输入（PDF / Word / 代码）· 带长期记忆的场景对话 · 记事本 · 浅色 / 深色主题 · 可安装为应用。<br><br><b>隐私</b>：Key 和对话只保存在本机浏览器的 localStorage，请求由浏览器直接发往 Totoro API。<br><br><b>快捷键</b>：Enter 发送 · Shift+Enter 换行 · Ctrl/⌘+Shift+O 新对话 · Ctrl/⌘+K 清除上下文。<br><br><b>源码</b>：<a href=\"https://github.com/catb62/totoro-chat\" target=\"_blank\" rel=\"noopener noreferrer\">github.com/catb62/totoro-chat</a> · 基于开源项目 <a href=\"https://github.com/lfbear/chatbox-lite\" target=\"_blank\" rel=\"noopener noreferrer\">chatbox-lite</a> 改造。<br><b>联系</b>：admin@to-to.cc",
+    "about.body":"<b style=\"color:var(--fg)\">Totoro Chat</b> —— <a href=\"https://api.to-to.cc\" target=\"_blank\" rel=\"noopener noreferrer\">Totoro API</a> 的网页聊天客户端。填一个 Key，就能和 Claude、GPT、Gemini 等模型对话。<br><br><b>功能</b>：流式输出 · 深度思考 · 画图（自动调用 / 涂抹局部修改）· Markdown / 代码高亮 / 数学公式 / Mermaid 图表 · 图片与文件输入（PDF / Word / 代码）· 文件夹整理 · 长对话自动记忆 · 记事本 · 浅色 / 深色主题 · 可安装为应用。<br><br><b>隐私</b>：Key 和对话只保存在本机浏览器的 localStorage，请求由浏览器直接发往 Totoro API。<br><br><b>快捷键</b>：Enter 发送 · Shift+Enter 换行 · Ctrl/⌘+Shift+O 新对话 · Ctrl/⌘+K 清除上下文。<br><br><b>源码</b>：<a href=\"https://github.com/catb62/totoro-chat\" target=\"_blank\" rel=\"noopener noreferrer\">github.com/catb62/totoro-chat</a> · 基于开源项目 <a href=\"https://github.com/lfbear/chatbox-lite\" target=\"_blank\" rel=\"noopener noreferrer\">chatbox-lite</a> 改造。<br><b>联系</b>：admin@to-to.cc",
     "modal.close":"关闭",
     "drag.overlay":"松开即可添加到对话",
     "empty.greet.morning":"早上好",
@@ -2071,9 +2059,34 @@ function normalizeState(s){
   });
   delete out.chatOrder;
   if(!Array.isArray(out.chats)) out.chats = [];
+  if(!Array.isArray(out.folders)) out.folders = [];
+  const g = out.general;
+  // The stored version (not the merged default) tells whether old settings need upgrading.
+  if((Number((s.general || {}).settingsVersion) || 0) < 2){
+    // v2 defaults: big context (200K tokens), 10 attachments, memory for every chat.
+    if(Number(g.historyN) === 40) g.historyN = 1000;
+    if(Number(g.attachmentKeepRecent) === 1) g.attachmentKeepRecent = 10;
+    if(!g.contextTokenBudget) g.contextTokenBudget = "200000";
+    if(g.scenarioAutoCompress === false) g.autoMemory = false;
+    if(Number(g.scenarioMemoryMaxChars) > 8000) g.memoryMaxChars = Number(g.scenarioMemoryMaxChars);
+    delete g.scenarioAutoCompress; delete g.scenarioCompressChars; delete g.scenarioMemoryMaxChars;
+    g.settingsVersion = 2;
+  }
+  out.chats.forEach(c=>migrateChat(c, g.systemPrompt));
   if(!Array.isArray(out.config.keys)) out.config.keys = [];
   if(!Array.isArray(out.config.hiddenModels)) out.config.hiddenModels = [];
   return out;
+}
+/* Scenario chats were folded into plain chats: keep their persona as the chat's own
+   system prompt (their summary keeps working as the chat's memory). */
+function migrateChat(c, baseSystemPrompt){
+  if(!c || c.kind !== "scenario") return c;
+  const sc = c.scenario || {};
+  if(c.systemPrompt == null && (sc.desc || sc.lang)){
+    c.systemPrompt = [baseSystemPrompt || "", sc.desc ? "Role and tone for this chat: " + sc.desc : "", sc.lang ? "Always reply in " + sc.lang + "." : ""].filter(Boolean).join("\n\n");
+  }
+  delete c.kind; delete c.scenario;
+  return c;
 }
 function loadState(){
   try{
@@ -2199,6 +2212,9 @@ async function loadPersisted(){
   const pos = new Map((order||[]).map((id, i)=>[id, i]));
   const rank = c => pos.has(c.id) ? pos.get(c.id) : -1;
   chats.sort((a, b)=>(rank(a) - rank(b)) || ((b.createdAt||0) - (a.createdAt||0)));
+  let migrated = false;
+  for(const c of chats){ if(c.kind === "scenario"){ migrateChat(c, state.general.systemPrompt); migrated = true; } }
+  if(migrated) saveState();
   for(const c of chats) for(const m of (c.messages||[])){
     // A drawing still "running" from a closed tab will never finish.
     if(m.imageJob){ m.imageJob = null; if(!(m.images||[]).length && !m.content){ m.content = t("img.err.interrupted"); m.error = true; } }
@@ -2761,15 +2777,23 @@ function uid(){ return Math.random().toString(36).slice(2,10)+Date.now().toStrin
 function currentChat(){
   return state.chats.find(c=>c.id===state.activeChatId) || null;
 }
-function newChat(){
+function newChat(folderId){
+  folderId = typeof folderId === "string" ? folderId : null;
   // Already on an empty chat? Reuse it instead of piling up blank ones.
   const cur = currentChat();
-  if(cur && !cur.messages.length && cur.kind !== "scenario"){ closeMobileSidebar(); focusInput(); return; }
+  if(cur && !cur.messages.length){
+    if(cur.folderId !== (folderId || undefined)){
+      if(folderId) cur.folderId = folderId; else delete cur.folderId;
+      saveState(); renderChatList();
+    }
+    closeMobileSidebar(); focusInput(); return;
+  }
   const id = uid();
   const chat = {
     id, title:t("chat.new.default"), model: state.lastModel || "",
     messages: [], createdAt: Date.now()
   };
+  if(folderId) chat.folderId = folderId;
   state.chats.unshift(chat);
   state.activeChatId = id;
   saveState(); renderChatList(); renderMessages(); updateTopBar();
@@ -2795,18 +2819,18 @@ function renameChat(id){
 function switchChat(id){
   // Leaving an untouched blank chat? Drop it so the list doesn't fill up with "New chat".
   const prev = currentChat();
-  if(prev && prev.id !== id && !prev.messages.length && prev.kind !== "scenario" && !isStreaming(prev.id)){
+  if(prev && prev.id !== id && !prev.messages.length && !isStreaming(prev.id)){
     state.chats = state.chats.filter(c=>c !== prev);
   }
-  state.activeChatId = id; saveState(); renderChatList(); renderMessages(); updateTopBar();
+  state.activeChatId = id;
+  const fo = folderById(currentChat()?.folderId);
+  if(fo) fo.collapsed = false;
+  saveState(); renderChatList(); renderMessages(); updateTopBar();
   syncComposerUI(); // refresh send/stop for the chat we switched to
   closeMobileSidebar();
 }
 
-/* Clear the LLM context but keep visible history. Inserts a divider marker.
-   For 🎬 scenario chats, folds what's about to be cut into long-term memory
-   FIRST — otherwise a manual clear would silently discard everything before it
-   with no chance to preserve the gist, unlike auto-compression. */
+/* Clear the LLM context but keep visible history. Inserts a divider marker. */
 async function clearContext(){
   const chat = currentChat();
   if(!chat || !chat.messages.length) return;
@@ -2816,17 +2840,8 @@ async function clearContext(){
     flashStatus(t("context.empty"));
     return;
   }
-  let compressed = false;
-  if(chat.kind === "scenario"){
-    // Silent: falls back to a plain clear below if there's nothing worth
-    // compressing, no model is configured, or the compression call fails.
-    try{ compressed = await runCompression(chat, { keepRecent: 0, silent: true }); }
-    catch{ compressed = false; }
-  }
-  if(!compressed){
-    chat.messages.push({ role:"divider", time: Date.now() });
-    saveState(); renderMessages();
-  }
+  chat.messages.push({ role:"divider", time: Date.now() });
+  saveState(); renderMessages();
 }
 
 /* Undo a previous context-clear: remove the divider at idx */
@@ -2847,45 +2862,16 @@ function flashStatus(text, ms=1600){
   flashStatus._t = setTimeout(()=>{ if(hint.textContent === text) hint.textContent = ""; }, ms);
 }
 
-/* ------------------------- Scenario chats (context + memory) ------------------------- */
-/* A scenario chat carries a reusable context definition (persona / tone / target
-   language) plus a compressed long-term memory. The effective system prompt is
-   composed from these on every request, mirroring ContextTranslate's design. */
-const SCENARIO_PRESETS = [
-  { emoji:"🎮", title:"Discord 游戏联机", lang:"English",
-    desc:"在 Discord 上和海外网友联机打游戏打字聊天，语气要极度口语化、搞笑自然，多用网络流行缩写（如 lol, tbh, ggwp, cracked）和表情符号。" },
-  { emoji:"💻", title:"GitHub 开源协作", lang:"English",
-    desc:"在 GitHub Issue 或 Pull Request 中与全球开源开发者进行技术讨论，语气要求专业、严谨、客观，礼貌且精炼，使用地道的软件工程术语。" },
-  { emoji:"📧", title:"外企商务邮件", lang:"English",
-    desc:"撰写或回复跨国团队的商务协作邮件，语气要求专业、得体、礼貌且职场化，人称称呼得当地道，使用标准的职场英文格式。" },
-  { emoji:"🌸", title:"二次元同好交流", lang:"日本語 (Japanese)",
-    desc:"在社交平台与日本二次元/动漫同好交流，语气要极其热情、软萌，多用语气词和二次元常用梗，结尾加上符合氛围的颜文字（如 🌸, www, 🥺）。" },
-  { emoji:"✈️", title:"日常旅游交际", lang:"日本語 (Japanese)",
-    desc:"用于日常旅行、问路、点餐或简单的社交聊天，语气要求简单、清晰、礼貌且实用，避免复杂的书面语，多用常用的口语交际句式。" },
-  { emoji:"🗣️", title:"地道口语陪练", lang:"English",
-    desc:"扮演一位友好的母语外教，用自然地道的口语和我聊天练习。先简短回应我的内容，再自然地把话题延续下去；如果我有明显的表达错误，用括号温和地给出更地道的说法。" }
-];
-
-/* Compose the system prompt actually sent to the model. */
+/* ------------------------- System prompt & memory ------------------------- */
+/* The system prompt actually sent: the chat's own (or the default) prompt, plus the
+   chat's long-term memory — a summary of its earlier part — when there is one. */
 function effectiveSystemPrompt(chat){
-  if(chat && chat.kind === "scenario"){
-    return buildScenarioSystemPrompt(chat.scenario||{}, chat.contextSummary||"");
+  if(!chat) return "";
+  let p = chat.systemPrompt ?? state.general.systemPrompt ?? "";
+  const mem = String(chat.contextSummary || "").trim();
+  if(mem){
+    p += (p ? "\n\n" : "") + "LONG-TERM MEMORY — a summary of the earlier part of this conversation, which is no longer shown to you in full. Treat it as things you already know and stay consistent with it (names, facts, decisions, preferences, open threads):\n" + mem;
   }
-  return chat ? (chat.systemPrompt ?? state.general.systemPrompt ?? "") : "";
-}
-
-function buildScenarioSystemPrompt(scenario, summary){
-  const lang = (scenario.lang||"").trim();
-  const desc = (scenario.desc||"").trim();
-  let p = "You are a context-aware conversational assistant operating inside a user-defined scenario.\n\n";
-  p += "SCENARIO & TONE INSTRUCTIONS (follow these strictly):\n\"" + (desc || "(none specified)") + "\"";
-  if(lang){
-    p += "\n\nTARGET LANGUAGE: Always respond in " + lang + ", using native-level, natural phrasing appropriate to the scenario above. If the user writes in another language, treat it as content to respond to (or translate, if that is the scenario's intent) — your reply itself stays in " + lang + ".";
-  }
-  if((summary||"").trim()){
-    p += "\n\nLONG-TERM MEMORY (compressed summary of earlier conversation — keep it consistent: relationships, names, pronouns, agreed facts and terminology):\n\"" + summary.trim().replace(/\n/g, " ") + "\"";
-  }
-  p += "\n\nStay in character and maintain continuity with both the recent messages and the long-term memory above.";
   return p;
 }
 
@@ -2897,30 +2883,16 @@ function activeWindowMessages(chat){
   return msgs.slice(start).filter(m=>(m.role==="user"||m.role==="assistant") && (m.content||"").trim());
 }
 
-let _editingScenarioId = null;
-
-function newScenarioChat(){ openScenarioModal(null); }
-
-function renderScenarioPresets(){
-  const box = document.getElementById("scenarioPresets");
-  box.innerHTML = "";
-  SCENARIO_PRESETS.forEach(p=>{
-    const b = document.createElement("button");
-    b.type = "button"; b.className = "scenario-preset";
-    b.innerHTML = `<span class="emoji">${p.emoji}</span><span>${escapeHtml(p.title)}</span>`;
-    b.addEventListener("click",()=>{
-      document.getElementById("sc_title").value = `${p.emoji} ${p.title}`;
-      document.getElementById("sc_lang").value = p.lang || "";
-      document.getElementById("sc_desc").value = p.desc || "";
-    });
-    box.appendChild(b);
-  });
+/* -------- Memory viewer / editor (🧠 in the top bar) -------- */
+function updateMemoryUI(){
+  const c = currentChat();
+  const b = document.getElementById("memoryBtn");
+  if(b) b.style.display = c && String(c.contextSummary || "").trim() ? "" : "none";
 }
-
-/* Populate the memory-rollback dropdown for a scenario chat, most recent first. */
+/* Memory rollback dropdown, most recent first. */
 function renderMemoryHistorySelect(chat){
-  const row = document.getElementById("sc_memoryHistoryRow");
-  const sel = document.getElementById("sc_memory_history");
+  const row = document.getElementById("memoryHistoryRow");
+  const sel = document.getElementById("memoryHistory");
   const hist = (chat && chat.memoryHistory) || [];
   if(!hist.length){ row.style.display = "none"; sel.innerHTML = ""; return; }
   row.style.display = "";
@@ -2935,86 +2907,111 @@ function renderMemoryHistorySelect(chat){
     sel.appendChild(o);
   });
 }
-
-function openScenarioModal(editId){
-  _editingScenarioId = editId || null;
-  renderScenarioPresets();
-  const titleEl = document.getElementById("scenarioModalTitle");
-  const saveEl = document.getElementById("saveScenario");
-  const summaryRow = document.getElementById("sc_summaryRow");
-  if(editId){
-    const c = state.chats.find(x=>x.id===editId);
-    const sc = (c && c.scenario) || {};
-    document.getElementById("sc_title").value = c?.title || "";
-    document.getElementById("sc_lang").value = sc.lang || "";
-    document.getElementById("sc_desc").value = sc.desc || "";
-    document.getElementById("sc_summary").value = c?.contextSummary || "";
-    renderMemoryHistorySelect(c);
-    summaryRow.style.display = "";
-    titleEl.textContent = t("scenario.modal.titleEdit");
-    saveEl.textContent = t("scenario.save.edit");
-  }else{
-    const first = SCENARIO_PRESETS[0];
-    document.getElementById("sc_title").value = `${first.emoji} ${first.title}`;
-    document.getElementById("sc_lang").value = first.lang;
-    document.getElementById("sc_desc").value = first.desc;
-    document.getElementById("sc_summary").value = "";
-    document.getElementById("sc_memoryHistoryRow").style.display = "none";
-    summaryRow.style.display = "none";
-    titleEl.textContent = t("scenario.modal.titleNew");
-    saveEl.textContent = t("scenario.save");
-  }
-  document.getElementById("scenarioModal").classList.remove("hide");
-}
-function closeScenarioModal(){ document.getElementById("scenarioModal").classList.add("hide"); _editingScenarioId = null; }
-
-function saveScenario(){
-  const title = document.getElementById("sc_title").value.trim();
-  const lang = document.getElementById("sc_lang").value;
-  const desc = document.getElementById("sc_desc").value.trim();
-  if(!desc){ alert(t("scenario.desc.required")); return; }
-  const scenario = { lang, desc };
-  if(_editingScenarioId){
-    const c = state.chats.find(x=>x.id===_editingScenarioId);
-    if(c){
-      c.title = title || c.title;
-      c.scenario = scenario;
-      const newSummary = document.getElementById("sc_summary").value.trim();
-      if(newSummary !== (c.contextSummary||"")){
-        // Manual edits (including restoring an older version) are snapshotted
-        // too, so the rollback history covers the full edit chain, not just
-        // automatic compressions.
-        pushMemoryHistory(c, c.contextSummary);
-        c.contextSummary = newSummary;
-      }
-    }
-    closeScenarioModal();
-    saveState(); renderChatList(); renderMessages(); updateTopBar();
-  }else{
-    const id = uid();
-    const chat = {
-      id, title: title || t("chat.new.default"),
-      model: state.lastModel || "",
-      kind: "scenario", scenario, contextSummary: "", memoryHistory: [],
-      messages: [], createdAt: Date.now()
-    };
-    state.chats.unshift(chat);
-    state.activeChatId = id;
-    closeScenarioModal();
-    saveState(); updateModelChip(); renderChatList(); renderMessages(); updateTopBar();
-    closeMobileSidebar();
-    if(window.matchMedia && !window.matchMedia("(max-width: 768px)").matches){
-      document.getElementById("input").focus();
-    }
-  }
-}
-
-/* Show/hide scenario-only controls for the active chat. */
-function updateScenarioUI(){
+function openMemoryModal(){
   const c = currentChat();
-  const isScenario = !!(c && c.kind === "scenario");
-  const sb = document.getElementById("scenarioBtn");
-  if(sb) sb.style.display = isScenario ? "" : "none";
+  if(!c) return;
+  document.getElementById("memoryText").value = c.contextSummary || "";
+  renderMemoryHistorySelect(c);
+  document.getElementById("memoryModal").classList.remove("hide");
+}
+function closeMemoryModal(){ document.getElementById("memoryModal").classList.add("hide"); }
+function saveMemory(){
+  const c = currentChat();
+  if(c){
+    const v = document.getElementById("memoryText").value.trim();
+    if(v !== (c.contextSummary || "")){
+      // Manual edits are snapshotted too, so the rollback history covers every change.
+      pushMemoryHistory(c, c.contextSummary);
+      c.contextSummary = v;
+      saveState();
+    }
+  }
+  closeMemoryModal();
+  updateMemoryUI();
+}
+
+/* ------------------------- Folders ------------------------- */
+function folderById(id){ return state.folders.find(f=>f.id===id) || null; }
+function createFolder(moveChatId){
+  const name = prompt(t("folder.prompt.name"), t("folder.default"));
+  if(name == null) return null;
+  const f = { id: uid(), name: name.trim() || t("folder.default"), collapsed: false };
+  state.folders.unshift(f);
+  if(moveChatId) setChatFolder(moveChatId, f.id, true);
+  saveState(); renderChatList();
+  return f;
+}
+function renameFolder(id){
+  const f = folderById(id);
+  if(!f) return;
+  const n = prompt(t("folder.prompt.rename"), f.name);
+  if(n != null && n.trim()){ f.name = n.trim(); saveState(); renderChatList(); }
+}
+function deleteFolder(id){
+  const f = folderById(id);
+  if(!f || !confirm(t("folder.confirm.delete", f.name))) return;
+  state.folders = state.folders.filter(x=>x.id !== id);
+  for(const c of state.chats) if(c.folderId === id) delete c.folderId;   // chats are kept
+  saveState(); renderChatList();
+}
+function toggleFolder(id){
+  const f = folderById(id);
+  if(!f) return;
+  f.collapsed = !f.collapsed;
+  saveState(); renderChatList();
+}
+function setChatFolder(chatId, folderId, silent){
+  const c = state.chats.find(x=>x.id===chatId);
+  if(!c) return;
+  const f = folderId ? folderById(folderId) : null;
+  if(f){ c.folderId = f.id; f.collapsed = false; }
+  else delete c.folderId;
+  if(!silent){ saveState(); renderChatList(); }
+}
+
+/* "Move to folder" menu next to a chat (works on phones too, where drag & drop doesn't). */
+let _folderMenuChat = null;
+function isFolderMenuOpen(){ const m = document.getElementById("folderMenu"); return !!m && !m.classList.contains("hide"); }
+function closeFolderMenu(){ document.getElementById("folderMenu")?.classList.add("hide"); _folderMenuChat = null; }
+function openFolderMenu(chatId, anchor){
+  _folderMenuChat = chatId;
+  const c = state.chats.find(x=>x.id===chatId);
+  const menu = document.getElementById("folderMenu");
+  const list = menu.querySelector(".model-list");
+  list.innerHTML = "";
+  const head = document.createElement("div");
+  head.className = "model-group"; head.textContent = t("folder.moveTo");
+  list.appendChild(head);
+  const item = (label, active, onClick, icon)=>{
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "model-item" + (active ? " active" : "");
+    b.innerHTML = `${icon || ""}<span class="mi-text"><span class="mi-name"></span></span>${ICONS.check}`;
+    b.querySelector(".mi-name").textContent = label;
+    b.addEventListener("click", ()=>{ closeFolderMenu(); onClick(); });
+    list.appendChild(b);
+  };
+  for(const f of state.folders) item(f.name, !!c && c.folderId === f.id, ()=>setChatFolder(chatId, f.id), ICONS.folder);
+  if(c && c.folderId) item(t("folder.removeFrom"), false, ()=>setChatFolder(chatId, null), ICONS.folderMove);
+  item(t("folder.newAndMove"), false, ()=>createFolder(chatId), ICONS.folderPlus);
+  menu.classList.remove("hide");
+  positionDropdown(menu, anchor, 230);
+}
+/* Popup below its anchor, or above it when there's no room below. */
+function positionDropdown(menu, anchor, w){
+  const r = anchor.getBoundingClientRect();
+  const vw = window.innerWidth, vh = window.innerHeight;
+  w = Math.min(w || 240, vw - 16);
+  menu.style.width = w + "px";
+  menu.style.left = Math.min(Math.max(8, r.left), vw - w - 8) + "px";
+  const below = vh - r.bottom, list = menu.querySelector(".model-list");
+  if(below > 220 || below >= r.top){
+    menu.style.top = (r.bottom + 6) + "px"; menu.style.bottom = "";
+    if(list) list.style.maxHeight = Math.max(120, below - 24) + "px";
+  }else{
+    menu.style.bottom = (vh - r.top + 6) + "px"; menu.style.top = "";
+    if(list) list.style.maxHeight = Math.max(120, r.top - 24) + "px";
+  }
 }
 
 /* One-shot (non-streamed for the caller) completion reusing the provider callers. */
@@ -3030,19 +3027,19 @@ async function oneShotLLM(modelId, systemPrompt, userContent, signal){
 
 /* Memory only ever holds TEXT — attachments (images/files) are intentionally never
    passed to the summarizer, so images can never bloat or leak into long-term memory. */
-function scenarioMemoryMaxChars(){
-  return Math.max(200, Number(state.general.scenarioMemoryMaxChars) || 800);
+function memoryMaxChars(){
+  return Math.max(500, Number(state.general.memoryMaxChars) || 8000);
 }
-function buildScenarioSummarizerPrompt(maxChars){
+function buildSummarizerPrompt(maxChars){
   // Rough word budget so the instruction scales with the configured cap (works
   // decently for both CJK, ~1 char/word, and Latin scripts, ~5 chars/word).
   const wordBudget = Math.max(40, Math.round(maxChars / 3));
   return `You are a conversation memory compression engine. Read the prior memory (if any) and the new conversation turns, then output an UPDATED consolidated memory in under ${wordBudget} words (hard cap: the memory storage itself is limited to ${maxChars} characters, so stay concise).
 
 Capture and preserve, in priority order:
-1. The established relationship, persona and tone.
-2. Names, nicknames, pronouns and agreed terminology.
-3. Concrete facts, decisions, preferences and open threads.
+1. The user's goals, the task at hand and its current state.
+2. Concrete facts, decisions, numbers, code/file names, preferences and open questions.
+3. Names, terminology and the tone or role agreed for the conversation.
 
 Attachments (images/files) are NOT included above and must NOT be described or invented — summarize only the text of the conversation. Merge the new turns into the prior memory; drop the least important details first if space is tight, deduplicate, keep it factual. Write in the same language the conversation mainly uses. Output ONLY a concise bulleted list — no preamble, no commentary.`;
 }
@@ -3068,39 +3065,41 @@ function truncateMemoryText(text, maxChars){
 }
 
 /* Snapshot the memory value that's about to be replaced, so a bad compression or
-   edit can be manually rolled back later from the scenario editor. Local-only —
+   edit can be manually rolled back later from the memory editor. Local-only —
    never sent to the model, so it doesn't cost tokens; capped to avoid unbounded
    localStorage growth over a long-lived chat. */
-const SCENARIO_MEMORY_HISTORY_CAP = 10;
+const MEMORY_HISTORY_CAP = 10;
 function pushMemoryHistory(chat, prevValue){
   if(!(prevValue||"").trim()) return;
   if(!Array.isArray(chat.memoryHistory)) chat.memoryHistory = [];
   chat.memoryHistory.push({ text: prevValue, time: Date.now() });
-  if(chat.memoryHistory.length > SCENARIO_MEMORY_HISTORY_CAP){
-    chat.memoryHistory = chat.memoryHistory.slice(-SCENARIO_MEMORY_HISTORY_CAP);
+  if(chat.memoryHistory.length > MEMORY_HISTORY_CAP){
+    chat.memoryHistory = chat.memoryHistory.slice(-MEMORY_HISTORY_CAP);
   }
 }
 
-/* Keep the most recent N real messages live; everything older gets folded into memory. */
-const SCENARIO_KEEP_RECENT = 4;
+/* Keep the most recent N real messages verbatim; everything older gets folded into memory. */
+const MEMORY_KEEP_RECENT = 10;
 let _autoCompressing = false;
-
-/* Approximate "context size" of the active window, in characters. */
-function estimateWindowSize(chat){
-  return activeWindowMessages(chat).reduce((n,m)=>n + ((m.content||"").length), 0);
+function contextBudget(){ const b = optNum(state.general.contextTokenBudget); return b && b > 0 ? b : 200000; }
+/* Rough token size of what the next request would send. */
+function windowTokens(chat){
+  const win = activeWindowMessages(chat);
+  const allow = computeAttachmentAllowSet(win);
+  return win.reduce((n, m)=>n + estimateMessageTokens(m, allow.has(m)), 0) + estimateTokens(effectiveSystemPrompt(chat));
 }
 
 /* Core compression: fold the older part of the active window into chat.contextSummary,
-   leaving a divider before the kept-recent messages. Returns true on success. */
+   leaving a memory divider before the kept-recent messages. Returns true on success. */
 async function runCompression(chat, opts={}){
   const keepRecent = Math.max(0, opts.keepRecent ?? 0);
   const win = activeWindowMessages(chat);
   const toCompress = keepRecent > 0 ? win.slice(0, Math.max(0, win.length - keepRecent)) : win.slice();
-  if(toCompress.length < 2){ if(!opts.silent) flashStatus(t("scenario.compress.tooFew")); return false; }
+  if(toCompress.length < 2) return false;
   const modelId = (findModel(chat.model, getAllModels()) || selectedModel())?.id;
-  if(!modelId){ if(!opts.silent) alert(t("msg.error.noModel")); return false; }
+  if(!modelId) return false;
 
-  flashStatus(t("scenario.compress.running"), 60000);
+  flashStatus(t("memory.running"), 60000);
   const ctrl = new AbortController();
   // Text only — attachments are deliberately never dumped into the summarizer input.
   let dump = "";
@@ -3109,40 +3108,44 @@ async function runCompression(chat, opts={}){
   if((chat.contextSummary||"").trim()) userContent += "【Prior memory】:\n" + chat.contextSummary.trim() + "\n\n";
   userContent += "【New conversation turns to merge】:\n" + dump;
 
-  const maxChars = scenarioMemoryMaxChars();
-  const summary = await oneShotLLM(modelId, buildScenarioSummarizerPrompt(maxChars), userContent, ctrl.signal);
+  const maxChars = memoryMaxChars();
+  const summary = await oneShotLLM(modelId, buildSummarizerPrompt(maxChars), userContent, ctrl.signal);
   if(!summary) return false;
   pushMemoryHistory(chat, chat.contextSummary);
-  // Hard cap as a safety net in case the model ignores the length instruction —
-  // this is what actually bounds the overall size of "memory", not just a hint.
+  // Hard cap as a safety net in case the model ignores the length instruction.
   chat.contextSummary = truncateMemoryText(summary, maxChars);
-  // Drop the compressed turns from the active window (keep them visible) via a divider.
+  // The summarized turns stay visible but leave the context, behind a memory divider.
   const firstKeep = keepRecent > 0 ? win[win.length - keepRecent] : null;
   const at = firstKeep ? chat.messages.indexOf(firstKeep) : -1;
-  if(at >= 0) chat.messages.splice(at, 0, { role:"divider", time: Date.now() });
-  else if(chat.messages[chat.messages.length-1]?.role !== "divider") chat.messages.push({ role:"divider", time: Date.now() });
-  saveState(); renderMessages();
-  flashStatus(t("scenario.compress.done"));
+  const divider = { role:"divider", memory:true, time: Date.now() };
+  if(at >= 0) chat.messages.splice(at, 0, divider);
+  else if(chat.messages[chat.messages.length-1]?.role !== "divider") chat.messages.push(divider);
+  saveState();
+  if(state.activeChatId === chat.id){ renderMessages(); updateTopBar(); }
+  flashStatus(t("memory.done"));
   return true;
 }
 
-/* Called after each scenario reply: auto-fold history into memory once the live
-   context grows past the configured size. No button, no user action required. */
-async function maybeAutoCompress(chat){
-  if(!chat || chat.kind !== "scenario") return;
-  if(state.general.scenarioAutoCompress === false) return;
-  if(_autoCompressing) return;
-  const threshold = Math.max(500, Number(state.general.scenarioCompressChars) || 4000);
-  if(estimateWindowSize(chat) < threshold) return;
-  if(activeWindowMessages(chat).length <= SCENARIO_KEEP_RECENT + 1) return; // too little to gain from
+/* After each reply: once the conversation nears the context limit, fold the older part
+   into memory, so nothing silently drops out of what the model knows. */
+async function maybeAutoMemory(chat){
+  if(!chat || state.general.autoMemory === false || _autoCompressing) return;
+  if(windowTokens(chat) < contextBudget() * 0.8) return;
+  if(activeWindowMessages(chat).length <= MEMORY_KEEP_RECENT + 1) return; // too little to gain from
   _autoCompressing = true;
-  try{ await runCompression(chat, { keepRecent: SCENARIO_KEEP_RECENT, silent: true }); }
-  catch(e){ flashStatus(t("scenario.compress.failed", e.message||String(e)), 4000); }
+  try{ await runCompression(chat, { keepRecent: MEMORY_KEEP_RECENT }); }
+  catch(e){ flashStatus(t("memory.failed", e.message||String(e)), 4000); }
   finally{ _autoCompressing = false; }
 }
 
 /* Inline icons used by dynamic UI (single-color line icons, same style as the sidebar). */
 const ICONS = {
+  folder: '<svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>',
+  folderPlus: '<svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 10v6"/><path d="M9 13h6"/><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>',
+  folderMove: '<svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 9V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H20a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-1"/><path d="M2 13h10"/><path d="m9 16 3-3-3-3"/></svg>',
+  pencil: '<svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
+  plus: '<svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg>',
+  chevR: '<svg class="fi chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>',
   download: '<svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>',
   brush: '<svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9.06 11.9 8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08"/><path d="M7.07 14.94c-1.66 0-3 1.35-3 3.02 0 1.33-2.5 1.52-2 2.02 1.08 1.1 2.49 2.02 4 2.02 2.2 0 4-1.8 4-4.04a3.01 3.01 0 0 0-3-3.02z"/></svg>',
   imgRef: '<svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/></svg>',
@@ -3151,7 +3154,6 @@ const ICONS = {
   check: '<svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>',
   eye: '<svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>',
   trash: '<svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>',
-  scene: '<svg class="fi ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.2 6 3 11l-.9-2.4c-.3-1.1.3-2.2 1.3-2.5l13.5-4c1.1-.3 2.2.3 2.5 1.3Z"/><path d="m6.2 5.3 3.1 3.9"/><path d="m12.4 3.4 3.1 4"/><path d="M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>',
   chat: '<svg class="fi ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8z"/></svg>'
 };
 function modelDisplayName(model){ const m = getAllModels().find(x=>x.model===model); return m ? m.name : prettyModelName(model); }
@@ -3227,8 +3229,16 @@ async function readImagesResponse(r, onActivity, onPartial){
   return out;
 }
 /* refs: [{rec}] — image records to edit; the first one's maskBlobId (if any) is the mask. */
+/* GPT Image treats a mask as guidance and redraws the whole picture; a bare "change this
+   part to X" is read as "make it X" and can change everything. Spell the scope out. */
+function maskedEditPrompt(prompt){
+  return /[\u3400-\u9fff]/.test(prompt)
+    ? `只修改遮罩区域（图中被涂抹的部分）：${prompt}\n遮罩以外的所有内容（主体的其余部分、背景、构图、颜色、画风）必须与原图完全一致，不要做任何改动。`
+    : `Edit only the masked area (the painted part of the image): ${prompt}\nEverything outside the masked area (the rest of the subject, background, composition, colors and style) must stay exactly as in the original image. Do not change anything else.`;
+}
 async function generateImages({ target, prompt, refs, size, quality, signal, onActivity, onPartial }){
   const edit = !!(refs && refs.length);
+  const sendPrompt = edit && refs[0].rec.maskBlobId ? maskedEditPrompt(prompt) : prompt;
   const url = target.base + (edit ? "/v1/images/edits" : "/v1/images/generations");
   // Edits are sent non-streamed: through this gateway, streamed edits fail upstream
   // (502 "Upstream service temporarily unavailable") while the same request without
@@ -3242,7 +3252,7 @@ async function generateImages({ target, prompt, refs, size, quality, signal, onA
     if(edit){
       const fd = new FormData();
       fd.append("model", target.model);
-      fd.append("prompt", prompt);
+      fd.append("prompt", sendPrompt);
       fd.append("n", "1");
       if(opt.size) fd.append("size", opt.size);
       if(opt.quality) fd.append("quality", opt.quality);
@@ -3929,7 +3939,7 @@ function updateModelChip(){
 function updateAccountCard(){
   const card = document.getElementById("accountCard");
   if(!card) return;
-  const n = visibleModels().length;
+  const n = getAllModels().filter(m=>!m.hidden).length;   // chat + image, same count as the key check
   const keyed = hasKey();
   card.classList.toggle("ok", keyed && n > 0);
   card.classList.toggle("warn", keyed && n === 0);
@@ -4116,33 +4126,40 @@ function moveChat(srcId, targetId, before){
 function renderChatList(){
   const list = document.getElementById("chatList");
   list.innerHTML = "";
-  for(const c of state.chats){
+  const folderIds = new Set(state.folders.map(f=>f.id));
+  // Drop targets for dragging a chat: a folder header (into the folder) or the "Chats"
+  // section label (out of any folder).
+  const dropTarget = (el, onDrop)=>{
+    el.addEventListener("dragover", (e)=>{ if(!_dragChatId) return; e.preventDefault(); el.classList.add("drop"); });
+    el.addEventListener("dragleave", ()=>el.classList.remove("drop"));
+    el.addEventListener("drop", (e)=>{ if(!_dragChatId) return; e.preventDefault(); el.classList.remove("drop"); onDrop(_dragChatId); });
+  };
+  const chatEl = (c, inFolder)=>{
     const div = document.createElement("div");
-    div.className = "chat-item"+(c.id===state.activeChatId?" active":"")+(isStreaming(c.id)?" streaming":"");
+    div.className = "chat-item" + (inFolder ? " in-folder" : "") + (c.id===state.activeChatId ? " active" : "") + (isStreaming(c.id) ? " streaming" : "");
     div.draggable = true;
     div.dataset.id = c.id;
-    const icon = c.kind === "scenario" ? ICONS.scene : ICONS.chat;
-    const editBtn = c.kind === "scenario"
-      ? `<button class="icon-btn" data-act="editScenario" title="${escapeHtml(t("scenario.edit.title"))}">⚙</button>`
-      : "";
     div.innerHTML = `
-      <span title="${c.kind==="scenario"?escapeHtml(t("scenario.badge")):""}">${icon}</span>
-      <span class="title">${escapeHtml(c.title||t("chat.untitled"))}</span>
+      <span>${ICONS.chat}</span>
+      <span class="title"></span>
       ${isStreaming(c.id)?`<span class="stream-dot" title="${escapeHtml(t("chat.streaming"))}"></span>`:""}
       <span class="actions">
-        ${editBtn}
-        <button class="icon-btn" data-act="rename" title="${escapeHtml(t("chat.action.rename"))}">✎</button>
-        <button class="icon-btn" data-act="delete" title="${escapeHtml(t("chat.action.delete"))}">🗑</button>
+        <button class="icon-btn" data-act="move" title="${escapeHtml(t("folder.move"))}">${ICONS.folderMove}</button>
+        <button class="icon-btn" data-act="rename" title="${escapeHtml(t("chat.action.rename"))}">${ICONS.pencil}</button>
+        <button class="icon-btn" data-act="delete" title="${escapeHtml(t("chat.action.delete"))}">${ICONS.trash}</button>
       </span>`;
+    div.querySelector(".title").textContent = c.title || t("chat.untitled");
     div.addEventListener("click",(e)=>{
-      const act = e.target.closest("button")?.dataset.act;
-      if(act==="editScenario"){ e.stopPropagation(); openScenarioModal(c.id); }
+      const btn = e.target.closest("button");
+      const act = btn?.dataset.act;
+      if(act==="move"){ e.stopPropagation(); if(isFolderMenuOpen() && _folderMenuChat === c.id) closeFolderMenu(); else openFolderMenu(c.id, btn); }
       else if(act==="rename"){ e.stopPropagation(); renameChat(c.id); }
       else if(act==="delete"){ e.stopPropagation(); deleteChat(c.id); }
       else switchChat(c.id);
     });
     div.addEventListener("dragstart",(e)=>{
       _dragChatId = c.id; div.classList.add("dragging");
+      closeFolderMenu();
       e.dataTransfer.effectAllowed = "move";
       try{ e.dataTransfer.setData("text/plain", c.id); }catch{}
     });
@@ -4162,16 +4179,58 @@ function renderChatList(){
       const r = div.getBoundingClientRect();
       const before = e.clientY < r.top + r.height/2;
       clearDragMarks();
+      // Dropped next to a chat: take that chat's place, including its folder.
+      setChatFolder(_dragChatId, c.folderId && folderIds.has(c.folderId) ? c.folderId : null, true);
       moveChat(_dragChatId, c.id, before);
     });
-    list.appendChild(div);
+    return div;
+  };
+
+  for(const f of state.folders){
+    const items = state.chats.filter(c=>c.folderId === f.id);
+    const open = !f.collapsed;
+    const head = document.createElement("div");
+    head.className = "folder-head" + (open ? " open" : "");
+    head.dataset.folder = f.id;
+    head.innerHTML = `${ICONS.chevR}${ICONS.folder.replace('class="fi"', 'class="fi fd"')}<span class="name"></span><span class="count">${items.length}</span>
+      <span class="actions">
+        <button class="icon-btn" data-act="newIn" title="${escapeHtml(t("folder.newChat"))}">${ICONS.plus}</button>
+        <button class="icon-btn" data-act="rename" title="${escapeHtml(t("folder.rename"))}">${ICONS.pencil}</button>
+        <button class="icon-btn" data-act="delete" title="${escapeHtml(t("folder.delete"))}">${ICONS.trash}</button>
+      </span>`;
+    head.querySelector(".name").textContent = f.name;
+    head.addEventListener("click", (e)=>{
+      const act = e.target.closest("button")?.dataset.act;
+      if(act === "newIn"){ e.stopPropagation(); newChat(f.id); }
+      else if(act === "rename"){ e.stopPropagation(); renameFolder(f.id); }
+      else if(act === "delete"){ e.stopPropagation(); deleteFolder(f.id); }
+      else toggleFolder(f.id);
+    });
+    dropTarget(head, (id)=>setChatFolder(id, f.id));
+    list.appendChild(head);
+    if(open){
+      if(!items.length){
+        const em = document.createElement("div");
+        em.className = "folder-empty"; em.textContent = t("folder.empty");
+        list.appendChild(em);
+      }
+      for(const c of items) list.appendChild(chatEl(c, true));
+    }
   }
+  const loose = state.chats.filter(c=>!c.folderId || !folderIds.has(c.folderId));
+  if(state.folders.length){
+    const sec = document.createElement("div");
+    sec.className = "list-section"; sec.textContent = t("folder.loose");
+    dropTarget(sec, (id)=>setChatFolder(id, null));
+    list.appendChild(sec);
+  }
+  for(const c of loose) list.appendChild(chatEl(c, false));
 }
 
 function updateTopBar(){
   const c = currentChat();
   document.getElementById("chatTitle").textContent = c?.title || t("chat.new.default");
-  updateScenarioUI();
+  updateMemoryUI();
   updateModelChip();
 }
 
@@ -4260,8 +4319,9 @@ function renderMessageEl(m, idx){
     const d = document.createElement("div");
     d.className = "msg-divider";
     const lbl = document.createElement("span"); lbl.className = "lbl";
-    const ico = document.createElement("span"); ico.className = "ico"; ico.textContent = "✂";
-    const text = document.createElement("span"); text.className = "text"; text.textContent = t("context.divider");
+    const ico = document.createElement("span"); ico.className = "ico"; ico.textContent = m.memory ? "🧠" : "✂";
+    if(m.memory) d.classList.add("memory");
+    const text = document.createElement("span"); text.className = "text"; text.textContent = t(m.memory ? "memory.divider" : "context.divider");
     const x = document.createElement("span"); x.className = "x"; x.textContent = "×";
     x.title = t("context.divider.remove");
     x.setAttribute("role","button");
@@ -4400,7 +4460,7 @@ async function regenerateAssistant(idx){
   chat.messages.push(aiMsg);
   saveState(); renderMessages();
   await streamResponse(chat, aiMsg, sel.id);
-  maybeAutoCompress(chat);
+  maybeAutoMemory(chat);
 }
 
 async function editUserMessage(idx){
@@ -4574,8 +4634,8 @@ async function sendMessage(){
   saveState(); renderChatList(); renderMessages(); updateTopBar();
 
   await streamResponse(chat, aiMsg, sel.id);
-  // Scenario chats: auto-fold older context into long-term memory when it grows too large.
-  maybeAutoCompress(chat);
+  // Long chats: fold older context into memory before it falls out of the window.
+  maybeAutoMemory(chat);
 }
 
 /* Name a chat after its first message. */
@@ -5455,7 +5515,7 @@ async function readSSE(response, onEvent, onActivity){
 }
 
 function lastN(messages, chat){
-  const n = Math.max(2, Number(state.general.historyN)||40);
+  const n = Math.max(2, Number(state.general.historyN)||1000);
   // Honor context dividers: only consider messages after the most recent divider
   let start = 0;
   for(let i=messages.length-1;i>=0;i--){
@@ -5551,13 +5611,11 @@ function openSettings(tab){
   set("cfg_ai_name", g.aiName || "");
   set("cfg_temp", g.temperature);
   set("cfg_max_tokens", g.maxTokens);
-  set("cfg_history_n", g.historyN);
   set("cfg_ctx_budget", g.contextTokenBudget);
   set("cfg_image_detail", g.imageDetail || "standard");
   set("cfg_attach_keep_recent", g.attachmentKeepRecent ?? 1);
-  document.getElementById("cfg_scenario_autocompress").checked = g.scenarioAutoCompress !== false;
-  set("cfg_scenario_compress_chars", g.scenarioCompressChars || 4000);
-  set("cfg_scenario_memory_max_chars", g.scenarioMemoryMaxChars || 800);
+  document.getElementById("cfg_auto_memory").checked = g.autoMemory !== false;
+  set("cfg_memory_max_chars", g.memoryMaxChars || 8000);
   document.getElementById("cfg_auto_image").checked = g.autoImage !== false;
   updateStorageUsage();
   document.getElementById("settingsStatus").textContent = "";
@@ -5692,13 +5750,11 @@ async function saveSettings(){
   g.aiName = str("cfg_ai_name");
   g.temperature = str("cfg_temp");
   g.maxTokens = str("cfg_max_tokens");
-  g.historyN = Math.max(2, Number(str("cfg_history_n")) || 40);
-  g.contextTokenBudget = str("cfg_ctx_budget");
+  g.contextTokenBudget = str("cfg_ctx_budget") === "" ? "200000" : String(Math.max(1000, Number(str("cfg_ctx_budget")) || 200000));
   g.imageDetail = document.getElementById("cfg_image_detail").value || "standard";
-  g.attachmentKeepRecent = str("cfg_attach_keep_recent") === "" ? 1 : Math.max(0, Number(str("cfg_attach_keep_recent")) || 0);
-  g.scenarioAutoCompress = document.getElementById("cfg_scenario_autocompress").checked;
-  g.scenarioCompressChars = Math.max(500, Number(str("cfg_scenario_compress_chars")) || 4000);
-  g.scenarioMemoryMaxChars = Math.max(200, Number(str("cfg_scenario_memory_max_chars")) || 800);
+  g.attachmentKeepRecent = str("cfg_attach_keep_recent") === "" ? 10 : Math.max(0, Number(str("cfg_attach_keep_recent")) || 0);
+  g.autoMemory = document.getElementById("cfg_auto_memory").checked;
+  g.memoryMaxChars = Math.max(500, Number(str("cfg_memory_max_chars")) || 8000);
   g.autoImage = document.getElementById("cfg_auto_image").checked;
   d.keys.forEach(k=>delete k.checking);
   state.config = d;
@@ -5763,11 +5819,14 @@ function importData(file){
       const incoming = s.chats.filter(c=>c && c.id);
       for(const c of incoming) await externalizeChatImages(c);
       if(confirm(t("confirm.import"))){
-        const { blobs, ...meta } = s;
+        const meta = { ...s };
+        delete meta.blobs;
         state = normalizeState({ ...meta, chats: incoming });
       }else{
         const have = new Set(state.chats.map(c=>c.id));
-        state.chats = incoming.filter(c=>!have.has(c.id)).concat(state.chats);
+        state.chats = incoming.filter(c=>!have.has(c.id)).map(c=>migrateChat(c, state.general.systemPrompt)).concat(state.chats);
+        const haveF = new Set(state.folders.map(f=>f.id));
+        state.folders = (Array.isArray(s.folders) ? s.folders : []).filter(f=>f && f.id && !haveF.has(f.id)).concat(state.folders);
       }
       if(!currentChat()) state.activeChatId = state.chats[0]?.id || null;
       saveState(); await flushChats();
@@ -6295,17 +6354,18 @@ async function init(){
 
   $("newChatBtn").onclick = newChat;
   $("topNewChatBtn").onclick = newChat;
-  $("newScenarioBtn").onclick = ()=>{ closeMobileSidebar(); newScenarioChat(); };
-  $("scenarioBtn").onclick = ()=>{ const c = currentChat(); if(c && c.kind==="scenario") openScenarioModal(c.id); };
-  $("closeScenario").onclick = closeScenarioModal;
-  $("cancelScenario").onclick = closeScenarioModal;
-  $("saveScenario").onclick = saveScenario;
-  $("sc_memory_restore").onclick = ()=>{
-    const c = state.chats.find(x=>x.id===_editingScenarioId);
-    const sel = $("sc_memory_history");
-    const h = c && (c.memoryHistory||[])[Number(sel.value)];
-    if(h) $("sc_summary").value = h.text;
+  $("newFolderBtn").onclick = ()=>createFolder();
+  $("memoryBtn").onclick = openMemoryModal;
+  $("closeMemory").onclick = closeMemoryModal;
+  $("cancelMemory").onclick = closeMemoryModal;
+  $("saveMemory").onclick = saveMemory;
+  $("memoryClear").onclick = ()=>{ $("memoryText").value = ""; };
+  $("memoryRestore").onclick = ()=>{
+    const c = currentChat();
+    const h = c && (c.memoryHistory||[])[Number($("memoryHistory").value)];
+    if(h) $("memoryText").value = h.text;
   };
+  $("chatList").addEventListener("scroll", closeFolderMenu, {passive:true});
   $("themeBtn").onclick = ()=>{ state.theme = state.theme==="dark"?"light":"dark"; saveState(); applyTheme(); reRenderAllMermaid(); };
   $("langBtn").onclick = ()=>{ setLang(curLang()==="en" ? "zh" : "en"); };
   $("reloadBtn").onclick = reloadApp;
@@ -6383,6 +6443,7 @@ async function init(){
   const outsideMenu = (e)=>{
     if(isModelMenuOpen() && !e.target.closest("#modelPick")) closeModelMenu();
     if(isImgOptOpen() && !e.target.closest("#imgOptPick")) closeImgOptMenu();
+    if(isFolderMenuOpen() && !e.target.closest("#folderMenu") && !e.target.closest('[data-act="move"]')) closeFolderMenu();
   };
   document.addEventListener("mousedown", outsideMenu);
   document.addEventListener("touchstart", outsideMenu, {passive:true});
@@ -6465,6 +6526,8 @@ async function init(){
   window.addEventListener("keydown",(e)=>{
     if(e.key!=="Escape") return;
     if(isMaskEditorOpen()){ closeMaskEditor(); return; }
+    if(isFolderMenuOpen()){ closeFolderMenu(); return; }
+    if(!$("memoryModal").classList.contains("hide")){ closeMemoryModal(); return; }
     if(isImageViewerOpen()){ closeImageViewer(); return; }
     if(isImgOptOpen()){ closeImgOptMenu(); return; }
     if(isModelMenuOpen()){ closeModelMenu(); return; }
