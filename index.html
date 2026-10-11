@@ -17,8 +17,8 @@
 <!-- PWA: a real manifest file enables Chrome/Edge "Install app". If it is missing,
      setupPWA() injects an inline fallback so the page still works as a single file. -->
 <link rel="manifest" href="manifest.webmanifest" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/styles/github-dark.min.css" />
+<link rel="stylesheet" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+<link rel="stylesheet" crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/styles/github-dark.min.css" />
 <style>
 :root{
   /* 浅色：与 api.to-to.cc 一致的冷白 + 青绿（Tailwind teal）主色 */
@@ -755,6 +755,15 @@ html[data-theme="dark"] .key-row-status.ok{color:#34d399}
 .msg-divider.memory .lbl{border-style:solid;border-color:var(--accent-bright);color:var(--accent)}
 .set-section .form-row .hint{display:block}
 @media (hover:none){ .folder-head .actions{display:flex} .folder-head .count{display:none} .chat-item.active .actions{display:flex} }
+/* storage breakdown */
+.storage-table{display:flex;flex-direction:column;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:6px}
+.st-row{display:flex;justify-content:space-between;gap:12px;padding:8px 12px;font-size:13px;border-top:1px solid var(--border)}
+.st-row:first-child{border-top:none}
+.st-row span{color:var(--fg-2)}
+.st-row b{font-weight:600;text-align:right}
+.st-row.total{background:var(--bg-2)}
+.storage-note{margin:4px 0 10px}
+.set-section .btn-row + .btn-row{margin-top:8px}
 /* iPad portrait & phones: collapse sidebar into off-canvas */
 @media (max-width:768px){
   .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:50;transform:translateX(-100%);transition:transform .2s;width:84vw;max-width:300px;padding-left:env(safe-area-inset-left);padding-top:env(safe-area-inset-top)}
@@ -1073,11 +1082,21 @@ html[data-theme="dark"] .key-row-status.ok{color:#34d399}
         <div class="form-row"><label data-i18n="general.system.label">Default system prompt</label><textarea id="cfg_system" rows="4" placeholder="You are a helpful assistant."></textarea><span class="hint" data-i18n="general.system.hint"></span></div>
         <section class="set-section">
           <div class="set-head"><h4 data-i18n="general.data">Data &amp; storage</h4></div>
-          <p class="storage-usage" id="storageUsage"></p>
+          <div class="storage-table">
+            <div class="st-row"><span data-i18n="storage.row.chats">Chats</span><b id="stChats">—</b></div>
+            <div class="st-row"><span data-i18n="storage.row.images">Images</span><b id="stImages">—</b></div>
+            <div class="st-row"><span data-i18n="storage.row.cache">Page cache</span><b id="stCache">—</b></div>
+            <div class="st-row total"><span data-i18n="storage.row.total">Site storage estimate (incl. cache)</span><b id="stTotal">—</b></div>
+          </div>
+          <p class="hint storage-note" id="storageNote"></p>
           <div class="btn-row">
-            <button type="button" class="btn ghost" id="exportBtn" data-i18n="general.data.export">Export data</button>
-            <button type="button" class="btn ghost" id="importBtn" data-i18n="general.data.import">Import data</button>
+            <button type="button" class="btn ghost" id="exportBtn" data-i18n="general.data.export">Export (with images)</button>
+            <button type="button" class="btn ghost" id="importBtn" data-i18n="general.data.import">Import</button>
+          </div>
+          <div class="btn-row">
+            <button type="button" class="btn ghost" id="clearCacheBtn" data-i18n="storage.clearCache">Clear page cache</button>
             <button type="button" class="btn ghost danger" id="clearImagesBtn" data-i18n="storage.clearImages">Delete all images</button>
+            <button type="button" class="btn ghost danger" id="clearAllBtn" data-i18n="storage.clearAll">Clear all data</button>
           </div>
           <p class="hint" data-i18n="general.data.hint"></p>
         </section>
@@ -1111,6 +1130,7 @@ html[data-theme="dark"] .key-row-status.ok{color:#34d399}
         <section class="set-section">
           <div class="set-head"><h4 data-i18n="general.image">Image generation</h4></div>
           <div class="form-row"><label class="check-label"><input id="cfg_auto_image" type="checkbox" /><span data-i18n="general.autoImage.label">Let chat models draw automatically</span></label><span class="hint" data-i18n="general.autoImage.hint"></span></div>
+          <div class="form-row"><label class="check-label"><input id="cfg_draw_smart" type="checkbox" /><span data-i18n="general.drawSmart.label">Understand the conversation when drawing</span></label><span class="hint" data-i18n="general.drawSmart.hint"></span></div>
         </section>
       </div>
 
@@ -1230,13 +1250,13 @@ html[data-theme="dark"] .key-row-status.ok{color:#34d399}
 <input type="file" id="importFileInput" accept="application/json" style="display:none" />
 
 <!-- Libraries -->
-<script src="https://cdn.jsdelivr.net/npm/marked@14.1.3/marked.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.7/dist/purify.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.7.76/build/pdf.min.mjs" type="module"></script>
+<script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/marked@14.1.3/marked.min.js"></script>
+<script crossorigin="anonymous" src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js"></script>
+<script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/dompurify@3.1.7/dist/purify.min.js"></script>
+<script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
+<script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.7.76/build/pdf.min.mjs" type="module"></script>
 
 <script type="module">
 import * as pdfjsLib from "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.7.76/build/pdf.min.mjs";
@@ -1294,6 +1314,7 @@ const DEFAULT_STATE = {
   general: {
     drawMode:false,      // composer "Image" switch: messages go straight to the image model
     autoImage:true,      // chat models may call the image tool by themselves
+    drawSmart:true,      // draw mode: the chat model reads the conversation, then calls the image tool
     imageModel:"",       // "keyId::model" of the preferred image model
     imageSize:"auto",
     imageQuality:"auto",
@@ -1319,6 +1340,27 @@ const DEFAULT_STATE = {
 /* ------------------------- i18n ------------------------- */
 const I18N = {
   en: {
+    "general.drawSmart.label":"Understand the conversation when drawing (recommended)",
+    "general.drawSmart.hint":"In draw mode the chat model first reads the chat history, memory, attached files and earlier pictures, then hands a clear instruction to the image model (one small extra chat call) — so \"make the last one blue\" works. Off: your text goes straight to the image model.",
+    "img.err.plan":"Couldn't prepare the drawing instructions. Please retry.",
+    "img.err.reference":"Couldn't find the reference image. Please attach it again and retry.",
+    "general.data.export":"⬇ Export (with images)",
+    "general.data.import":"⬆ Import",
+    "storage.row.chats":"Chats",
+    "storage.row.images":"Images",
+    "storage.row.cache":"Page cache",
+    "storage.row.total":"Site storage estimate (incl. cache)",
+    "storage.chats":"{0} chats · {1}",
+    "storage.images":"{0} images · {1}",
+    "storage.cacheUnknown":" · {0} items not measurable",
+    "storage.note":"The estimate comes from the browser. It includes the page cache and the browser's own bookkeeping, so it is usually larger than the items above.",
+    "storage.clearCache":"Clear page cache",
+    "storage.cacheCleared":"Page cache cleared — it is downloaded again on the next visit.",
+    "storage.clearAll":"Clear all data",
+    "storage.clearAll.confirm":"Delete all Totoro Chat data in this browser — chats, images, folders, notes, settings and API keys? Export first if you want to keep anything. This can't be undone.",
+    "export.preparing":"Preparing export…",
+    "export.done":"Exported {0} chats and {1} image files.",
+    "export.missing":" ({0} files were missing and could not be exported)",
     "folder.new":"New folder",
     "folder.prompt.name":"Folder name:",
     "folder.prompt.rename":"Rename folder:",
@@ -1395,14 +1437,12 @@ const I18N = {
     "general.autoImage.label":"Let chat models draw automatically",
     "general.autoImage.hint":"Just say \"draw a cat\": the chat model calls the image model by itself. Needs an image model (e.g. gpt-image-2) on one of your keys. The Image switch in the composer always draws directly.",
     "general.data":"Data & storage",
-    "storage.usage":"{0} chats · {1} images · {2} used",
     "storage.fallback":"This browser has no IndexedDB — images are kept for this session only.",
     "storage.clearImages":"Delete all images",
     "storage.clearImages.confirm":"Delete all {0} images from every chat? The text stays. This can't be undone.",
     "storage.cleared":"Deleted {0} images.",
     "storage.none":"There are no images to delete.",
     "storage.imageRemoved":"_[Image deleted]_",
-    "export.withImages":"Include the {0} images in the export? The file can get large.\n\nOK = with images · Cancel = text only",
     "lang.switch.title":"Language / 语言",
     "reload.title":"Reload app",
     "reload.confirm":"Reload now? You have unsent input — copy it first if you need it.",
@@ -1570,8 +1610,6 @@ const I18N = {
     "general.system.label":"Default system prompt",
     "general.system.hint":"Used by every chat. When a chat gets long, its earlier part is added automatically as memory.",
     "model.family.other":"Other",
-    "general.data.export":"⬇ Export data",
-    "general.data.import":"⬆ Import data",
     "general.data.hint":"The exported JSON contains your chats and API keys in plain text — keep it somewhere safe.",
     "general.temperature.label":"Temperature",
     "general.temperature.placeholder":"Empty = model default (recommended)",
@@ -1630,6 +1668,27 @@ const I18N = {
     "aiName.default":"Totoro"
   },
   zh: {
+    "general.drawSmart.label":"画图时理解上下文（推荐）",
+    "general.drawSmart.hint":"画图模式下，先由对话模型读取聊天记录、记忆、附件和之前的图片，再把清楚的指令交给画图模型（多一次很小的对话调用），可以直接说「把上一张改成蓝色」。关闭后，输入原样交给画图模型。",
+    "img.err.plan":"没能整理出绘图要求，请重试。",
+    "img.err.reference":"没有找到参考图片，请重新附图后重试。",
+    "general.data.export":"⬇ 导出（含图片）",
+    "general.data.import":"⬆ 导入",
+    "storage.row.chats":"聊天记录",
+    "storage.row.images":"图片",
+    "storage.row.cache":"页面缓存",
+    "storage.row.total":"站点存储估算（含缓存）",
+    "storage.chats":"{0} 个对话 · {1}",
+    "storage.images":"{0} 张 · {1}",
+    "storage.cacheUnknown":" · 另有 {0} 项无法计量",
+    "storage.note":"估算值由浏览器提供，包含页面缓存和浏览器自身的额外计量，通常比上面几项之和大。",
+    "storage.clearCache":"清理页面缓存",
+    "storage.cacheCleared":"页面缓存已清理，下次打开会自动重新下载。",
+    "storage.clearAll":"清除全部数据",
+    "storage.clearAll.confirm":"清除本浏览器里 Totoro Chat 的全部数据（对话、图片、文件夹、记事本、设置和 API Key）？如需保留请先导出。此操作不可撤销。",
+    "export.preparing":"正在打包导出…",
+    "export.done":"已导出 {0} 个对话、{1} 个图片文件。",
+    "export.missing":"（{0} 个文件已丢失，未能导出）",
     "folder.new":"新建文件夹",
     "folder.prompt.name":"文件夹名称：",
     "folder.prompt.rename":"重命名文件夹：",
@@ -1706,14 +1765,12 @@ const I18N = {
     "general.autoImage.label":"对话中自动画图",
     "general.autoImage.hint":"直接说「画一只猫」，对话模型会自己调用画图模型。需要你的 Key 里有画图模型（如 gpt-image-2）。输入框里的「画图」开关则总是直接画图。",
     "general.data":"数据与存储",
-    "storage.usage":"{0} 个对话 · {1} 张图片 · 已用 {2}",
     "storage.fallback":"当前浏览器不支持 IndexedDB，图片只在本次打开期间保留。",
     "storage.clearImages":"删除所有图片",
     "storage.clearImages.confirm":"删除所有对话里的 {0} 张图片？文字会保留，此操作不可撤销。",
     "storage.cleared":"已删除 {0} 张图片",
     "storage.none":"没有可删除的图片",
     "storage.imageRemoved":"_[图片已删除]_",
-    "export.withImages":"导出时包含 {0} 张图片吗？文件可能会比较大。\n\n确定 = 包含图片 · 取消 = 只导出文字",
     "lang.switch.title":"Language / 语言",
     "reload.title":"重新加载应用",
     "reload.confirm":"现在刷新？输入框里还有未发送内容 —— 需要的话先复制走。",
@@ -1881,8 +1938,6 @@ const I18N = {
     "general.system.label":"默认系统提示词",
     "general.system.hint":"对所有对话生效。对话变长后，较早的部分会自动作为记忆附加进去。",
     "model.family.other":"其他",
-    "general.data.export":"⬇ 导出数据",
-    "general.data.import":"⬆ 导入数据",
     "general.data.hint":"导出的 JSON 含有对话记录和明文 API Key，请妥善保管。",
     "general.temperature.label":"温度（temperature）",
     "general.temperature.placeholder":"留空 = 使用模型默认值（推荐）",
@@ -2127,12 +2182,14 @@ function idbTxDone(tx){ return new Promise((res, rej)=>{ tx.oncomplete = ()=>res
 /* -------- Chats -------- */
 const _savedChatJson = new Map();    // chatId → JSON last written to IndexedDB
 let _flushTimer = null;
+let _clearingData = false;
 function metaForStorage(){
   const { chats, ...meta } = state;
   meta.chatOrder = (chats||[]).map(c=>c.id);
   return meta;
 }
 function saveState(){
+  if(_clearingData) return false;
   if(!DB) return saveStateLegacy();
   try{ localStorage.setItem(LS_KEY, JSON.stringify(metaForStorage())); }
   catch(e){ console.error("Failed to save settings.", e); }
@@ -2217,7 +2274,7 @@ async function loadPersisted(){
   if(migrated) saveState();
   for(const c of chats) for(const m of (c.messages||[])){
     // A drawing still "running" from a closed tab will never finish.
-    if(m.imageJob){ m.imageJob = null; if(!(m.images||[]).length && !m.content){ m.content = t("img.err.interrupted"); m.error = true; } }
+    if(m.imageJob || (m.drawn && !(m.images||[]).length && !m.content && !m.imageError)){ m.imageJob = null; if(!(m.images||[]).length && !m.content){ m.content = t("img.err.interrupted"); m.error = true; } }
   }
   state.chats = chats;
   if(legacy.length){ await flushChats(); saveState(); }
@@ -4376,7 +4433,7 @@ function renderMessageEl(m, idx){
       enhanceCodeBlocks(contentEl);
       renderMathIn(contentEl);
       enhanceMermaid(contentEl);
-    }else if(!m.thought && !m.reasoning && !m.imageJob && !(m.images||[]).length){
+    }else if(!m.thought && !m.reasoning && !m.imageJob && !m.imageError && !(m.images||[]).length){
       // 等待首个 token：显示三点跳动占位
       contentEl.innerHTML = `<span class="typing-dots" aria-label="${escapeHtml(t("waiting.aria"))}"><span></span><span></span><span></span></span>`;
     }
@@ -4436,18 +4493,16 @@ async function regenerateAssistant(idx){
   if(!hasKey()){ openKeyModal(); return; }
   const old = chat.messages[idx];
   if(old && old.drawn){
-    // A manual drawing: draw again from the same prompt and images.
+    // A draw-mode answer: draw again from the same message (and context).
     const user = chat.messages[idx-1];
     const im = selectedImageModel();
-    const target = im && resolveTarget(im.id);
-    if(!target || !user || user.role !== "user"){ openSettings("account"); return; }
+    if(!im || !resolveTarget(im.id) || !user || user.role !== "user"){ openSettings("account"); return; }
     if(isStreaming(chat.id)) return;
     chat.messages = chat.messages.slice(0, idx);
-    const aiMsg = { role:"assistant", content:"", images:[], drawn:true, model:im.model, imageJob:{ status:"running", prompt:user.content, startedAt:Date.now() }, time:Date.now() };
+    const aiMsg = newDrawReply(im.model);
     chat.messages.push(aiMsg);
     saveState(); renderMessages();
-    await runImageJob(chat, aiMsg, { target, prompt:user.content, refs:(user.attachments||[]).filter(a=>a.kind==="image").map(rec=>({ rec })),
-                                     size: state.general.imageSize, quality: state.general.imageQuality });
+    await drawReply(chat, aiMsg, user);
     return;
   }
   const sel = selectedModel();
@@ -4645,14 +4700,44 @@ function autoTitle(chat, text, userMsg){
     chat.title = (text || userMsg.attachments[0]?.name || t("chat.new.default")).replace(/\s+/g," ").slice(0,30);
   }
 }
-/* Draw mode: the message goes straight to the image model. Attached images are edited
-   (the first one's painted mask, if any, limits the change to that area). */
+/* Draw mode: every message becomes a picture. By default the chat model plans it — it reads
+   the whole conversation (history, memory, attached files, earlier images) and must answer
+   with one generate_image call, so "make the last one blue" or "same style as before" work.
+   Without a chat model (or with the option off) the text goes straight to the image model. */
+const DRAW_HINT = "DRAWING MODE — the user switched on drawing mode, so this message is an image request. Call the generate_image tool exactly once. Use the whole conversation (earlier messages, long-term memory, attached files and earlier images) to understand what to draw: when the user refers to an earlier or attached image (\"this one\", \"the last picture\", \"make it blue\"), pass its id in reference_images; keep the established subject, characters, style and details unless the user asks to change them; turn attached documents into a concrete visual description. Write a detailed, self-contained prompt in the user's language. Do not ask questions and do not answer with text only.";
+function drawPlanner(){ return state.general.drawSmart !== false ? selectedModel() : null; }
+function imageRefs(userMsg){ return ((userMsg && userMsg.attachments) || []).filter(a=>a.kind==="image").map(rec=>({ rec })).sort((a,b)=>Number(!!b.rec.maskBlobId) - Number(!!a.rec.maskBlobId)); }
+/* Direct drawing: attached documents are appended to the prompt instead of being dropped. */
+function directDrawPrompt(userMsg){
+  const text = (userMsg && userMsg.content) || "";
+  const files = ((userMsg && userMsg.attachments) || []).filter(a=>a.kind==="file" && a.text);
+  if(!files.length) return text;
+  return (text + "\n\n" + files.map(f=>`[${f.name}]\n${f.text}`).join("\n\n")).slice(0, 8000);
+}
+function newDrawReply(model){
+  return { role:"assistant", content:"", reasoning:"", reasoningMs:0, thought:false, images:[], drawn:true, model, time: Date.now() };
+}
+async function drawReply(chat, aiMsg, userMsg){
+  const planner = drawPlanner();
+  if(planner){
+    aiMsg.model = planner.model;
+    await streamResponse(chat, aiMsg, planner.id, { forceImage: true });
+    return;
+  }
+  const im = selectedImageModel();
+  const target = im && resolveTarget(im.id);
+  if(!target){ aiMsg.content = `> ❌ **${t("msg.error.label")}**: ${t("msg.error.noModel")}`; aiMsg.error = true; saveState(); renderMessages(); return; }
+  aiMsg.model = im.model;
+  aiMsg.imageJob = { status:"running", prompt: userMsg.content, startedAt: Date.now() };
+  renderMessages();
+  await runImageJob(chat, aiMsg, { target, prompt: directDrawPrompt(userMsg), refs: imageRefs(userMsg),
+                                   size: state.general.imageSize, quality: state.general.imageQuality });
+}
 async function sendDrawMessage(text){
   const ta = document.getElementById("input");
   if(!text){ flashStatus(t("draw.needPrompt"), 2500); ta.focus(); return; }
   const im = selectedImageModel();
-  const target = im && resolveTarget(im.id);
-  if(!target){ openSettings("account"); return; }
+  if(!im || !resolveTarget(im.id)){ openSettings("account"); return; }
   let chat = currentChat();
   if(!chat){ newChat(); chat = currentChat(); }
   if(isStreaming(chat.id)) return;
@@ -4661,12 +4746,11 @@ async function sendDrawMessage(text){
   pendingAttachments = []; renderAttachStrip();
   ta.value = ""; autoresize(ta);
   autoTitle(chat, text, userMsg);
-  const aiMsg = { role:"assistant", content:"", images:[], drawn:true, model: im.model,
-                  imageJob:{ status:"running", prompt:text, startedAt:Date.now() }, time: Date.now() };
+  const aiMsg = newDrawReply(im.model);
   chat.messages.push(aiMsg);
   saveState(); renderChatList(); renderMessages(); updateTopBar();
-  await runImageJob(chat, aiMsg, { target, prompt:text, refs: userMsg.attachments.filter(a=>a.kind==="image").map(rec=>({ rec })),
-                                   size: state.general.imageSize, quality: state.general.imageQuality });
+  await drawReply(chat, aiMsg, userMsg);
+  maybeAutoMemory(chat);
 }
 
 // 解析内联 <think>/<thinking> 标签的流式状态机
@@ -4792,7 +4876,8 @@ function isRetryableLLM(err){
   return false;                                  // 4xx, auth, parse errors → don't hammer
 }
 
-async function streamResponse(chat, aiMsg, modelId){
+async function streamResponse(chat, aiMsg, modelId, opts){
+  const forceImage = !!(opts && opts.forceImage);
   const target = resolveTarget(modelId);
   const chatId = chat.id;
   if(!target){
@@ -4920,17 +5005,33 @@ async function streamResponse(chat, aiMsg, modelId){
   // The chat model asked for an image (tool call): draw it with the image model.
   const onToolCall = async (tc, signal)=>{
     if(tc.name !== IMAGE_TOOL.name) return { status:"error", message:`Unknown tool: ${tc.name}` };
-    toolUsed = true;
     if(inReasoning){ aiMsg.reasoningMs = Date.now() - reasoningStart; inReasoning = false; }
     const args = tc.args || {};
     const prompt = String(args.prompt || "").trim();
-    if(!prompt) return { status:"error", message:"The prompt argument is required." };
+    if(!prompt){
+      if(forceImage) throw new Error(t("img.err.plan"));
+      return { status:"error", message:"The prompt argument is required." };
+    }
     const im = selectedImageModel();
     const itarget = im && resolveTarget(im.id);
-    if(!itarget) return { status:"error", message:"No image model is available for this API key." };
+    if(!itarget){
+      if(forceImage) throw new Error(t("msg.error.noModel"));
+      return { status:"error", message:"No image model is available for this API key." };
+    }
     const index = chatImageIndex(chat);
-    const refs = (Array.isArray(args.reference_images) ? args.reference_images : []).map(l=>index.get(l)).filter(Boolean);
-    const size = IMAGE_SIZES.includes(args.size) && args.size !== "auto" ? args.size : (state.general.imageSize || "auto");
+    const labels = Array.isArray(args.reference_images) ? args.reference_images : [];
+    let refs = labels.map(l=>index.get(l)).filter(Boolean);
+    if(forceImage && refs.length !== labels.length) throw new Error(t("img.err.reference"));
+    const userMsg = chat.messages[chat.messages.indexOf(aiMsg) - 1];
+    const attached = imageRefs(userMsg);
+    if(forceImage && !refs.length) refs = attached;
+    const masked = attached.find(r=>r.rec.maskBlobId);
+    if(masked) refs = [masked, ...refs.filter(r=>r.rec !== masked.rec && (!masked.rec.blobId || r.rec.blobId !== masked.rec.blobId))];
+    const modelSize = IMAGE_SIZES.includes(args.size) && args.size !== "auto" ? args.size : "";
+    // In draw mode the size picked in the composer wins; otherwise the model's choice does.
+    const size = forceImage && state.general.imageSize && state.general.imageSize !== "auto"
+      ? state.general.imageSize : (modelSize || state.general.imageSize || "auto");
+    toolUsed = true;
     aiMsg.images = aiMsg.images || [];
     aiMsg.imageError = "";
     aiMsg.imageJob = { status:"running", prompt, startedAt: Date.now() };
@@ -4958,10 +5059,14 @@ async function streamResponse(chat, aiMsg, modelId){
       refreshImages();
     }
   };
-  const tools = imageToolAvailable();
-  const runOnce = (signal)=>callModel(target, chat, signal,
+  const tools = forceImage ? imageModels().length > 0 : imageToolAvailable();
+  // Draw mode: the drawing instruction is added to this request only (never stored).
+  const reqChat = forceImage
+    ? { ...chat, systemPrompt: [chat.systemPrompt ?? state.general.systemPrompt ?? "", DRAW_HINT].filter(Boolean).join("\n\n") }
+    : chat;
+  const runOnce = (signal)=>callModel(target, reqChat, signal,
     { onContent, onReasoning, onOrphanThink, onActivity, onRoundBreak, onToolCall: (tc)=>onToolCall(tc, signal) },
-    { tools });
+    forceImage ? { tools, forceTool: true, stopAfterTool: true, think: false } : { tools });
 
   // Watchdog: "connect" timeout until the first token, then a "stall" timeout between chunks.
   const CONNECT_MS = Math.max(5000, Number(state.general.connectTimeoutMs) || 90000);
@@ -5008,7 +5113,7 @@ async function streamResponse(chat, aiMsg, modelId){
       err.name = "TimeoutError";
     }
 
-    const gotSomething = aiMsg.content.trim()!=="" || aiMsg.reasoning.trim()!=="" || (aiMsg.images||[]).length > 0;
+    const gotSomething = aiMsg.content.trim()!=="" || aiMsg.reasoning.trim()!=="" || (aiMsg.images||[]).length > 0 || !!aiMsg.imageError;
     if(!err && gotSomething) break;                                               // good response
     if(attempt < maxAttempts && isRetryableLLM(err) && !toolUsed) continue;       // transient → retry
 
@@ -5025,6 +5130,11 @@ async function streamResponse(chat, aiMsg, modelId){
   }
   aiMsg.imageJob = null;
   if(inReasoning){ aiMsg.reasoningMs = Date.now() - reasoningStart; }
+  // Keep a planning failure visible; drawing without its context would change the request.
+  if(forceImage && !toolUsed && !aiMsg.error && !ctrl.signal.aborted){
+    aiMsg.content = `> ❌ **${t("msg.error.label")}**: ${t("img.err.plan")}`;
+    aiMsg.error = true;
+  }
   // Thinking but no answer: say so, instead of an empty bubble or a misleading "empty response".
   if(!aiMsg.content.trim() && aiMsg.reasoning.trim() && !(aiMsg.images||[]).length) aiMsg.content = t("msg.thinkingOnly");
   // Final render (foreground only; a background chat is rebuilt by renderMessages on switch).
@@ -5197,7 +5307,7 @@ function isOpenAIReasoningModel(model){
   const m = String(model||"").toLowerCase();
   return /^(o\d|gpt-5|gpt-[6-9]|codex)/.test(m) && !/chat-latest|gpt-5-chat/.test(m);
 }
-async function callOpenAICompat({base, key, model, chat, signal, onContent, onReasoning, onOrphanThink, onActivity, think, tools, extra, imgIndex}){
+async function callOpenAICompat({base, key, model, chat, signal, onContent, onReasoning, onOrphanThink, onActivity, think, tools, forceTool, extra, imgIndex}){
   const url = base + "/v1/chat/completions";
   const body = { model, messages: buildOpenAIMessages(chat, imgIndex).concat(extra || []), stream:true };
   const reasoning = isOpenAIReasoningModel(model);
@@ -5207,8 +5317,9 @@ async function callOpenAICompat({base, key, model, chat, signal, onContent, onRe
   if(maxT) body[reasoning ? "max_completion_tokens" : "max_tokens"] = maxT;
   if(reasoning) body.reasoning_effort = think ? "high" : "low";
   if(tools) body.tools = [{ type:"function", function: IMAGE_TOOL }];
+  if(tools && forceTool) body.tool_choice = { type:"function", function:{ name: IMAGE_TOOL.name } };
   const headers = { "Content-Type":"application/json", "Authorization":"Bearer " + key };
-  const OPTIONAL = ["reasoning_effort","temperature","max_tokens","max_completion_tokens"];
+  const OPTIONAL = ["reasoning_effort","temperature","max_tokens","max_completion_tokens","tool_choice"];
   const r = await postWithDegrade(url, headers, body, (b, msg)=>{
     // Drop only the field the error names; if none is named, drop all optional ones once.
     const named = OPTIONAL.filter(k=>k in b && msg.includes(k));
@@ -5381,7 +5492,7 @@ async function callClaude({base, key, model, chat, signal, onContent, onReasonin
 }
 
 /* -------- Google Gemini (native) -------- */
-async function callGemini({base, key, model, chat, signal, onContent, onReasoning, onActivity, think, tools, extra, imgIndex}){
+async function callGemini({base, key, model, chat, signal, onContent, onReasoning, onActivity, think, tools, forceTool, extra, imgIndex}){
   const url = `${base}/v1beta/models/${encodeURIComponent(model)}:streamGenerateContent?alt=sse`;
   const contents = [];
   const msgs = lastN(chat.messages, chat);
@@ -5408,12 +5519,14 @@ async function callGemini({base, key, model, chat, signal, onContent, onReasonin
     generationConfig: genCfg
   };
   if(tools) body.tools = [{ functionDeclarations: [{ name: IMAGE_TOOL.name, description: IMAGE_TOOL.description, parameters: IMAGE_TOOL.parameters }] }];
+  if(tools && forceTool) body.toolConfig = { functionCallingConfig: { mode:"ANY", allowedFunctionNames:[IMAGE_TOOL.name] } };
   const sys = effectiveSystemPrompt(chat);
   if(sys) body.systemInstruction = {parts:[{text:sys}]};
   const headers = { "Content-Type":"application/json", "x-goog-api-key": key };
   const r = await postWithDegrade(url, headers, body, (b, msg)=>{
     const g = b.generationConfig || {};
     if(g.thinkingConfig && /think/.test(msg)){ delete g.thinkingConfig; return b; }
+    if(b.toolConfig && /tool_?config|function_?calling/.test(msg)){ delete b.toolConfig; return b; }
     if("temperature" in g && /temperature/.test(msg)){ delete g.temperature; return b; }
     return null;
   }, signal);
@@ -5466,11 +5579,12 @@ async function callModel(target, chat, signal, handlers, opts){
   await hydrateRequestImages(chat);
   const think = wantThink(opts);
   const tools = !!(opts && opts.tools && handlers.onToolCall);
+  const forceTool = tools && !!(opts && opts.forceTool);
   const imgIndex = tools ? chatImageIndex(chat) : null;
   const extra = [];
   let protocol = target.protocol;
   for(let round = 0; round < 4; round++){
-    const args = { ...target, chat, signal, ...handlers, think, tools, extra, imgIndex };
+    const args = { ...target, chat, signal, ...handlers, think, tools, forceTool: forceTool && round === 0, extra, imgIndex };
     let res;
     if(protocol === "openai") res = await callOpenAICompat(args);
     else{
@@ -5482,7 +5596,8 @@ async function callModel(target, chat, signal, handlers, opts){
     }
     if(!res || !res.toolCalls || !res.toolCalls.length || round === 3) return;
     const results = [];
-    for(const tc of res.toolCalls) results.push(await handlers.onToolCall(tc));
+    for(const tc of opts && opts.stopAfterTool ? res.toolCalls.slice(0, 1) : res.toolCalls) results.push(await handlers.onToolCall(tc));
+    if(opts && opts.stopAfterTool) return;      // draw mode: the picture is the answer
     extra.push(res.assistantTurn, ...toolResultTurns(protocol, res.toolCalls, results));
     handlers.onRoundBreak?.();
   }
@@ -5617,6 +5732,7 @@ function openSettings(tab){
   document.getElementById("cfg_auto_memory").checked = g.autoMemory !== false;
   set("cfg_memory_max_chars", g.memoryMaxChars || 8000);
   document.getElementById("cfg_auto_image").checked = g.autoImage !== false;
+  document.getElementById("cfg_draw_smart").checked = g.drawSmart !== false;
   updateStorageUsage();
   document.getElementById("settingsStatus").textContent = "";
   setSettingsTab(tab || "account");
@@ -5756,6 +5872,7 @@ async function saveSettings(){
   g.autoMemory = document.getElementById("cfg_auto_memory").checked;
   g.memoryMaxChars = Math.max(500, Number(str("cfg_memory_max_chars")) || 8000);
   g.autoImage = document.getElementById("cfg_auto_image").checked;
+  g.drawSmart = document.getElementById("cfg_draw_smart").checked;
   d.keys.forEach(k=>delete k.checking);
   state.config = d;
   // The selected model may have been removed or hidden — fall back to the recommended one.
@@ -5764,15 +5881,62 @@ async function saveSettings(){
   saveState(); updateModelChip(); renderChatList(); renderMessages(); updateTopBar(); renderAttachStrip();
   closeSettings();
 }
-async function updateStorageUsage(){
-  const el = document.getElementById("storageUsage");
-  if(!el) return;
-  let used = "";
+/* What this site stores in the browser, piece by piece. The browser's own estimate also
+   counts the page cache and its internal bookkeeping, so it is shown separately. */
+async function storageBreakdown(){
+  const b = { chats: state.chats.length, chatsBytes: 0, images: allImageRecords().length, imageBytes: 0,
+              cacheBytes: 0, cacheUnknown: 0, usage: null, quota: null };
+  try{ b.chatsBytes = new Blob([DB ? JSON.stringify(state.chats) : "", localStorage.getItem(LS_KEY) || ""]).size; }catch{}
+  if(DB){
+    try{ for(const r of await idbReq(idbStore("blobs").getAll())) b.imageBytes += r.size || (r.blob && r.blob.size) || 0; }catch{}
+  }else{
+    for(const x of _memBlobs.values()) b.imageBytes += x.size;
+  }
   try{
-    const est = await navigator.storage?.estimate?.();
-    if(est && est.usage != null) used = fmtBytes(est.usage);
+    if(window.caches){
+      for(const name of await caches.keys()){
+        const cache = await caches.open(name);
+        for(const req of await cache.keys()){
+          const res = await cache.match(req);
+          if(!res) continue;
+          if(res.type === "opaque") b.cacheUnknown++;
+          else b.cacheBytes += (await res.blob()).size;
+        }
+      }
+    }
   }catch{}
-  el.textContent = t("storage.usage", state.chats.length, allImageRecords().length, used || "—") + (DB ? "" : " · " + t("storage.fallback"));
+  try{ const est = await navigator.storage?.estimate?.(); if(est){ b.usage = est.usage ?? null; b.quota = est.quota ?? null; } }catch{}
+  return b;
+}
+async function updateStorageUsage(){
+  const el = document.getElementById("stChats");
+  if(!el) return;
+  const b = await storageBreakdown();
+  el.textContent = t("storage.chats", b.chats, fmtBytes(b.chatsBytes));
+  document.getElementById("stImages").textContent = t("storage.images", b.images, fmtBytes(b.imageBytes));
+  document.getElementById("stCache").textContent = fmtBytes(b.cacheBytes) + (b.cacheUnknown ? t("storage.cacheUnknown", b.cacheUnknown) : "");
+  document.getElementById("stTotal").textContent = b.usage != null ? fmtBytes(b.usage) + (b.quota ? " / " + fmtBytes(b.quota) : "") : "—";
+  document.getElementById("storageNote").textContent = DB ? t("storage.note") : t("storage.fallback");
+}
+/* Drop the page cache only (the service worker refills it on the next visit). */
+async function clearPageCache(){
+  try{ if(window.caches) for(const k of await caches.keys()) await caches.delete(k); }catch{}
+  document.getElementById("settingsStatus").textContent = t("storage.cacheCleared");
+  updateStorageUsage();
+}
+/* Everything this site keeps in this browser: chats, images, folders, notes, settings, keys. */
+async function clearAllData(){
+  if(!confirm(t("storage.clearAll.confirm"))) return;
+  _clearingData = true;
+  for(const s of activeStreams.values()) s.controller.abort();
+  clearTimeout(_flushTimer); _flushTimer = null;
+  const db = DB; DB = null;
+  try{ db && db.close(); }catch{}
+  await new Promise(res=>{ try{ const r = indexedDB.deleteDatabase(IDB_NAME); r.onsuccess = r.onerror = r.onblocked = ()=>res(); }catch{ res(); } });
+  try{ localStorage.removeItem(LS_KEY); localStorage.removeItem(LANG_KEY); }catch{}
+  try{ if(window.caches) for(const k of await caches.keys()) await caches.delete(k); }catch{}
+  showReloadOverlay();
+  location.reload();
 }
 async function clearAllImages(){
   const n = allImageRecords().length;
@@ -5794,18 +5958,26 @@ function openMobileSidebar(){ document.getElementById("sidebar").classList.add("
 function closeMobileSidebar(){ document.getElementById("sidebar").classList.remove("open"); document.getElementById("mobileMask").classList.remove("show"); }
 
 /* Export / Import */
+/* Export always includes every image (attachments, generated images, masks). The JSON is
+   assembled from parts, so many images never have to sit in one giant string. */
 async function exportData(){
+  const status = document.getElementById("settingsStatus");
+  status.textContent = t("export.preparing");
   await flushChats();
-  const recs = allImageRecords().filter(r=>r.blobId || r.maskBlobId);
-  const withImages = recs.length > 0 && confirm(t("export.withImages", recs.length));
-  const data = { app:"totoro-chat", version:2, exportedAt: new Date().toISOString(), ...metaForStorage(), chats: state.chats };
-  if(withImages){
-    data.blobs = {};
-    for(const r of recs) for(const id of [r.blobId, r.maskBlobId]){
-      if(id && !data.blobs[id]){ const b = await getBlob(id); if(b) data.blobs[id] = await blobToDataUrl(b); }
-    }
+  const ids = new Set();
+  for(const r of allImageRecords()){ if(r.blobId) ids.add(r.blobId); if(r.maskBlobId) ids.add(r.maskBlobId); }
+  const head = JSON.stringify({ app:"totoro-chat", version:3, exportedAt: new Date().toISOString(), ...metaForStorage(), chats: state.chats });
+  const parts = [head.slice(0, -1), ',"blobs":{'];
+  let n = 0, missing = 0;
+  for(const id of ids){
+    const b = await getBlob(id);
+    if(!b){ missing++; continue; }
+    parts.push((n ? "," : "") + JSON.stringify(id) + ":" + JSON.stringify(await blobToDataUrl(b)));
+    n++;
   }
-  triggerDownload(new Blob([JSON.stringify(data)], {type:"application/json"}), `totoro-chat-${new Date().toISOString().slice(0,10)}.json`);
+  parts.push("}}");
+  triggerDownload(new Blob(parts, {type:"application/json"}), `totoro-chat-${new Date().toISOString().slice(0,10)}.json`);
+  status.textContent = t("export.done", state.chats.length, n) + (missing ? t("export.missing", missing) : "");
 }
 function importData(file){
   const r = new FileReader();
@@ -6320,13 +6492,15 @@ function setupServiceWorker(){
   // Service workers only run over https or localhost — never file:// or plain http.
   const isLocalhost = ["localhost","127.0.0.1","[::1]"].includes(location.hostname);
   if(location.protocol !== "https:" && !isLocalhost) return;
-  window.addEventListener("load", ()=>{
+  const register = ()=>{
     const swUrl = new URL("sw.js", location.href).href;
     navigator.serviceWorker.register(swUrl, { scope: "./" })
       .then(()=> console.info("[pwa] service worker registered — app is installable & offline-capable"))
       // Missing file (404) or wrong MIME → reject. That's the "no sw.js" case: keep running as a plain SPA.
       .catch((err)=> console.info("[pwa] no service worker; running as a plain single-page app:", err && err.message));
-  });
+  };
+  if(document.readyState === "complete") register();
+  else window.addEventListener("load", register, { once:true });
 }
 
 /* ------------------------- Init ------------------------- */
@@ -6424,6 +6598,8 @@ async function init(){
   $("manualModelInput").addEventListener("keydown", (e)=>{ if(e.key==="Enter"){ e.preventDefault(); addManualModel(); } });
   $("exportBtn").onclick = exportData;
   $("clearImagesBtn").onclick = clearAllImages;
+  $("clearCacheBtn").onclick = clearPageCache;
+  $("clearAllBtn").onclick = clearAllData;
   $("importBtn").onclick = ()=>$("importFileInput").click();
   $("importFileInput").onchange = (e)=>{ const f = e.target.files[0]; if(f) importData(f); e.target.value=""; };
 

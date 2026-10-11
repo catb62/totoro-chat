@@ -11,7 +11,7 @@
  *
  * Bump VERSION to force-refresh the cache after shipping a new index.html.
  */
-const VERSION = "totoro-chat-v3";
+const VERSION = "totoro-chat-v5";
 const APP_SHELL = "./"; // resolves to the directory index = index.html
 // Best-effort precache. Each is added individually so one 404 (e.g. icons not
 // deployed) doesn't abort the whole install.
@@ -73,8 +73,8 @@ self.addEventListener("fetch", (event) => {
     caches.match(req).then((cached) => {
       const network = fetch(req)
         .then((res) => {
-          // Cache successful and opaque (no-CORS CDN) responses alike.
-          if (res && (res.ok || res.type === "opaque")) {
+          // Only cache readable responses; opaque responses inflate browser quota estimates.
+          if (res && res.ok && res.type !== "opaque") {
             const copy = res.clone();
             caches.open(VERSION).then((c) => c.put(req, copy)).catch(() => {});
           }
