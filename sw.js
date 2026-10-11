@@ -1,4 +1,4 @@
-/* Chatbox Lite — optional service worker.
+/* Totoro Chat — optional service worker.
  *
  * Present  → the app installs as a Chrome/Edge app and works offline.
  * Absent   → index.html still runs fine as a plain single-page app
@@ -7,14 +7,15 @@
  * The whole app lives in index.html, so the "app shell" is a single document.
  * We cache it on first online visit and replay it when offline; CDN assets
  * (KaTeX, highlight.js, fonts) are cached opportunistically as they're used.
+ * API calls (Totoro API) are never cached — they always go to the network.
  *
  * Bump VERSION to force-refresh the cache after shipping a new index.html.
  */
-const VERSION = "chatbox-lite-v3";
+const VERSION = "totoro-chat-v1";
 const APP_SHELL = "./"; // resolves to the directory index = index.html
 // Best-effort precache. Each is added individually so one 404 (e.g. icons not
 // deployed) doesn't abort the whole install.
-const PRECACHE = [APP_SHELL, "manifest.webmanifest", "icon-192.png", "icon-512.png"];
+const PRECACHE = [APP_SHELL, "manifest.webmanifest", "logo.png", "apple-touch-icon.png", "icon-192.png", "icon-512.png", "icon-maskable-512.png"];
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
@@ -39,6 +40,13 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
+  // Only the app itself and its CDN libraries are cacheable. Everything else — notably
+  // GET /v1/models on the API, whose answer depends on the Authorization header — must
+  // always hit the network, or a cached response could "validate" the wrong key.
+  const url = new URL(req.url);
+  const cacheable = url.origin === self.location.origin ||
+    /(^|\.)(jsdelivr\.net|cloudflare\.com)$/.test(url.hostname);
+  if (!cacheable) return;
 
   // App navigations: network-first (so a new index.html shows up), with the
   // cached shell as the offline fallback.
@@ -59,7 +67,7 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Everything else (same-origin icons, cross-origin CDN assets):
+  // Same-origin icons and CDN assets:
   // stale-while-revalidate — fast from cache, refreshed in the background.
   event.respondWith(
     caches.match(req).then((cached) => {
