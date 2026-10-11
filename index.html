@@ -3290,8 +3290,8 @@ async function readImagesResponse(r, onActivity, onPartial){
    part to X" is read as "make it X" and can change everything. Spell the scope out. */
 function maskedEditPrompt(prompt){
   return /[\u3400-\u9fff]/.test(prompt)
-    ? `只修改遮罩区域（图中被涂抹的部分）：${prompt}\n遮罩以外的所有内容（主体的其余部分、背景、构图、颜色、画风）必须与原图完全一致，不要做任何改动。`
-    : `Edit only the masked area (the painted part of the image): ${prompt}\nEverything outside the masked area (the rest of the subject, background, composition, colors and style) must stay exactly as in the original image. Do not change anything else.`;
+    ? `只修改遮罩区域，也就是用户涂抹的部分：\n\n${prompt}\n\n原始遮罩是本次修改范围的依据。遮罩以外的所有内容，包括主体的其余部位、背景、构图、颜色和画风，必须保持原图。不要为了让修改后的品种、风格或颜色更统一，改动遮罩以外的内容。`
+    : `Edit only the masked area, the part painted by the user:\n\n${prompt}\n\nThe original mask defines the scope of this edit. Everything outside it, including the rest of the subject, background, composition, colors and style, must stay as in the original image. Do not change unmasked areas to make the breed, style or colors more consistent.`;
 }
 async function generateImages({ target, prompt, refs, size, quality, signal, onActivity, onPartial }){
   const edit = !!(refs && refs.length);
@@ -4704,7 +4704,43 @@ function autoTitle(chat, text, userMsg){
    the whole conversation (history, memory, attached files, earlier images) and must answer
    with one generate_image call, so "make the last one blue" or "same style as before" work.
    Without a chat model (or with the option off) the text goes straight to the image model. */
-const DRAW_HINT = "DRAWING MODE — the user switched on drawing mode, so this message is an image request. Call the generate_image tool exactly once. Use the whole conversation (earlier messages, long-term memory, attached files and earlier images) to understand what to draw: when the user refers to an earlier or attached image (\"this one\", \"the last picture\", \"make it blue\"), pass its id in reference_images; keep the established subject, characters, style and details unless the user asks to change them; turn attached documents into a concrete visual description. Write a detailed, self-contained prompt in the user's language. Do not ask questions and do not answer with text only.";
+const DRAW_HINT = `用户已开启画图模式，当前消息是一项绘图或图片修改请求。
+请结合当前消息、附件、聊天历史和长期记忆理解需求，
+用用户的语言整理绘图指令，并调用 generate_image 工具一次。
+不要仅回复文字，不要要求用户重复已经提供的信息。
+
+图片选择：
+1. 本次消息明确附上的图片，优先于历史图片。
+2. 本次消息包含带涂抹标记的图片时，它就是当前的优先编辑对象。
+3. 历史图片用于理解上下文、画风和此前修改，不能替代本次明确选中的编辑对象。
+4. reference_images 使用对话中标注的实际图片 ID，不要编造图片 ID。
+
+新建图片：
+根据用户要求描述画面，可以补充必要的视觉细节。
+保留对话中已经确定的人物、主体、画风和其他要求，除非用户明确要求改变。
+将附带文档中的绘图要求整理为具体的画面描述。
+
+修改已有图片：
+引用对应的原图，只修改用户要求改变的内容。
+其余主体、姿势、构图、背景、颜色和画风保持原图。
+
+局部修改：
+当本次图片带有涂抹选区时，必须按局部修改理解。
+即使用户只说“改成暹罗猫”“换成蓝色”“这里换成花”，
+也默认是在描述该图片涂抹区域内的变化，而不是修改整张图。
+
+你会看到原图，以及同一张图的选区预览。
+预览中的紫色标记只表示允许修改的范围，不是最终画面需要出现的颜色或物体。
+
+请结合原图和选区预览，理解选区对应的实际部位：
+- 只描述这个区域内需要发生的变化。
+- 不得为了品种、风格、颜色或整体一致性，把修改扩大到未标记的部位。
+- 不要重新设计整张图片或重新描述整只主体的外观。
+- 保留区域外的原图内容。
+- 如果选区对应的部位不明确，直接称为“用户涂抹的区域”，不要自行猜测或扩大范围。
+
+局部修改规则优先于补充视觉细节的规则。
+最终提示词应完整表达用户要求的变化及保留范围，并引用当前带遮罩图片对应的原图 ID。`;
 function drawPlanner(){ return state.general.drawSmart !== false ? selectedModel() : null; }
 function imageRefs(userMsg){ return ((userMsg && userMsg.attachments) || []).filter(a=>a.kind==="image").map(rec=>({ rec })).sort((a,b)=>Number(!!b.rec.maskBlobId) - Number(!!a.rec.maskBlobId)); }
 /* Direct drawing: attached documents are appended to the prompt instead of being dropped. */
@@ -5229,6 +5265,9 @@ function imageNote(rec, imgIndex, role){
     const p = String(rec.revisedPrompt || rec.prompt || "").replace(/\s+/g, " ").slice(0, 300);
     return `[Generated image${label ? " " + label : ""}${p ? ": " + p : ""}]`;
   }
+  if(label && imgIndex.previews?.has(rec)){
+    return `[当前局部编辑对象：${label}。随附图对的第一张是 ${label} 的原图，第二张是 ${label} 的选区预览，紫色区域表示修改范围。两张图对应同一个编辑对象；预览只用于理解选区，没有独立图片 ID，也不是最终画面内容。]`;
+  }
   return label ? `[Image ${label}${rec.maskBlobId ? " — the user painted the area to edit" : ""}]` : "";
 }
 function assistantRequestContent(m, imgIndex){
@@ -5260,19 +5299,53 @@ function attachmentText(m, attachments, imgIndex){
   }
   return txt;
 }
-function imageParts(attachments){
-  return attachments.filter(a=>a.kind==="image").map(img=>{
-    const dataUrl = attDataUrl(img);
-    if(!dataUrl) return null;
-    const [meta, b64] = dataUrl.split(",");
-    return { img, dataUrl, mime: (meta.match(/data:(.*?);/)||[])[1] || "image/png", b64 };
-  }).filter(Boolean);
+function imageParts(attachments, imgIndex){
+  return attachments.filter(a=>a.kind==="image").flatMap(img=>{
+    const urls = [attDataUrl(img), imgIndex?.previews?.get(img)].filter(Boolean);
+    return urls.map(dataUrl=>{
+      const [meta, b64] = dataUrl.split(",");
+      return { img, dataUrl, mime: (meta.match(/data:(.*?);/)||[])[1] || "image/png", b64 };
+    });
+  });
+}
+/* Request-only selection guidance for the planner. The edit API keeps the original + mask. */
+async function maskedSelectionPreview(rec){
+  const original = await recordBlob(rec), mask = await getBlob(rec.maskBlobId);
+  if(!original || !mask) throw new Error(t("img.err.missing"));
+  const image = await createImageBitmap(original);
+  let selection;
+  try{
+    selection = await createImageBitmap(mask);
+    const scale = Math.min(1, 1536 / Math.max(image.width, image.height));
+    const paint = document.createElement("canvas");
+    paint.width = Math.round(image.width * scale); paint.height = Math.round(image.height * scale);
+    const px = paint.getContext("2d");
+    px.fillStyle = "#a855f7"; px.fillRect(0, 0, paint.width, paint.height);
+    px.globalCompositeOperation = "destination-out";
+    px.drawImage(selection, 0, 0, paint.width, paint.height);
+    const preview = document.createElement("canvas");
+    preview.width = paint.width; preview.height = paint.height;
+    const ctx = preview.getContext("2d");
+    ctx.drawImage(image, 0, 0, preview.width, preview.height);
+    ctx.globalAlpha = 0.45;
+    ctx.drawImage(paint, 0, 0);
+    // A PNG preview can dwarf a compressed photo; keep this extra planner image small.
+    return preview.toDataURL("image/jpeg", 0.85);
+  }finally{ image.close(); selection?.close(); }
 }
 /* Load the image attachments this request will send, so the builders can read them sync. */
-async function hydrateRequestImages(chat){
+async function hydrateRequestImages(chat, imgIndex){
   const msgs = lastN(chat.messages, chat);
-  for(const m of computeAttachmentAllowSet(msgs)){
+  const allow = computeAttachmentAllowSet(msgs);
+  for(const m of allow){
     for(const a of (m.attachments||[])) if(a.kind==="image" && a.blobId && !a.dataUrl) await blobDataUrl(a.blobId);
+  }
+  if(imgIndex){
+    imgIndex.previews = new Map();
+    const current = msgs.findLast(m=>m.role==="user");
+    if(current && allow.has(current)){
+      for(const a of (current.attachments||[])) if(a.kind==="image" && a.maskBlobId) imgIndex.previews.set(a, await maskedSelectionPreview(a));
+    }
   }
 }
 function buildOpenAIMessages(chat, imgIndex){
@@ -5285,7 +5358,7 @@ function buildOpenAIMessages(chat, imgIndex){
     if(m.role==="assistant"){ const c = assistantRequestContent(m, imgIndex); if(c) out.push({role:"assistant", content:c}); continue; }
     const attachments = allow.has(m) ? (m.attachments||[]) : [];
     const txt = attachmentText(m, attachments, imgIndex);
-    const images = imageParts(attachments);
+    const images = imageParts(attachments, imgIndex);
     if(images.length){
       const parts = [{type:"text", text:txt}];
       for(const {img, dataUrl} of images) parts.push({type:"image_url", image_url:{url:dataUrl, detail: img.detail || "auto"}});
@@ -5384,7 +5457,7 @@ function buildClaudeMessages(chat, imgIndex){
   for(const m of msgs){
     if(m.role==="assistant"){ const c = assistantRequestContent(m, imgIndex); if(c) messages.push({role:"assistant", content:c}); continue; }
     const attachments = allow.has(m) ? (m.attachments||[]) : [];
-    const blocks = imageParts(attachments).map(({mime, b64})=>({type:"image", source:{type:"base64", media_type:mime, data:b64}}));
+    const blocks = imageParts(attachments, imgIndex).map(({mime, b64})=>({type:"image", source:{type:"base64", media_type:mime, data:b64}}));
     const txt = attachmentText(m, attachments, imgIndex);
     if(txt) blocks.push({type:"text", text:txt});
     if(!blocks.length) blocks.push({type:"text", text:"…"});
@@ -5504,7 +5577,7 @@ async function callGemini({base, key, model, chat, signal, onContent, onReasonin
     const txt = attachmentText(m, attachments, imgIndex);
     if(txt) parts.push({text:txt});
     // Gemini REST wants camelCase
-    for(const {mime, b64} of imageParts(attachments)) parts.push({inlineData:{mimeType:mime, data:b64}});
+    for(const {mime, b64} of imageParts(attachments, imgIndex)) parts.push({inlineData:{mimeType:mime, data:b64}});
     if(!parts.length) parts.push({text:"…"});
     contents.push({role:"user", parts});
   }
@@ -5576,11 +5649,11 @@ function toolResultTurns(protocol, calls, results){
    If the gateway has no native endpoint for the protocol (404 on the first round), retry
    through the OpenAI-compatible endpoint. */
 async function callModel(target, chat, signal, handlers, opts){
-  await hydrateRequestImages(chat);
   const think = wantThink(opts);
   const tools = !!(opts && opts.tools && handlers.onToolCall);
   const forceTool = tools && !!(opts && opts.forceTool);
   const imgIndex = tools ? chatImageIndex(chat) : null;
+  await hydrateRequestImages(chat, imgIndex);
   const extra = [];
   let protocol = target.protocol;
   for(let round = 0; round < 4; round++){

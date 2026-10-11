@@ -18,6 +18,7 @@
 - **多 Key 合并**：不同分组的 Key 可以同时添加，模型自动合并到一个列表
 - **输入框里切模型**，一键开关「深度思考」；不同代际模型的思考参数自动适配
 - **画图**：直接说「画一只猫」，对话模型会自动调用画图模型（gpt-image 等）；也可以打开「画图」开关直接出图，上传图片改图，或涂抹局部只改一块区域。接口遵循 OpenAI 官方 Images API（`/v1/images/generations`、`/v1/images/edits`）
+  局部修改时，规划模型会读取原图和紫色选区预览；实际改图仍发送原图与原始遮罩，预览不保存为聊天图片。
 - 流式输出 · Markdown / 代码高亮 / 数学公式 / Mermaid 图表
 - 图片与文件输入（PDF / Word / 代码）· 记事本
 - **文件夹**：新建文件夹整理对话，拖进去或点「移到文件夹」即可
@@ -31,6 +32,8 @@
 纯静态页面，无需构建，把整个目录放到任意静态服务器即可（目前部署在 `chat.to-to.cc`，服务器上 `git pull` 就能更新）。
 
 浏览器会直接请求 Totoro API，所以网关需要为聊天站的域名开启 CORS，并允许这些请求头：`Authorization`、`Content-Type`、`x-api-key`、`anthropic-version`、`x-goog-api-key`。
+
+局部修改流程的回归检查：`node --test tests/masked-planning.cjs`（无需安装依赖）。
 
 ## 致谢
 
