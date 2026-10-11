@@ -40,6 +40,10 @@
   --avatar-user:linear-gradient(135deg,#a5b4fc,#c4b5fd);
   --shadow-pop:0 12px 32px rgba(15,23,42,.12),0 2px 6px rgba(15,23,42,.06);
   --danger:#ef4444;
+  --draw:#8b5cf6;          /* draw mode: the logo's lavender */
+  --draw-soft:#f5f3ff;
+  --draw-border:#ddd6fe;
+  --draw-ring:rgba(139,92,246,.2);
   --warn:#d97706;         /* 临近提醒：琥珀 */
 }
 html[data-theme="dark"]{
@@ -62,6 +66,10 @@ html[data-theme="dark"]{
   --avatar-user:linear-gradient(135deg,#6366f1,#8b5cf6);
   --shadow-pop:0 12px 32px rgba(0,0,0,.45),0 2px 6px rgba(0,0,0,.3);
   --danger:#f87171;
+  --draw:#a78bfa;
+  --draw-soft:rgba(139,92,246,.12);
+  --draw-border:rgba(167,139,250,.35);
+  --draw-ring:rgba(167,139,250,.25);
   --warn:#fbbf24;         /* 临近提醒：暖琥珀 */
 }
 *{box-sizing:border-box}
@@ -540,6 +548,11 @@ html[data-theme="dark"] .alert{background:#3a2e10;color:#f5d57a;border-color:#5a
 .mdot.f-grok{background:#64748b}
 .mdot.f-kimi{background:#0ea5e9}
 .mdot.f-glm{background:#2563eb}
+.mdot.f-image{background:var(--draw)}
+@media (min-width:769px){
+  .sidebar-header .icon-btn{width:28px;height:28px}
+  .sidebar-header .lang-btn{padding:0 6px}
+}
 .model-menu{position:fixed;z-index:120;background:var(--bg);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-pop);display:flex;flex-direction:column;overflow:hidden;animation:menuIn .14s ease-out}
 .model-menu.hide{display:none}
 @keyframes menuIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
@@ -641,6 +654,87 @@ html[data-theme="dark"] .key-row-status.ok{color:#34d399}
 .empty-state .prompts .p-text{color:var(--fg-2);font-size:12px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 @media (prefers-reduced-motion: reduce){ .empty-logo,.key-logo{animation:none} }
 
+/* ------- Image generation ------- */
+.draw-chip.on{background:var(--draw-soft);border-color:var(--draw);color:var(--draw)}
+.imgopt-chip{color:var(--draw);border-color:var(--draw-border);background:var(--draw-soft)}
+.imgopt-chip:hover{border-color:var(--draw);background:var(--draw-soft);color:var(--draw)}
+.imgopt-chip .chev{width:13px;height:13px}
+.imgopt-chip[aria-expanded="true"] .chev{transform:rotate(180deg)}
+.composer.draw-mode{border-color:var(--draw-border)}
+.composer.draw-mode:focus-within{border-color:var(--draw);box-shadow:0 0 0 3px var(--draw-ring)}
+#imgOptMenu .model-item .mi-name{font-weight:500}
+.gen-slot:empty{display:none}
+.gen-grid{display:flex;flex-wrap:wrap;gap:10px;margin:2px 0 10px}
+.gen-img{position:relative;margin:0;width:min(380px,100%);border-radius:14px;overflow:hidden;background:var(--bg-2);border:1px solid var(--border);box-shadow:0 6px 20px rgba(15,23,42,.08);cursor:zoom-in}
+.gen-img img{display:block;width:100%;height:100%;object-fit:cover}
+.gen-img img.missing{min-height:120px}
+.gen-img-bar{position:absolute;right:8px;bottom:8px;display:flex;gap:6px;opacity:0;transform:translateY(4px);transition:opacity .15s,transform .15s}
+.gen-img:hover .gen-img-bar,.gen-img:focus-within .gen-img-bar{opacity:1;transform:none}
+@media (hover:none){ .gen-img-bar{opacity:1;transform:none} }
+.gen-btn{width:32px;height:32px;border-radius:9px;background:rgba(15,23,42,.62);color:#fff;display:flex;align-items:center;justify-content:center;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.gen-btn:hover{background:rgba(15,23,42,.85)}
+.gen-btn .fi{width:16px;height:16px}
+.gen-pending{display:flex;gap:12px;align-items:center;padding:10px;border:1px dashed var(--draw-border);border-radius:14px;background:var(--draw-soft);margin:2px 0 10px;max-width:440px}
+.gen-skel{width:72px;height:72px;border-radius:10px;flex:none;overflow:hidden;background:linear-gradient(110deg,var(--bg-3) 8%,var(--bg) 18%,var(--bg-3) 33%);background-size:200% 100%;animation:shimmer 1.3s linear infinite;display:flex;align-items:center;justify-content:center}
+.gen-skel img{width:100%;height:100%;object-fit:cover;filter:blur(2px)}
+@keyframes shimmer{to{background-position-x:-200%}}
+.gen-spinner{width:22px;height:22px;border-radius:50%;border:2.5px solid var(--draw-border);border-top-color:var(--draw);animation:reloadspin .9s linear infinite}
+.gen-pending-text{min-width:0;font-size:13px;color:var(--fg)}
+.gen-pending-text b{font-weight:600;color:var(--draw)}
+.gen-elapsed{color:var(--fg-2);font-size:12px;margin-left:4px}
+.gen-prompt{color:var(--fg-2);font-size:12px;line-height:1.5;margin-top:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.gen-error{font-size:12.5px;color:var(--danger);background:var(--bg-2);border:1px dashed var(--danger);border-radius:10px;padding:7px 10px;margin:2px 0 10px;display:inline-block}
+.msg .role .model-tag.img{border-color:var(--draw-border);color:var(--draw);background:var(--draw-soft)}
+.msg .attachments .att-img{position:relative;display:block;cursor:zoom-in}
+.mask-badge{position:absolute;left:6px;top:6px;font-size:10.5px;font-weight:600;line-height:1.6;padding:0 7px;border-radius:999px;background:var(--draw);color:#fff}
+.attach-chip .mask-badge{position:static}
+.attach-chip.has-mask{box-shadow:inset 0 0 0 1.5px var(--draw)}
+.attach-chip .brush{cursor:pointer;color:var(--fg-2);display:inline-flex;align-items:center}
+.attach-chip .brush:hover{color:var(--draw)}
+.attach-chip .brush .fi{width:15px;height:15px}
+/* image viewer */
+.img-viewer{position:fixed;inset:0;z-index:300;background:rgba(2,6,23,.9);display:flex;flex-direction:column;padding:max(14px,env(safe-area-inset-top)) 14px max(14px,env(safe-area-inset-bottom))}
+.img-viewer.hide{display:none}
+.iv-close{position:absolute;top:max(12px,env(safe-area-inset-top));right:12px;color:#fff;z-index:2}
+.iv-close:hover{background:rgba(255,255,255,.14);color:#fff}
+.iv-stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+.iv-stage img{max-width:100%;max-height:100%;object-fit:contain;border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.iv-bar{display:flex;flex-direction:column;align-items:center;gap:10px;padding-top:12px}
+.iv-prompt{color:#cbd5e1;font-size:12.5px;max-width:760px;text-align:center;line-height:1.55;max-height:4.8em;overflow:auto}
+.iv-prompt:empty{display:none}
+.iv-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.iv-actions .btn{background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.2)}
+.iv-actions .btn:hover{background:rgba(255,255,255,.22)}
+.iv-actions .btn .fi{width:15px;height:15px}
+/* mask editor */
+.mask-editor{position:fixed;inset:0;z-index:310;background:var(--bg);display:flex;flex-direction:column}
+.mask-editor.hide{display:none}
+.me-top{display:flex;align-items:flex-start;gap:10px;padding:12px 16px;padding-top:max(12px,env(safe-area-inset-top));border-bottom:1px solid var(--border)}
+.me-top>div{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.me-top b{font-size:15px}
+.me-tip{font-size:12.5px;color:var(--fg-2)}
+.me-stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:8px;background:repeating-conic-gradient(var(--bg-2) 0 25%, var(--bg) 0 50%) 0 0/20px 20px}
+.me-wrap{position:relative;box-shadow:0 10px 30px rgba(15,23,42,.2);border-radius:6px;overflow:hidden}
+.me-wrap img{position:absolute;inset:0;width:100%;height:100%;user-select:none;-webkit-user-drag:none;pointer-events:none}
+.me-wrap canvas{position:absolute;inset:0;width:100%;height:100%;opacity:.55;touch-action:none;cursor:crosshair}
+.me-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 16px max(10px,env(safe-area-inset-bottom));border-top:1px solid var(--border)}
+.me-seg{display:inline-flex;border:1px solid var(--border);border-radius:9px;overflow:hidden}
+.me-seg button{padding:6px 12px;font-size:12.5px;color:var(--fg-2)}
+.me-seg button.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.me-size{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--fg-2)}
+.me-size input{width:110px;padding:0;border:none;background:transparent;accent-color:var(--accent-bright)}
+.me-tools .spacer{flex:1}
+/* storage */
+.storage-usage{font-size:13px;color:var(--fg);margin:0 0 10px}
+.btn.danger{color:var(--danger)}
+.btn.danger:hover{background:rgba(239,68,68,.08);border-color:var(--danger)}
+/* collapsible sidebar (desktop) */
+@media (min-width:769px){
+  .sidebar{transition:margin-left .22s ease, visibility 0s}
+  .app.sidebar-collapsed .sidebar{margin-left:-272px;visibility:hidden;transition:margin-left .22s ease, visibility 0s .22s}
+  .app.sidebar-collapsed .menu-btn{display:inline-flex}
+}
+
 /* iPad portrait & phones: collapse sidebar into off-canvas */
 @media (max-width:768px){
   .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:50;transform:translateX(-100%);transition:transform .2s;width:84vw;max-width:300px;padding-left:env(safe-area-inset-left);padding-top:env(safe-area-inset-top)}
@@ -737,6 +831,19 @@ html[data-theme="dark"] .key-row-status.ok{color:#34d399}
   .msg.user .content{max-width:92%}
   .model-item{padding:10px}
 }
+
+/* Totoro: phone-sized tweaks for drawing */
+@media (max-width:768px){
+  .collapse-btn{display:none}
+  .draw-chip{width:36px;padding:0;justify-content:center}
+  .draw-chip span{display:none}
+  .imgopt-chip{width:36px;padding:0;justify-content:center}
+  .imgopt-chip #imgOptLabel,.imgopt-chip .chev{display:none}
+  .gen-img{width:100%}
+  .me-size input{width:80px}
+  .me-tools{gap:6px;padding:8px 10px max(8px, env(safe-area-inset-bottom))}
+  .me-tools .btn{padding:8px 12px}
+}
 </style>
 </head>
 <body>
@@ -754,6 +861,9 @@ html[data-theme="dark"] .key-row-status.ok{color:#34d399}
       <button class="icon-btn lang-btn" id="langBtn" data-i18n-title="lang.switch.title" title="Language / 语言">EN</button>
       <button class="icon-btn" id="themeBtn" data-i18n-title="theme.toggle.title" title="Light / dark theme">
         <svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+      </button>
+      <button class="icon-btn collapse-btn" id="collapseBtn" data-i18n-title="sidebar.collapse" title="Collapse sidebar">
+        <svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="m16 15-3-3 3-3"/></svg>
       </button>
     </div>
     <div class="new-chat-row">
@@ -836,6 +946,18 @@ html[data-theme="dark"] .key-row-status.ok{color:#34d399}
               <svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
               <span data-i18n="think.label">Deep think</span>
             </button>
+            <button type="button" class="chip draw-chip" id="drawChip" data-i18n-title="draw.title" title="Image mode" aria-pressed="false" style="display:none">
+              <svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+              <span data-i18n="draw.label">Image</span>
+            </button>
+            <div class="model-pick" id="imgOptPick">
+              <button type="button" class="chip imgopt-chip" id="imgOptChip" data-i18n-title="imgopt.title" title="Size and quality" aria-haspopup="listbox" aria-expanded="false" style="display:none">
+                <svg class="fi opt-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="21" x2="14" y1="4" y2="4"/><line x1="10" x2="3" y1="4" y2="4"/><line x1="21" x2="12" y1="12" y2="12"/><line x1="8" x2="3" y1="12" y2="12"/><line x1="21" x2="16" y1="20" y2="20"/><line x1="12" x2="3" y1="20" y2="20"/><line x1="14" x2="14" y1="2" y2="6"/><line x1="8" x2="8" y1="10" y2="14"/><line x1="16" x2="16" y1="18" y2="22"/></svg>
+                <span id="imgOptLabel"></span>
+                <svg class="fi chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+              <div class="model-menu hide" id="imgOptMenu"><div class="model-list" role="listbox"></div></div>
+            </div>
             <span class="spacer"></span>
             <span class="hint" id="statusHint"></span>
             <button type="button" class="icon-btn" id="clearCtxBtn" data-i18n-title="context.clear.title" title="Clear context (Ctrl/⌘+K)">
@@ -930,10 +1052,12 @@ html[data-theme="dark"] .key-row-status.ok{color:#34d399}
         </div>
         <div class="form-row"><label data-i18n="general.system.label">Default system prompt</label><textarea id="cfg_system" rows="4" placeholder="You are a helpful assistant."></textarea><span class="hint" data-i18n="general.system.hint"></span></div>
         <section class="set-section">
-          <div class="set-head"><h4 data-i18n="general.data">Backup</h4></div>
+          <div class="set-head"><h4 data-i18n="general.data">Data &amp; storage</h4></div>
+          <p class="storage-usage" id="storageUsage"></p>
           <div class="btn-row">
             <button type="button" class="btn ghost" id="exportBtn" data-i18n="general.data.export">Export data</button>
             <button type="button" class="btn ghost" id="importBtn" data-i18n="general.data.import">Import data</button>
+            <button type="button" class="btn ghost danger" id="clearImagesBtn" data-i18n="storage.clearImages">Delete all images</button>
           </div>
           <p class="hint" data-i18n="general.data.hint"></p>
         </section>
@@ -960,6 +1084,10 @@ html[data-theme="dark"] .key-row-status.ok{color:#34d399}
           <span class="hint" data-i18n="general.imageDetail.hint"></span>
         </div>
         <div class="form-row"><label data-i18n="general.attachKeepRecent.label">Keep attachments for the latest N messages</label><input id="cfg_attach_keep_recent" type="number" min="0" step="1" value="1" inputmode="numeric" /><span class="hint" data-i18n="general.attachKeepRecent.hint"></span></div>
+        <section class="set-section">
+          <div class="set-head"><h4 data-i18n="general.image">Image generation</h4></div>
+          <div class="form-row"><label class="check-label"><input id="cfg_auto_image" type="checkbox" /><span data-i18n="general.autoImage.label">Let chat models draw automatically</span></label><span class="hint" data-i18n="general.autoImage.hint"></span></div>
+        </section>
         <section class="set-section">
           <div class="set-head"><h4 data-i18n="general.scenario">Scenario chat memory</h4></div>
           <div class="form-row"><label class="check-label"><input id="cfg_scenario_autocompress" type="checkbox" /><span data-i18n="general.autoCompress.label">Auto-compress scenario memory</span></label><span class="hint" data-i18n="general.autoCompress.hint"></span></div>
@@ -1067,6 +1195,39 @@ html[data-theme="dark"] .key-row-status.ok{color:#34d399}
   </div>
 </div>
 
+<!-- Image viewer -->
+<div class="img-viewer hide" id="imgViewer" role="dialog" aria-modal="true">
+  <button type="button" class="icon-btn iv-close" data-act="close" data-i18n-title="modal.close" title="Close">✕</button>
+  <div class="iv-stage" id="ivStage"><img id="ivImg" alt="" /></div>
+  <div class="iv-bar">
+    <div class="iv-prompt" id="ivPrompt"></div>
+    <div class="iv-actions">
+      <button type="button" class="btn ghost small" data-act="download"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg><span data-i18n="img.download">Download</span></button>
+      <button type="button" class="btn ghost small" data-act="edit"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9.06 11.9 8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08"/><path d="M7.07 14.94c-1.66 0-3 1.35-3 3.02 0 1.33-2.5 1.52-2 2.02 1.08 1.1 2.49 2.02 4 2.02 2.2 0 4-1.8 4-4.04a3.01 3.01 0 0 0-3-3.02z"/></svg><span data-i18n="img.edit">Edit part</span></button>
+      <button type="button" class="btn ghost small" data-act="ref"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/></svg><span data-i18n="img.useAsRef">Edit this image</span></button>
+      <button type="button" class="btn ghost small" data-act="copy"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="13" height="13" x="9" y="9" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span data-i18n="img.copyPrompt">Copy prompt</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- Mask editor: paint the area to change (partial edit) -->
+<div class="mask-editor hide" id="maskEditor" role="dialog" aria-modal="true">
+  <div class="me-top">
+    <div><b data-i18n="mask.title">Paint over the area to change</b><span class="me-tip" data-i18n="mask.tip"></span></div>
+    <button type="button" class="icon-btn" id="meClose" data-i18n-title="modal.close" title="Close">✕</button>
+  </div>
+  <div class="me-stage" id="meStage"><div class="me-wrap" id="meWrap"><img id="meImg" alt="" draggable="false" /><canvas id="meCanvas"></canvas></div></div>
+  <div class="me-tools">
+    <div class="me-seg"><button type="button" data-tool="brush" class="on" data-i18n="mask.brush">Brush</button><button type="button" data-tool="eraser" data-i18n="mask.eraser">Eraser</button></div>
+    <label class="me-size"><span data-i18n="mask.size">Size</span><input type="range" id="meSize" min="8" max="120" value="44" /></label>
+    <button type="button" class="btn ghost small" id="meUndo" data-i18n="mask.undo">Undo</button>
+    <button type="button" class="btn ghost small" id="meClear" data-i18n="mask.clear">Clear</button>
+    <span class="spacer"></span>
+    <button type="button" class="btn ghost" id="meCancel" data-i18n="modal.cancel">Cancel</button>
+    <button type="button" class="btn primary" id="meDone" data-i18n="mask.done">Done</button>
+  </div>
+</div>
+
 <div class="drag-overlay hide" id="dragOverlay" data-i18n="drag.overlay">Drop files to add them to the conversation</div>
 
 <input type="file" id="importFileInput" accept="application/json" style="display:none" />
@@ -1134,6 +1295,12 @@ const DEFAULT_STATE = {
     modelsAt: 0         // last successful model-list refresh
   },
   general: {
+    drawMode:false,      // composer "Image" switch: messages go straight to the image model
+    autoImage:true,      // chat models may call the image tool by themselves
+    imageModel:"",       // "keyId::model" of the preferred image model
+    imageSize:"auto",
+    imageQuality:"auto",
+    sidebarCollapsed:false,
     systemPrompt:"You are a helpful assistant. Answer in the user's language.",
     temperature:"",     // empty = model default (most new models reject custom values)
     maxTokens:"",       // empty = automatic
@@ -1154,6 +1321,58 @@ const DEFAULT_STATE = {
 /* ------------------------- i18n ------------------------- */
 const I18N = {
   en: {
+    "sidebar.collapse":"Collapse sidebar",
+    "model.family.image":"Image",
+    "draw.label":"Image",
+    "draw.title":"Image mode: your message goes straight to the image model (attach a picture to edit it)",
+    "draw.on":"Image mode on",
+    "draw.off":"Image mode off",
+    "draw.placeholder":"Describe the picture you want… Attach an image to edit it; tap the brush on it to change just one area",
+    "draw.needPrompt":"Describe what to draw first.",
+    "imgopt.title":"Image size and quality",
+    "imgopt.size":"Size",
+    "imgopt.quality":"Quality",
+    "size.auto":"Auto ratio",
+    "size.square":"Square 1:1",
+    "size.landscape":"Landscape 3:2",
+    "size.portrait":"Portrait 2:3",
+    "quality.auto":"Auto quality",
+    "quality.low":"Fast",
+    "quality.medium":"Standard",
+    "quality.high":"Fine",
+    "img.status.drawing":"Drawing…",
+    "img.elapsed":"{0}s",
+    "img.download":"Download",
+    "img.edit":"Edit part",
+    "img.useAsRef":"Edit this image",
+    "img.copyPrompt":"Copy prompt",
+    "img.copied":"Copied",
+    "img.err.empty":"The image model returned no image.",
+    "img.err.missing":"The image file is missing (it may have been cleaned up).",
+    "img.err.interrupted":"_[Drawing was interrupted — the page was closed before it finished.]_",
+    "img.failed":"Image generation failed: {0}",
+    "img.maskBadge":"Area",
+    "img.attachEdit":"Paint the area to change",
+    "mask.title":"Paint over the area to change",
+    "mask.tip":"The painted area is redrawn from your description; the rest stays as it is.",
+    "mask.brush":"Brush",
+    "mask.eraser":"Eraser",
+    "mask.size":"Size",
+    "mask.undo":"Undo",
+    "mask.clear":"Clear",
+    "mask.done":"Done",
+    "general.image":"Image generation",
+    "general.autoImage.label":"Let chat models draw automatically",
+    "general.autoImage.hint":"Just say \"draw a cat\": the chat model calls the image model by itself. Needs an image model (e.g. gpt-image-2) on one of your keys. The Image switch in the composer always draws directly.",
+    "general.data":"Data & storage",
+    "storage.usage":"{0} chats · {1} images · {2} used",
+    "storage.fallback":"This browser has no IndexedDB — images are kept for this session only.",
+    "storage.clearImages":"Delete all images",
+    "storage.clearImages.confirm":"Delete all {0} images from every chat? The text stays. This can't be undone.",
+    "storage.cleared":"Deleted {0} images.",
+    "storage.none":"There are no images to delete.",
+    "storage.imageRemoved":"_[Image deleted]_",
+    "export.withImages":"Include the {0} images in the export? The file can get large.\n\nOK = with images · Cancel = text only",
     "lang.switch.title":"Language / 语言",
     "reload.title":"Reload app",
     "reload.confirm":"Reload now? You have unsent input — copy it first if you need it.",
@@ -1357,7 +1576,6 @@ const I18N = {
     "general.system.label":"Default system prompt",
     "general.system.hint":"Used by every regular chat. Scenario chats use their own persona instead.",
     "model.family.other":"Other",
-    "general.data":"Backup",
     "general.data.export":"⬇ Export data",
     "general.data.import":"⬆ Import data",
     "general.data.hint":"The exported JSON contains your chats and API keys in plain text — keep it somewhere safe.",
@@ -1367,7 +1585,7 @@ const I18N = {
     "general.maxTokens.label":"Max output tokens",
     "general.maxTokens.placeholder":"Empty = automatic",
     "general.scenario":"Scenario chat memory",
-    "about.body":"<b style=\"color:var(--fg)\">Totoro Chat</b> — the web chat client for <a href=\"https://api.to-to.cc\" target=\"_blank\" rel=\"noopener noreferrer\">Totoro API</a>. Paste one key and talk to Claude, GPT, Gemini and more.<br><br><b>Features</b>: streaming replies · deep think · Markdown, code highlighting, math and Mermaid diagrams · image and file input (PDF / Word / code) · scenario chats with long-term memory · notepad · light and dark themes · installable as an app.<br><br><b>Privacy</b>: keys and chats are stored only in this browser's localStorage. Requests go straight from your browser to Totoro API.<br><br><b>Shortcuts</b>: Enter to send · Shift+Enter for a new line · Ctrl/⌘+Shift+O new chat · Ctrl/⌘+K clear context.<br><br><b>Source</b>: <a href=\"https://github.com/catb62/totoro-chat\" target=\"_blank\" rel=\"noopener noreferrer\">github.com/catb62/totoro-chat</a> · based on the open-source <a href=\"https://github.com/lfbear/chatbox-lite\" target=\"_blank\" rel=\"noopener noreferrer\">chatbox-lite</a>.<br><b>Contact</b>: admin@to-to.cc",
+    "about.body":"<b style=\"color:var(--fg)\">Totoro Chat</b> — the web chat client for <a href=\"https://api.to-to.cc\" target=\"_blank\" rel=\"noopener noreferrer\">Totoro API</a>. Paste one key and talk to Claude, GPT, Gemini and more.<br><br><b>Features</b>: streaming replies · deep think · image generation (automatic or manual, with partial edits) · Markdown, code highlighting, math and Mermaid diagrams · image and file input (PDF / Word / code) · scenario chats with long-term memory · notepad · light and dark themes · installable as an app.<br><br><b>Privacy</b>: keys and chats are stored only in this browser's localStorage. Requests go straight from your browser to Totoro API.<br><br><b>Shortcuts</b>: Enter to send · Shift+Enter for a new line · Ctrl/⌘+Shift+O new chat · Ctrl/⌘+K clear context.<br><br><b>Source</b>: <a href=\"https://github.com/catb62/totoro-chat\" target=\"_blank\" rel=\"noopener noreferrer\">github.com/catb62/totoro-chat</a> · based on the open-source <a href=\"https://github.com/lfbear/chatbox-lite\" target=\"_blank\" rel=\"noopener noreferrer\">chatbox-lite</a>.<br><b>Contact</b>: admin@to-to.cc",
     "modal.close":"Close",
     "drag.overlay":"Drop files to add them to the conversation",
     "empty.greet.morning":"Good morning",
@@ -1419,6 +1637,58 @@ const I18N = {
     "aiName.default":"Totoro"
   },
   zh: {
+    "sidebar.collapse":"收起侧栏",
+    "model.family.image":"画图",
+    "draw.label":"画图",
+    "draw.title":"画图模式：消息直接交给画图模型（附上图片即可改图）",
+    "draw.on":"已开启画图模式",
+    "draw.off":"已关闭画图模式",
+    "draw.placeholder":"描述你想画的画面…附上图片可以改图，点图片上的画笔可只改局部",
+    "draw.needPrompt":"先描述一下要画什么",
+    "imgopt.title":"尺寸与画质",
+    "imgopt.size":"尺寸",
+    "imgopt.quality":"画质",
+    "size.auto":"自动比例",
+    "size.square":"方形 1:1",
+    "size.landscape":"横版 3:2",
+    "size.portrait":"竖版 2:3",
+    "quality.auto":"自动画质",
+    "quality.low":"快速",
+    "quality.medium":"标准",
+    "quality.high":"精细",
+    "img.status.drawing":"正在画图…",
+    "img.elapsed":"{0} 秒",
+    "img.download":"下载",
+    "img.edit":"局部修改",
+    "img.useAsRef":"以此图修改",
+    "img.copyPrompt":"复制提示词",
+    "img.copied":"已复制",
+    "img.err.empty":"画图模型没有返回图片",
+    "img.err.missing":"图片文件不存在（可能已被清理）",
+    "img.err.interrupted":"_[画图被中断：页面在完成前被关闭了。]_",
+    "img.failed":"画图失败：{0}",
+    "img.maskBadge":"局部",
+    "img.attachEdit":"涂抹要修改的区域",
+    "mask.title":"涂抹要修改的区域",
+    "mask.tip":"涂过的地方会按你的描述重画，其余部分尽量保持不变",
+    "mask.brush":"画笔",
+    "mask.eraser":"橡皮",
+    "mask.size":"笔刷",
+    "mask.undo":"撤销",
+    "mask.clear":"清除",
+    "mask.done":"完成",
+    "general.image":"画图",
+    "general.autoImage.label":"对话中自动画图",
+    "general.autoImage.hint":"直接说「画一只猫」，对话模型会自己调用画图模型。需要你的 Key 里有画图模型（如 gpt-image-2）。输入框里的「画图」开关则总是直接画图。",
+    "general.data":"数据与存储",
+    "storage.usage":"{0} 个对话 · {1} 张图片 · 已用 {2}",
+    "storage.fallback":"当前浏览器不支持 IndexedDB，图片只在本次打开期间保留。",
+    "storage.clearImages":"删除所有图片",
+    "storage.clearImages.confirm":"删除所有对话里的 {0} 张图片？文字会保留，此操作不可撤销。",
+    "storage.cleared":"已删除 {0} 张图片",
+    "storage.none":"没有可删除的图片",
+    "storage.imageRemoved":"_[图片已删除]_",
+    "export.withImages":"导出时包含 {0} 张图片吗？文件可能会比较大。\n\n确定 = 包含图片 · 取消 = 只导出文字",
     "lang.switch.title":"Language / 语言",
     "reload.title":"重新加载应用",
     "reload.confirm":"现在刷新？输入框里还有未发送内容 —— 需要的话先复制走。",
@@ -1622,7 +1892,6 @@ const I18N = {
     "general.system.label":"默认系统提示词",
     "general.system.hint":"对所有普通对话生效；场景对话使用自己的人设设定。",
     "model.family.other":"其他",
-    "general.data":"数据备份",
     "general.data.export":"⬇ 导出数据",
     "general.data.import":"⬆ 导入数据",
     "general.data.hint":"导出的 JSON 含有对话记录和明文 API Key，请妥善保管。",
@@ -1632,7 +1901,7 @@ const I18N = {
     "general.maxTokens.label":"最大输出 tokens",
     "general.maxTokens.placeholder":"留空 = 自动",
     "general.scenario":"场景对话记忆",
-    "about.body":"<b style=\"color:var(--fg)\">Totoro Chat</b> —— <a href=\"https://api.to-to.cc\" target=\"_blank\" rel=\"noopener noreferrer\">Totoro API</a> 的网页聊天客户端。填一个 Key，就能和 Claude、GPT、Gemini 等模型对话。<br><br><b>功能</b>：流式输出 · 深度思考 · Markdown / 代码高亮 / 数学公式 / Mermaid 图表 · 图片与文件输入（PDF / Word / 代码）· 带长期记忆的场景对话 · 记事本 · 浅色 / 深色主题 · 可安装为应用。<br><br><b>隐私</b>：Key 和对话只保存在本机浏览器的 localStorage，请求由浏览器直接发往 Totoro API。<br><br><b>快捷键</b>：Enter 发送 · Shift+Enter 换行 · Ctrl/⌘+Shift+O 新对话 · Ctrl/⌘+K 清除上下文。<br><br><b>源码</b>：<a href=\"https://github.com/catb62/totoro-chat\" target=\"_blank\" rel=\"noopener noreferrer\">github.com/catb62/totoro-chat</a> · 基于开源项目 <a href=\"https://github.com/lfbear/chatbox-lite\" target=\"_blank\" rel=\"noopener noreferrer\">chatbox-lite</a> 改造。<br><b>联系</b>：admin@to-to.cc",
+    "about.body":"<b style=\"color:var(--fg)\">Totoro Chat</b> —— <a href=\"https://api.to-to.cc\" target=\"_blank\" rel=\"noopener noreferrer\">Totoro API</a> 的网页聊天客户端。填一个 Key，就能和 Claude、GPT、Gemini 等模型对话。<br><br><b>功能</b>：流式输出 · 深度思考 · 画图（自动调用 / 涂抹局部修改）· Markdown / 代码高亮 / 数学公式 / Mermaid 图表 · 图片与文件输入（PDF / Word / 代码）· 带长期记忆的场景对话 · 记事本 · 浅色 / 深色主题 · 可安装为应用。<br><br><b>隐私</b>：Key 和对话只保存在本机浏览器的 localStorage，请求由浏览器直接发往 Totoro API。<br><br><b>快捷键</b>：Enter 发送 · Shift+Enter 换行 · Ctrl/⌘+Shift+O 新对话 · Ctrl/⌘+K 清除上下文。<br><br><b>源码</b>：<a href=\"https://github.com/catb62/totoro-chat\" target=\"_blank\" rel=\"noopener noreferrer\">github.com/catb62/totoro-chat</a> · 基于开源项目 <a href=\"https://github.com/lfbear/chatbox-lite\" target=\"_blank\" rel=\"noopener noreferrer\">chatbox-lite</a> 改造。<br><b>联系</b>：admin@to-to.cc",
     "modal.close":"关闭",
     "drag.overlay":"松开即可添加到对话",
     "empty.greet.morning":"早上好",
@@ -1716,7 +1985,7 @@ function setLang(lang){
 }
 
 let state = loadState();
-let pendingAttachments = []; // {kind:'image'|'file', name, mime, dataUrl?, text?}
+let pendingAttachments = []; // {kind:'image'|'file', name, mime, blobId?|dataUrl?, maskBlobId?, w?, h?, text?}
 // 每个会话独立的流式状态：chatId -> { controller, phase }
 // 这样不同会话的输出互不干扰，可以同时进行。
 const activeStreams = new Map();
@@ -1788,6 +2057,10 @@ function maybeAutoScroll(){
 }
 
 /* ------------------------- Persistence ------------------------- */
+/* Settings (small) live in localStorage under LS_KEY. Chats and binary files (images,
+   masks) live in IndexedDB: localStorage tops out around 5 MB, which a single generated
+   image can exceed. Without IndexedDB, chats fall back to localStorage and images are
+   kept for the current session only. */
 /* Merge stored (or imported) data over the defaults, so missing fields never crash. */
 function normalizeState(s){
   s = (s && typeof s === "object") ? s : {};
@@ -1796,6 +2069,7 @@ function normalizeState(s){
     general: Object.assign(structuredClone(DEFAULT_STATE.general), s.general||{}),
     notepad: Object.assign(structuredClone(DEFAULT_STATE.notepad), s.notepad||{}),
   });
+  delete out.chatOrder;
   if(!Array.isArray(out.chats)) out.chats = [];
   if(!Array.isArray(out.config.keys)) out.config.keys = [];
   if(!Array.isArray(out.config.hiddenModels)) out.config.hiddenModels = [];
@@ -1810,6 +2084,73 @@ function loadState(){
 function isQuotaExceeded(e){
   return e && (e.name==="QuotaExceededError" || e.name==="NS_ERROR_DOM_QUOTA_REACHED" || e.code===22 || e.code===1014);
 }
+
+/* -------- IndexedDB -------- */
+const IDB_NAME = "totoro-chat";
+let DB = null;                       // IDBDatabase once opened; null → localStorage fallback
+function idbOpen(){
+  return new Promise((resolve)=>{
+    let done = false;
+    const finish = (db)=>{ if(!done){ done = true; resolve(db); } };
+    try{
+      if(!("indexedDB" in window)) return finish(null);
+      const req = indexedDB.open(IDB_NAME, 1);
+      req.onupgradeneeded = ()=>{
+        const db = req.result;
+        if(!db.objectStoreNames.contains("chats")) db.createObjectStore("chats", { keyPath:"id" });
+        if(!db.objectStoreNames.contains("blobs")) db.createObjectStore("blobs", { keyPath:"id" });
+      };
+      req.onsuccess = ()=>{ const db = req.result; db.onversionchange = ()=>db.close(); finish(db); };
+      req.onerror = ()=>finish(null);
+      req.onblocked = ()=>finish(null);
+      setTimeout(()=>finish(null), 5000);
+    }catch{ finish(null); }
+  });
+}
+function idbReq(req){ return new Promise((res, rej)=>{ req.onsuccess = ()=>res(req.result); req.onerror = ()=>rej(req.error); }); }
+function idbStore(name, mode){ return DB.transaction(name, mode || "readonly").objectStore(name); }
+function idbTxDone(tx){ return new Promise((res, rej)=>{ tx.oncomplete = ()=>res(); tx.onerror = tx.onabort = ()=>rej(tx.error); }); }
+
+/* -------- Chats -------- */
+const _savedChatJson = new Map();    // chatId → JSON last written to IndexedDB
+let _flushTimer = null;
+function metaForStorage(){
+  const { chats, ...meta } = state;
+  meta.chatOrder = (chats||[]).map(c=>c.id);
+  return meta;
+}
+function saveState(){
+  if(!DB) return saveStateLegacy();
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(metaForStorage())); }
+  catch(e){ console.error("Failed to save settings.", e); }
+  clearTimeout(_flushTimer);
+  _flushTimer = setTimeout(flushChats, 200);
+  return true;
+}
+/* Write only the chats that changed since the last flush (and drop deleted ones). */
+async function flushChats(){
+  clearTimeout(_flushTimer); _flushTimer = null;
+  if(!DB) return;
+  const live = new Set(), writes = [];
+  for(const c of state.chats){
+    live.add(c.id);
+    const json = JSON.stringify(c);
+    if(_savedChatJson.get(c.id) !== json) writes.push([c.id, json]);
+  }
+  const deletes = [..._savedChatJson.keys()].filter(id=>!live.has(id));
+  if(!writes.length && !deletes.length) return;
+  try{
+    const tx = DB.transaction("chats", "readwrite");
+    const st = tx.objectStore("chats");
+    for(const [, json] of writes) st.put(JSON.parse(json));
+    for(const id of deletes) st.delete(id);
+    await idbTxDone(tx);
+    for(const [id, json] of writes) _savedChatJson.set(id, json);
+    for(const id of deletes) _savedChatJson.delete(id);
+    if(deletes.length) scheduleBlobGC();
+  }catch(e){ console.error("Failed to save chats.", e); }
+}
+/* Fallback (no IndexedDB): everything in localStorage, dropping heavy payloads on quota. */
 function cloneStateForStorage(keepAttachmentMessages){
   const s = structuredClone(state);
   const keep = Math.max(0, Number(keepAttachmentMessages)||0);
@@ -1819,36 +2160,178 @@ function cloneStateForStorage(keepAttachmentMessages){
     const keepSet = new Set(withAttachments.slice(-keep));
     for(const m of msgs){
       if((m.attachments||[]).length && !keepSet.has(m)) delete m.attachments;
+      for(const im of (m.images||[])) delete im.dataUrl;   // generated images are session-only here
     }
   }
   return s;
 }
-function saveState(){
+function saveStateLegacy(){
   const configuredKeep = Math.max(0, Number(state.general?.attachmentKeepRecent ?? 1)||0);
-  const attempts = [...new Set([configuredKeep, 1, 0])];
-  let lastErr = null;
-  for(const keep of attempts){
-    try{
-      localStorage.setItem(LS_KEY, JSON.stringify(cloneStateForStorage(keep)));
-      return true;
-    }catch(e){
-      lastErr = e;
-      if(!isQuotaExceeded(e)) break;
-    }
+  for(const keep of [...new Set([configuredKeep, 1, 0])]){
+    try{ localStorage.setItem(LS_KEY, JSON.stringify(cloneStateForStorage(keep))); return true; }
+    catch(e){ if(!isQuotaExceeded(e)) break; }
   }
-  console.warn("Totoro Chat state was too large for localStorage; dropped persisted attachment payloads.", lastErr);
   try{
     const slim = cloneStateForStorage(0);
-    for(const chat of (slim.chats||[])){
-      for(const m of (chat.messages||[])) delete m.reasoning;
-    }
+    for(const chat of (slim.chats||[])) for(const m of (chat.messages||[])) delete m.reasoning;
     localStorage.setItem(LS_KEY, JSON.stringify(slim));
     return true;
-  }catch(e){
-    console.error("Failed to save Totoro Chat state.", e);
-    return false;
+  }catch(e){ console.error("Failed to save Totoro Chat state.", e); return false; }
+}
+/* Open IndexedDB and load chats; chats from the old all-in-localStorage format are
+   migrated (inline images become blobs) on the first run. */
+async function loadPersisted(){
+  DB = await idbOpen();
+  if(!DB) return;
+  let raw = null;
+  try{ raw = JSON.parse(localStorage.getItem(LS_KEY) || "null"); }catch{}
+  const legacy = raw && Array.isArray(raw.chats) ? raw.chats : [];
+  let chats = [];
+  try{ chats = await idbReq(idbStore("chats").getAll()); }catch(e){ console.error(e); }
+  for(const c of chats) _savedChatJson.set(c.id, JSON.stringify(c));
+  const have = new Set(chats.map(c=>c.id));
+  for(const c of legacy){
+    if(!c || have.has(c.id)) continue;
+    await externalizeChatImages(c);
+    chats.push(c);
+  }
+  const order = (raw && raw.chatOrder) || legacy.map(c=>c && c.id);
+  const pos = new Map((order||[]).map((id, i)=>[id, i]));
+  const rank = c => pos.has(c.id) ? pos.get(c.id) : -1;
+  chats.sort((a, b)=>(rank(a) - rank(b)) || ((b.createdAt||0) - (a.createdAt||0)));
+  for(const c of chats) for(const m of (c.messages||[])){
+    // A drawing still "running" from a closed tab will never finish.
+    if(m.imageJob){ m.imageJob = null; if(!(m.images||[]).length && !m.content){ m.content = t("img.err.interrupted"); m.error = true; } }
+  }
+  state.chats = chats;
+  if(legacy.length){ await flushChats(); saveState(); }
+  scheduleBlobGC();
+}
+
+/* -------- Blobs (images, masks) -------- */
+const _blobUrls = new Map();         // blobId → object URL for <img>
+const _dataUrls = new Map();         // blobId → data: URL for API requests (small LRU)
+const _memBlobs = new Map();         // session-only store when IndexedDB is unavailable
+function newBlobId(){ return `b_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,8)}`; }
+function blobIdTime(id){ const n = parseInt(String(id).split("_")[1], 36); return Number.isFinite(n) ? n : 0; }
+async function putBlob(blob, id){
+  id = id || newBlobId();
+  if(DB){
+    await idbReq(idbStore("blobs", "readwrite").put({ id, blob, type: blob.type, size: blob.size }));
+    requestPersistentStorage();
+  }else _memBlobs.set(id, blob);
+  return id;
+}
+async function getBlob(id){
+  if(!id) return null;
+  if(_memBlobs.has(id)) return _memBlobs.get(id);
+  if(!DB) return null;
+  try{ const r = await idbReq(idbStore("blobs").get(id)); return r ? r.blob : null; }catch{ return null; }
+}
+async function blobObjectUrl(id){
+  if(_blobUrls.has(id)) return _blobUrls.get(id);
+  const b = await getBlob(id);
+  if(!b) return "";
+  const u = URL.createObjectURL(b);
+  _blobUrls.set(id, u);
+  return u;
+}
+function blobToDataUrl(blob){
+  return new Promise((res, rej)=>{ const r = new FileReader(); r.onload = ()=>res(r.result); r.onerror = ()=>rej(r.error); r.readAsDataURL(blob); });
+}
+async function blobDataUrl(id){
+  if(_dataUrls.has(id)) return _dataUrls.get(id);
+  const b = await getBlob(id);
+  if(!b) return "";
+  const d = await blobToDataUrl(b);
+  _dataUrls.set(id, d);
+  if(_dataUrls.size > 24) _dataUrls.delete(_dataUrls.keys().next().value);
+  return d;
+}
+function dropBlobCaches(id){
+  const u = _blobUrls.get(id);
+  if(u) URL.revokeObjectURL(u);
+  _blobUrls.delete(id); _dataUrls.delete(id); _memBlobs.delete(id);
+}
+async function dataUrlToBlob(dataUrl){ return (await fetch(dataUrl)).blob(); }
+/* An image record (attachment or generated image) is backed by a blob in IndexedDB,
+   a legacy inline data: URL, or (rarely) a remote URL. */
+async function imageSrc(rec){
+  if(!rec) return "";
+  if(rec.dataUrl) return rec.dataUrl;
+  if(rec.blobId) return blobObjectUrl(rec.blobId);
+  return rec.url || "";
+}
+function fillImg(img, rec){ imageSrc(rec).then(u=>{ if(u) img.src = u; else img.classList.add("missing"); }); }
+async function recordBlob(rec){
+  if(!rec) return null;
+  if(rec.blobId) return getBlob(rec.blobId);
+  if(rec.dataUrl) return dataUrlToBlob(rec.dataUrl);
+  if(rec.url){ try{ const r = await fetch(rec.url); if(r.ok) return r.blob(); }catch{} }
+  return null;
+}
+/* Synchronous data: URL for request builders (filled beforehand by hydrateRequestImages). */
+function attDataUrl(rec){ return rec.dataUrl || (rec.blobId && _dataUrls.get(rec.blobId)) || ""; }
+async function externalizeChatImages(chat){
+  if(!DB) return;
+  for(const m of (chat.messages||[])){
+    for(const rec of [...(m.attachments||[]), ...(m.images||[])]){
+      if(rec && rec.dataUrl && !rec.blobId){
+        try{ rec.blobId = await putBlob(await dataUrlToBlob(rec.dataUrl)); delete rec.dataUrl; }catch{}
+      }
+    }
   }
 }
+function allImageRecords(){
+  const out = [];
+  for(const c of state.chats) for(const m of (c.messages||[])){
+    for(const a of (m.attachments||[])) if(a.kind==="image") out.push(a);
+    for(const im of (m.images||[])) out.push(im);
+  }
+  return out;
+}
+function referencedBlobIds(){
+  const ids = new Set();
+  const add = (o)=>{ if(o && o.blobId) ids.add(o.blobId); if(o && o.maskBlobId) ids.add(o.maskBlobId); };
+  allImageRecords().forEach(add);
+  pendingAttachments.forEach(add);
+  return ids;
+}
+/* Delete blobs nothing refers to any more (deleted chats, regenerated answers …).
+   Fresh blobs are spared: they may belong to a message that is still being built. */
+let _gcTimer = null;
+function scheduleBlobGC(){ clearTimeout(_gcTimer); _gcTimer = setTimeout(()=>gcBlobs(), 3000); }
+async function gcBlobs(maxAgeMs){
+  if(!DB) return 0;
+  try{
+    const keys = await idbReq(idbStore("blobs").getAllKeys());
+    const used = referencedBlobIds();
+    const cutoff = Date.now() - (maxAgeMs ?? 10*60*1000);
+    const dead = keys.filter(k=>!used.has(k) && blobIdTime(k) <= cutoff);
+    if(!dead.length) return 0;
+    const tx = DB.transaction("blobs", "readwrite");
+    const st = tx.objectStore("blobs");
+    dead.forEach(k=>{ st.delete(k); dropBlobCaches(k); });
+    await idbTxDone(tx);
+    return dead.length;
+  }catch(e){ console.warn("[gc]", e); return 0; }
+}
+let _persistAsked = false;
+function requestPersistentStorage(){
+  if(_persistAsked) return;
+  _persistAsked = true;
+  try{ navigator.storage?.persisted?.().then(p=>{ if(!p) navigator.storage.persist?.(); }).catch(()=>{}); }catch{}
+}
+function fmtBytes(n){
+  if(!(n >= 0)) return "—";
+  if(n < 1024) return n + " B";
+  if(n < 1024*1024) return (n/1024).toFixed(0) + " KB";
+  if(n < 1024*1024*1024) return (n/1024/1024).toFixed(1) + " MB";
+  return (n/1024/1024/1024).toFixed(2) + " GB";
+}
+// Flush pending chat writes when the page is hidden or closed.
+window.addEventListener("pagehide", ()=>{ if(_flushTimer) flushChats(); });
+document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState === "hidden" && _flushTimer) flushChats(); });
 
 /* ------------------------- Marked setup ------------------------- */
 marked.setOptions({
@@ -2660,6 +3143,9 @@ async function maybeAutoCompress(chat){
 
 /* Inline icons used by dynamic UI (single-color line icons, same style as the sidebar). */
 const ICONS = {
+  download: '<svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>',
+  brush: '<svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9.06 11.9 8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08"/><path d="M7.07 14.94c-1.66 0-3 1.35-3 3.02 0 1.33-2.5 1.52-2 2.02 1.08 1.1 2.49 2.02 4 2.02 2.2 0 4-1.8 4-4.04a3.01 3.01 0 0 0-3-3.02z"/></svg>',
+  imgRef: '<svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/></svg>',
   send: '<svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>',
   stop: '<svg class="fi" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="5" y="5" width="14" height="14" rx="2.5"/></svg>',
   check: '<svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>',
@@ -2669,6 +3155,536 @@ const ICONS = {
   chat: '<svg class="fi ci" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8z"/></svg>'
 };
 function modelDisplayName(model){ const m = getAllModels().find(x=>x.model===model); return m ? m.name : prettyModelName(model); }
+/* ------------------------- Image generation (OpenAI Images API) ------------------------- */
+/* Official OpenAI Images API, as implemented by the gateway:
+     POST {base}/v1/images/generations  JSON       {model, prompt, n, size?, quality?, stream?}
+     POST {base}/v1/images/edits        multipart  image | image[] (+ mask for the first image)
+   Streaming is requested so the gateway's keep-alive events keep the connection warm;
+   a plain JSON answer (or a JSON error inside a 200) is handled as well. */
+const IMAGE_SIZES = ["auto", "1024x1024", "1536x1024", "1024x1536"];
+const IMAGE_QUALITIES = ["auto", "low", "medium", "high"];
+const IMAGE_SIZE_KEYS = { "auto":"size.auto", "1024x1024":"size.square", "1536x1024":"size.landscape", "1024x1536":"size.portrait" };
+const IMAGE_QUALITY_KEYS = { "auto":"quality.auto", "low":"quality.low", "medium":"quality.medium", "high":"quality.high" };
+const sleep = (ms)=>new Promise(r=>setTimeout(r, ms));
+function imageExt(mime){ return /jpe?g/.test(mime||"") ? "jpg" : /webp/.test(mime||"") ? "webp" : "png"; }
+async function imageDims(blob){
+  try{ const bm = await createImageBitmap(blob); const d = { w:bm.width, h:bm.height }; bm.close?.(); return d; }
+  catch{ return { w:0, h:0 }; }
+}
+function imageModels(){ return getAllModels().filter(m=>!m.hidden && m.kind==="image"); }
+/* Prefer the plain "gpt-image-N" model with the highest N, then any image model. */
+function pickDefaultImageModel(list){
+  if(!list.length) return null;
+  const ver = m => { const r = /^gpt-image-(\d+(?:\.\d+)?)$/i.exec(m.model); return r ? parseFloat(r[1]) : -1; };
+  const plain = list.filter(m=>ver(m) >= 0).sort((a,b)=>ver(b) - ver(a));
+  return plain[0] || list[0];
+}
+function selectedImageModel(){
+  const list = imageModels();
+  return findModel(state.general.imageModel, list) || pickDefaultImageModel(list);
+}
+function imageErrorFromBody(e){
+  const msg = typeof e === "string" ? e : (e && (e.message || e.code || JSON.stringify(e))) || "error";
+  const type = (e && e.type) || "";
+  const err = new Error(msg);
+  err.detail = msg;
+  err.status = /invalid_request/.test(type) ? 400 : /authentication/.test(type) ? 401 : /permission/.test(type) ? 403 : 502;
+  return err;
+}
+async function readImagesResponse(r, onActivity, onPartial){
+  const out = [];
+  const push = async (item, ctx)=>{
+    if(item.b64_json){
+      const fmt = String(item.output_format || ctx.output_format || "png").replace("jpg", "jpeg");
+      out.push({ blob: await dataUrlToBlob(`data:image/${fmt};base64,${item.b64_json}`), revisedPrompt: item.revised_prompt || "" });
+    }else if(item.url){
+      let blob = null;
+      try{ const rr = await fetch(item.url); if(rr.ok) blob = await rr.blob(); }catch{}
+      out.push(blob ? { blob, revisedPrompt: item.revised_prompt || "" } : { url: item.url, revisedPrompt: item.revised_prompt || "" });
+    }
+  };
+  const ct = (r.headers.get("content-type") || "").toLowerCase();
+  if(ct.includes("text/event-stream")){
+    let streamErr = null;
+    const jobs = [];
+    await readSSE(r, (j)=>{
+      if(j.error){ streamErr = j.error; return; }
+      const type = String(j.type || "");
+      if(/partial_image$/.test(type) && j.b64_json && onPartial) onPartial(j.b64_json, j.output_format);
+      else if(/completed$/.test(type) && (j.b64_json || j.url)) jobs.push(push(j, j));
+      else if(Array.isArray(j.data)) jobs.push(...j.data.map(d=>push(d, j)));
+    }, onActivity);
+    await Promise.all(jobs);
+    if(!out.length && streamErr) throw imageErrorFromBody(streamErr);
+    return out;
+  }
+  const text = await r.text();
+  let j;
+  try{ j = JSON.parse(text); }
+  catch{ throw Object.assign(new Error(text.slice(0, 200) || "Invalid response"), { status: 502 }); }
+  if(j.error) throw imageErrorFromBody(j.error);
+  for(const item of (j.data || [])) await push(item, j);
+  return out;
+}
+/* refs: [{rec}] — image records to edit; the first one's maskBlobId (if any) is the mask. */
+async function generateImages({ target, prompt, refs, size, quality, signal, onActivity, onPartial }){
+  const edit = !!(refs && refs.length);
+  const url = target.base + (edit ? "/v1/images/edits" : "/v1/images/generations");
+  // Edits are sent non-streamed: through this gateway, streamed edits fail upstream
+  // (502 "Upstream service temporarily unavailable") while the same request without
+  // streaming succeeds. Generations stream fine (keep-alives keep the connection warm).
+  const opt = { size: IMAGE_SIZES.includes(size) && size !== "auto" ? size : "",
+                quality: IMAGE_QUALITIES.includes(quality) && quality !== "auto" ? quality : "",
+                stream: !edit };
+  let retried = false;
+  for(let attempt = 0; attempt < 6; attempt++){
+    let r;
+    if(edit){
+      const fd = new FormData();
+      fd.append("model", target.model);
+      fd.append("prompt", prompt);
+      fd.append("n", "1");
+      if(opt.size) fd.append("size", opt.size);
+      if(opt.quality) fd.append("quality", opt.quality);
+      if(opt.stream) fd.append("stream", "true");
+      const field = refs.length > 1 ? "image[]" : "image";
+      for(let i = 0; i < refs.length; i++){
+        const b = await recordBlob(refs[i].rec);
+        if(!b) throw Object.assign(new Error(t("img.err.missing")), { status: 400 });
+        fd.append(field, b, `image-${i+1}.${imageExt(b.type)}`);
+      }
+      const mask = refs[0].rec.maskBlobId ? await getBlob(refs[0].rec.maskBlobId) : null;
+      if(mask) fd.append("mask", mask, "mask.png");
+      r = await fetch(url, { method:"POST", headers:{ "Authorization":"Bearer " + target.key }, body: fd, signal });
+    }else{
+      const body = { model: target.model, prompt, n: 1 };
+      if(opt.size) body.size = opt.size;
+      if(opt.quality) body.quality = opt.quality;
+      if(opt.stream) body.stream = true;
+      r = await fetch(url, { method:"POST", headers:{ "Content-Type":"application/json", "Authorization":"Bearer " + target.key }, body: JSON.stringify(body), signal });
+    }
+    try{
+      if(!r.ok) throw await httpError(r);
+      const imgs = await readImagesResponse(r, onActivity, onPartial);
+      if(!imgs.length) throw Object.assign(new Error(t("img.err.empty")), { status: 502 });
+      return imgs;
+    }catch(e){
+      if(e.name === "AbortError") throw e;
+      const msg = String(e.detail || e.message || "").toLowerCase();
+      if(e.status === 400){
+        // Drop whichever optional parameter this model/gateway rejected, then resend.
+        if(opt.stream && /stream/.test(msg)){ opt.stream = false; continue; }
+        if(opt.quality && /quality/.test(msg)){ opt.quality = ""; continue; }
+        if(opt.size && /size/.test(msg)){ opt.size = ""; continue; }
+        throw e;
+      }
+      // One automatic retry for upstream hiccups, without streaming (the more reliable path).
+      if(!retried && (e.status >= 500 || e.name === "TypeError")){ retried = true; opt.stream = false; await sleep(1200); continue; }
+      throw e;
+    }
+  }
+  throw new Error(t("img.err.empty"));
+}
+async function storeGeneratedImage(im, meta){
+  const rec = { kind:"image", prompt: meta.prompt || "", model: meta.model || "" };
+  if(im.revisedPrompt) rec.revisedPrompt = im.revisedPrompt;
+  if(im.blob){
+    rec.mime = im.blob.type || "image/png";
+    const d = await imageDims(im.blob);
+    rec.w = d.w; rec.h = d.h;
+    rec.blobId = await putBlob(im.blob);
+  }else if(im.url){
+    rec.url = im.url;
+  }
+  return rec;
+}
+
+/* Every image in a chat gets a short, stable id (img1, img2 …) the chat model can refer to
+   when it calls the image tool. */
+function chatImageIndex(chat){
+  const list = [], byRec = new Map();
+  for(const m of (chat.messages||[])){
+    const recs = m.role === "user" ? (m.attachments||[]).filter(a=>a.kind==="image") : (m.images||[]);
+    for(const rec of recs){
+      const label = "img" + (list.length + 1);
+      list.push({ label, rec, role: m.role });
+      byRec.set(rec, label);
+    }
+  }
+  return { list, byRec, get: (label)=>list.find(x=>x.label === String(label||"").trim().toLowerCase()) || null };
+}
+/* Tool the chat model may call (OpenAI function schema; converted for Anthropic / Gemini). */
+const IMAGE_TOOL = {
+  name: "generate_image",
+  description: "Create a new image, or edit existing images, with the image generation model. Call it whenever the user asks you to draw, paint, generate, create, design or illustrate a picture, photo, illustration, logo, poster, icon, avatar or wallpaper, or to modify/edit an image. To edit, pass the ids of the images to change in reference_images (ids such as img1 or img2 appear in the conversation). Write a detailed, self-contained prompt. Do not use it for charts or diagrams that can be written as Mermaid or code.",
+  parameters: {
+    type: "object",
+    properties: {
+      prompt: { type: "string", description: "Detailed description of the image to create, or of the change to make when editing." },
+      reference_images: { type: "array", items: { type: "string" }, description: "Ids of existing images to edit or use as reference, e.g. [\"img2\"]. Omit to create a new image." },
+      size: { type: "string", enum: IMAGE_SIZES, description: "auto, square 1024x1024, landscape 1536x1024 or portrait 1024x1536. Use auto unless the user asks for a shape." }
+    },
+    required: ["prompt"]
+  }
+};
+function imageToolAvailable(){ return state.general.autoImage !== false && imageModels().length > 0; }
+
+/* -------- Draw mode (composer) -------- */
+function isDrawMode(){ return !!state.general.drawMode && imageModels().length > 0; }
+function setDrawMode(on){
+  state.general.drawMode = !!on;
+  saveState();
+  updateDrawUI();
+}
+/* Composer chrome for draw mode (cheap; called from updateModelChip). */
+function syncDrawChrome(){
+  const hasImg = imageModels().length > 0;
+  const draw = isDrawMode();
+  const chip = document.getElementById("drawChip");
+  if(chip){
+    chip.style.display = hasImg ? "" : "none";
+    chip.classList.toggle("on", draw);
+    chip.setAttribute("aria-pressed", draw ? "true" : "false");
+  }
+  const think = document.getElementById("thinkChip");
+  if(think) think.style.display = draw ? "none" : "";
+  const opt = document.getElementById("imgOptChip");
+  if(opt){
+    opt.style.display = draw ? "" : "none";
+    document.getElementById("imgOptLabel").textContent =
+      `${t(IMAGE_SIZE_KEYS[state.general.imageSize] || "size.auto")} · ${t(IMAGE_QUALITY_KEYS[state.general.imageQuality] || "quality.auto")}`;
+  }
+  document.querySelector(".composer")?.classList.toggle("draw-mode", draw);
+  const ta = document.getElementById("input");
+  if(ta) ta.placeholder = t(draw ? "draw.placeholder" : "composer.input.placeholder");
+}
+function updateDrawUI(){
+  updateModelChip();      // also syncs the draw chrome
+  renderAttachStrip();
+}
+function isImgOptOpen(){ const m = document.getElementById("imgOptMenu"); return !!m && !m.classList.contains("hide"); }
+function closeImgOptMenu(){ document.getElementById("imgOptMenu")?.classList.add("hide"); document.getElementById("imgOptChip")?.setAttribute("aria-expanded", "false"); }
+function openImgOptMenu(){
+  closeModelMenu();
+  const menu = document.getElementById("imgOptMenu");
+  menu.classList.remove("hide");
+  document.getElementById("imgOptChip").setAttribute("aria-expanded", "true");
+  renderImgOptMenu();
+  positionPopup(menu, document.getElementById("imgOptChip"), menu.querySelector(".model-list"), 300);
+}
+function renderImgOptMenu(){
+  const list = document.querySelector("#imgOptMenu .model-list");
+  list.innerHTML = "";
+  const group = (title, values, keys, cur, onPick)=>{
+    const h = document.createElement("div"); h.className = "model-group"; h.textContent = title;
+    list.appendChild(h);
+    for(const v of values){
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "model-item" + (v === cur ? " active" : "");
+      b.innerHTML = `<span class="mi-text"><span class="mi-name"></span></span>${ICONS.check}`;
+      b.querySelector(".mi-name").textContent = t(keys[v]);
+      b.addEventListener("click", ()=>{ onPick(v); saveState(); updateDrawUI(); renderImgOptMenu(); });
+      list.appendChild(b);
+    }
+  };
+  group(t("imgopt.size"), IMAGE_SIZES, IMAGE_SIZE_KEYS, state.general.imageSize || "auto", v=>{ state.general.imageSize = v; });
+  group(t("imgopt.quality"), IMAGE_QUALITIES, IMAGE_QUALITY_KEYS, state.general.imageQuality || "auto", v=>{ state.general.imageQuality = v; });
+}
+/* Position a popup above its anchor (full-width sheet on phones). */
+function positionPopup(menu, anchor, listEl, maxW){
+  const r = anchor.getBoundingClientRect();
+  const vw = window.innerWidth;
+  const narrow = vw < 520;
+  const w = narrow ? vw - 16 : Math.min(maxW || 340, vw - 16);
+  menu.style.width = w + "px";
+  menu.style.left = (narrow ? 8 : Math.min(Math.max(8, r.left), vw - w - 8)) + "px";
+  menu.style.bottom = (window.innerHeight - r.top + 8) + "px";
+  if(listEl) listEl.style.maxHeight = Math.max(160, Math.min(400, r.top - 130)) + "px";
+}
+
+/* -------- Manual drawing (draw mode on) -------- */
+async function runImageJob(chat, aiMsg, { target, prompt, refs, size, quality }){
+  const ctrl = new AbortController();
+  streamStart(chat.id, ctrl, t("img.status.drawing"));
+  startImageTicker();
+  const onActive = ()=> state.activeChatId === chat.id;
+  try{
+    const imgs = await generateImages({ target, prompt, refs, size, quality, signal: ctrl.signal,
+      onPartial: (b64, fmt)=>showPartialImage(chat, aiMsg, b64, fmt) });
+    for(const im of imgs) aiMsg.images.push(await storeGeneratedImage(im, { prompt, model: target.model }));
+  }catch(e){
+    if(e.name === "AbortError") aiMsg.content = t("msg.aborted");
+    else aiMsg.content = `> ❌ **${t("msg.error.label")}**: ${e.message}\n\n${errorHint(e)}`;
+    aiMsg.error = true;
+  }finally{
+    aiMsg.imageJob = null;
+    streamEnd(chat.id);
+    saveState();
+    if(onActive()) renderMessages();
+  }
+}
+function showPartialImage(chat, aiMsg, b64, fmt){
+  if(state.activeChatId !== chat.id || !aiMsg.imageJob) return;
+  aiMsg.imageJob.preview = `data:image/${String(fmt||"png").replace("jpg","jpeg")};base64,${b64}`;
+  refreshGenSlot(aiMsg);
+}
+/* Re-render the image area of an assistant message that is on screen. */
+function refreshGenSlot(m){
+  const chat = currentChat();
+  if(!chat) return;
+  const idx = chat.messages.indexOf(m);
+  if(idx < 0) return;
+  const el = document.querySelectorAll(".messages .msg-wrap > *")[idx];
+  const slot = el && el.querySelector(".gen-slot");
+  if(slot) renderGenImages(slot, m);
+}
+let _imgTicker = null;
+function startImageTicker(){
+  if(_imgTicker) return;
+  _imgTicker = setInterval(()=>{
+    const els = document.querySelectorAll(".gen-elapsed[data-start]");
+    if(!els.length && !activeStreams.size){ clearInterval(_imgTicker); _imgTicker = null; return; }
+    els.forEach(el=>{ el.textContent = t("img.elapsed", Math.max(0, Math.round((Date.now() - Number(el.dataset.start)) / 1000))); });
+  }, 1000);
+}
+
+/* -------- Rendering generated images -------- */
+function mkImgBtn(icon, label, onClick){
+  const b = document.createElement("button");
+  b.type = "button";
+  b.className = "gen-btn";
+  b.title = label;
+  b.setAttribute("aria-label", label);
+  b.innerHTML = icon;
+  b.addEventListener("click", (e)=>{ e.stopPropagation(); onClick(); });
+  return b;
+}
+function renderGenImages(slot, m){
+  slot.innerHTML = "";
+  const imgs = m.images || [];
+  if(imgs.length){
+    const grid = document.createElement("div");
+    grid.className = "gen-grid";
+    for(const rec of imgs){
+      const fig = document.createElement("figure");
+      fig.className = "gen-img";
+      if(rec.w && rec.h) fig.style.aspectRatio = `${rec.w} / ${rec.h}`;
+      const img = document.createElement("img");
+      img.alt = rec.prompt || "";
+      img.decoding = "async";
+      fillImg(img, rec);
+      img.addEventListener("click", ()=>openImageViewer(rec));
+      const bar = document.createElement("div");
+      bar.className = "gen-img-bar";
+      bar.append(
+        mkImgBtn(ICONS.download, t("img.download"), ()=>downloadImage(rec)),
+        mkImgBtn(ICONS.brush, t("img.edit"), ()=>editImageRegion(rec)),
+        mkImgBtn(ICONS.imgRef, t("img.useAsRef"), ()=>useImageAsReference(rec)));
+      fig.append(img, bar);
+      grid.appendChild(fig);
+    }
+    slot.appendChild(grid);
+  }
+  if(m.imageJob){
+    const card = document.createElement("div");
+    card.className = "gen-pending";
+    card.innerHTML = `<div class="gen-skel">${m.imageJob.preview ? '<img alt="" />' : '<span class="gen-spinner"></span>'}</div>
+      <div class="gen-pending-text"><b></b> <span class="gen-elapsed" data-start="${Number(m.imageJob.startedAt)||Date.now()}"></span><div class="gen-prompt"></div></div>`;
+    if(m.imageJob.preview) card.querySelector("img").src = m.imageJob.preview;
+    card.querySelector("b").textContent = t("img.status.drawing");
+    card.querySelector(".gen-elapsed").textContent = t("img.elapsed", Math.max(0, Math.round((Date.now() - (m.imageJob.startedAt||Date.now())) / 1000)));
+    card.querySelector(".gen-prompt").textContent = m.imageJob.prompt || "";
+    slot.appendChild(card);
+    startImageTicker();
+  }
+  if(m.imageError){
+    const e = document.createElement("div");
+    e.className = "gen-error";
+    e.textContent = t("img.failed", m.imageError);
+    slot.appendChild(e);
+  }
+}
+async function downloadImage(rec){
+  const b = await recordBlob(rec);
+  if(!b){ if(rec.url) window.open(rec.url, "_blank", "noopener"); else flashStatus(t("img.err.missing")); return; }
+  const d = new Date();
+  triggerDownload(b, `totoro-${d.getFullYear()}${_pad2(d.getMonth()+1)}${_pad2(d.getDate())}-${_pad2(d.getHours())}${_pad2(d.getMinutes())}${_pad2(d.getSeconds())}.${imageExt(b.type)}`);
+}
+function refFromRecord(rec){
+  const a = { kind:"image", name: "image." + imageExt(rec.mime), mime: rec.mime || "image/png", w: rec.w, h: rec.h, detail: "high" };
+  if(rec.blobId) a.blobId = rec.blobId; else if(rec.dataUrl) a.dataUrl = rec.dataUrl; else if(rec.url) a.url = rec.url;
+  return a;
+}
+/* Put an image into the composer as the image to edit, and switch to draw mode. */
+function useImageAsReference(rec, maskBlobId){
+  const a = refFromRecord(rec);
+  if(maskBlobId) a.maskBlobId = maskBlobId;
+  pendingAttachments.push(a);
+  closeImageViewer();
+  if(imageModels().length) setDrawMode(true); else renderAttachStrip();
+  document.getElementById("input").focus();
+}
+/* "Edit part of this image": paint a mask, then describe the change. */
+function editImageRegion(rec){
+  closeImageViewer();
+  openMaskEditor(rec, (maskId)=>{ if(maskId) useImageAsReference(rec, maskId); });
+}
+
+/* -------- Image viewer -------- */
+let _viewerRec = null;
+function openImageViewer(rec){
+  _viewerRec = rec;
+  const v = document.getElementById("imgViewer");
+  const img = document.getElementById("ivImg");
+  img.removeAttribute("src");
+  fillImg(img, rec);
+  const p = rec.revisedPrompt || rec.prompt || "";
+  document.getElementById("ivPrompt").textContent = p;
+  v.querySelector('[data-act="copy"]').style.display = p ? "" : "none";
+  v.querySelector('[data-act="edit"]').style.display = imageModels().length ? "" : "none";
+  v.querySelector('[data-act="ref"]').style.display = imageModels().length ? "" : "none";
+  v.classList.remove("hide");
+}
+function closeImageViewer(){ document.getElementById("imgViewer")?.classList.add("hide"); _viewerRec = null; }
+function isImageViewerOpen(){ const v = document.getElementById("imgViewer"); return !!v && !v.classList.contains("hide"); }
+
+/* -------- Mask editor (partial edit / inpainting) --------
+   The user paints over the area to change. The mask sent to the API is a PNG of the same
+   size as the image: opaque everywhere, fully transparent where painted (OpenAI format). */
+const ME = { rec:null, onDone:null, strokes:[], cur:null, tool:"brush", w:0, h:0, url:"", base:null };
+function isMaskEditorOpen(){ const m = document.getElementById("maskEditor"); return !!m && !m.classList.contains("hide"); }
+async function openMaskEditor(rec, onDone){
+  const blob = await recordBlob(rec);
+  if(!blob){ flashStatus(t("img.err.missing")); return; }
+  closeModelMenu(); closeImgOptMenu();
+  Object.assign(ME, { rec, onDone, strokes:[], cur:null, tool:"brush", base:null });
+  if(ME.url) URL.revokeObjectURL(ME.url);
+  ME.url = URL.createObjectURL(blob);
+  const img = document.getElementById("meImg");
+  await new Promise((res)=>{ img.onload = res; img.onerror = res; img.src = ME.url; });
+  ME.w = img.naturalWidth || rec.w || 1024;
+  ME.h = img.naturalHeight || rec.h || 1024;
+  const c = document.getElementById("meCanvas");
+  c.width = ME.w; c.height = ME.h;
+  // Re-editing: turn the existing mask's transparent area back into paint.
+  if(rec.maskBlobId){
+    const mb = await getBlob(rec.maskBlobId);
+    if(mb){
+      try{
+        const bm = await createImageBitmap(mb);
+        const base = document.createElement("canvas");
+        base.width = ME.w; base.height = ME.h;
+        const bx = base.getContext("2d");
+        bx.fillStyle = "#a855f7"; bx.fillRect(0, 0, ME.w, ME.h);
+        bx.globalCompositeOperation = "destination-out";
+        bx.drawImage(bm, 0, 0, ME.w, ME.h);
+        ME.base = base;
+      }catch{}
+    }
+  }
+  setMaskTool("brush");
+  document.getElementById("maskEditor").classList.remove("hide");
+  layoutMaskEditor();
+  redrawMask();
+}
+function closeMaskEditor(){
+  document.getElementById("maskEditor")?.classList.add("hide");
+  ME.rec = null; ME.onDone = null;
+}
+function layoutMaskEditor(){
+  const stage = document.getElementById("meStage");
+  const wrap = document.getElementById("meWrap");
+  const sw = stage.clientWidth - 16, sh = stage.clientHeight - 16;
+  const s = Math.min(sw / ME.w, sh / ME.h);
+  wrap.style.width = Math.max(40, Math.floor(ME.w * s)) + "px";
+  wrap.style.height = Math.max(40, Math.floor(ME.h * s)) + "px";
+}
+function setMaskTool(tool){
+  ME.tool = tool;
+  document.querySelectorAll("#maskEditor [data-tool]").forEach(b=>b.classList.toggle("on", b.dataset.tool === tool));
+}
+function drawStroke(ctx, s){
+  ctx.save();
+  ctx.globalCompositeOperation = s.tool === "eraser" ? "destination-out" : "source-over";
+  ctx.strokeStyle = ctx.fillStyle = "#a855f7";        // purple: visible on most images
+  ctx.lineCap = ctx.lineJoin = "round";
+  ctx.lineWidth = s.size;
+  if(s.pts.length === 1){
+    ctx.beginPath(); ctx.arc(s.pts[0][0], s.pts[0][1], s.size / 2, 0, Math.PI * 2); ctx.fill();
+  }else{
+    ctx.beginPath(); ctx.moveTo(s.pts[0][0], s.pts[0][1]);
+    for(let i = 1; i < s.pts.length; i++) ctx.lineTo(s.pts[i][0], s.pts[i][1]);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+function redrawMask(){
+  const c = document.getElementById("meCanvas");
+  const ctx = c.getContext("2d");
+  ctx.clearRect(0, 0, c.width, c.height);
+  if(ME.base) ctx.drawImage(ME.base, 0, 0);
+  for(const s of ME.strokes) drawStroke(ctx, s);
+}
+function maskPoint(e){
+  const c = document.getElementById("meCanvas");
+  const r = c.getBoundingClientRect();
+  return [ (e.clientX - r.left) * ME.w / r.width, (e.clientY - r.top) * ME.h / r.height ];
+}
+function maskBrushPx(){
+  const c = document.getElementById("meCanvas");
+  const r = c.getBoundingClientRect();
+  return Number(document.getElementById("meSize").value || 40) * ME.w / Math.max(1, r.width);
+}
+function maskHasPaint(){
+  const c = document.getElementById("meCanvas");
+  const d = c.getContext("2d").getImageData(0, 0, c.width, c.height).data;
+  for(let i = 3; i < d.length; i += 16) if(d[i] > 8) return true;
+  return false;
+}
+async function finishMask(){
+  const done = ME.onDone;
+  if(!maskHasPaint()){ closeMaskEditor(); if(done) done(null); return; }
+  const m = document.createElement("canvas");
+  m.width = ME.w; m.height = ME.h;
+  const ctx = m.getContext("2d");
+  ctx.fillStyle = "#000"; ctx.fillRect(0, 0, ME.w, ME.h);
+  ctx.globalCompositeOperation = "destination-out";       // painted → fully transparent
+  ctx.drawImage(document.getElementById("meCanvas"), 0, 0);
+  const blob = await new Promise(res=>m.toBlob(res, "image/png"));
+  const id = blob ? await putBlob(blob) : null;
+  closeMaskEditor();
+  if(done) done(id);
+}
+function setupMaskEditor(){
+  const c = document.getElementById("meCanvas");
+  c.addEventListener("pointerdown", (e)=>{
+    e.preventDefault();
+    try{ c.setPointerCapture(e.pointerId); }catch{}
+    ME.cur = { tool: ME.tool, size: maskBrushPx(), pts: [maskPoint(e)] };
+    ME.strokes.push(ME.cur);
+    drawStroke(c.getContext("2d"), ME.cur);
+  });
+  c.addEventListener("pointermove", (e)=>{
+    if(!ME.cur) return;
+    const p = maskPoint(e);
+    const prev = ME.cur.pts[ME.cur.pts.length - 1];
+    ME.cur.pts.push(p);
+    drawStroke(c.getContext("2d"), { tool: ME.cur.tool, size: ME.cur.size, pts: [prev, p] });
+  });
+  const end = ()=>{ ME.cur = null; };
+  c.addEventListener("pointerup", end);
+  c.addEventListener("pointercancel", end);
+  document.querySelectorAll("#maskEditor [data-tool]").forEach(b=>b.addEventListener("click", ()=>setMaskTool(b.dataset.tool)));
+  document.getElementById("meUndo").onclick = ()=>{ ME.strokes.pop(); redrawMask(); };
+  document.getElementById("meClear").onclick = ()=>{ ME.strokes = []; ME.base = null; redrawMask(); };
+  document.getElementById("meCancel").onclick = closeMaskEditor;
+  document.getElementById("meClose").onclick = closeMaskEditor;
+  document.getElementById("meDone").onclick = finishMask;
+  window.addEventListener("resize", ()=>{ if(isMaskEditorOpen()) layoutMaskEditor(); });
+}
+
+
 function thinkingDoneLabel(ms){ return ms >= 500 ? t("thinking.done.for", (ms/1000).toFixed(1)) : t("thinking.done"); }
 
 /* ------------------------- Models / Totoro API ------------------------- */
@@ -2699,20 +3715,24 @@ const MODEL_FAMILIES = [
   ["kimi",     /kimi|moonshot/i,                            "Kimi"],
   ["glm",      /glm/i,                                      "GLM"],
 ];
-const FAMILY_ORDER = MODEL_FAMILIES.map(f=>f[0]).concat("other");
+const FAMILY_ORDER = MODEL_FAMILIES.map(f=>f[0]).concat("other", "image");
 function modelFamily(model){
   const m = String(model||"");
+  if(isImageModel(m)) return "image";
   for(const [id, re] of MODEL_FAMILIES) if(re.test(m)) return id;
   return "other";
 }
-function familyLabel(f){ const x = MODEL_FAMILIES.find(e=>e[0]===f); return x ? x[2] : t("model.family.other"); }
+function familyLabel(f){ const x = MODEL_FAMILIES.find(e=>e[0]===f); return x ? x[2] : t(f === "image" ? "model.family.image" : "model.family.other"); }
 function modelProtocol(model){
   const f = modelFamily(model);
   return f === "claude" ? "claude" : f === "gemini" ? "gemini" : "openai";
 }
 /* Models a chat UI can't use (embeddings, speech, image/video generation…) are filtered
    out, so picking one never ends in a confusing error. */
-const NON_CHAT_RE = /embed|whisper|tts|transcribe|moderation|dall-e|imagen|veo|sora|realtime|rerank|audio|computer-use|(^|[-_.\/])image([-_.]|$)/i;
+const NON_CHAT_RE = /embed|whisper|tts|transcribe|moderation|veo|sora|realtime|rerank|audio|computer-use/i;
+/* Image models are served through the OpenAI Images API (/v1/images/*). */
+const IMAGE_MODEL_RE = /dall-e|imagen|grok-imagine|(^|[-_.\/])image([-_.]|$)/i;
+function isImageModel(id){ return IMAGE_MODEL_RE.test(String(id||"")); }
 
 /* claude-opus-4-5 / claude-3-7-sonnet / claude-sonnet-5 → 4.5 / 3.7 / 5; null when unknown. */
 function claudeVersion(model){
@@ -2764,27 +3784,30 @@ function getAllModels(cfg){
       if(!m || !m.id || seen.has(m.id)) continue;
       seen.add(m.id);
       list.push({ id:`${k.id}::${m.id}`, keyId:k.id, model:m.id, name:m.name || prettyModelName(m.id),
-                  family:modelFamily(m.id), hidden:hidden.has(m.id) });
+                  family:modelFamily(m.id), hidden:hidden.has(m.id), kind: isImageModel(m.id) ? "image" : "chat" });
     }
   }
   return list;
 }
-function visibleModels(){ return getAllModels().filter(m=>!m.hidden); }
+function visibleModels(){ return getAllModels().filter(m=>!m.hidden && m.kind !== "image"); }
 function groupModels(list){
   const groups = new Map();
   for(const m of list){ if(!groups.has(m.family)) groups.set(m.family, []); groups.get(m.family).push(m); }
   return FAMILY_ORDER.filter(f=>groups.has(f)).map(f=>({ family:f, label:familyLabel(f), items:groups.get(f) }));
 }
-/* Default pick: the newest Claude Sonnet, then Opus / GPT-5 / Gemini Pro, then the first one. */
+/* Default pick: the newest Claude Sonnet, then Opus, the newest full GPT, Gemini Pro, then the first one. */
 function pickDefaultModel(list){
   if(!list.length) return null;
   const claudes = list.filter(m=>m.family==="claude")
     .sort((a,b)=>(claudeVersion(b.model)||0) - (claudeVersion(a.model)||0));
+  const gptVer = m => { const r = /^gpt-(\d+(?:\.\d+)?)/i.exec(m.model); return r ? parseFloat(r[1]) : 0; };
+  const gpts = list.filter(m=>m.family==="gpt" && gptVer(m) > 0 && !/nano|mini|codex/i.test(m.model))
+    .sort((a,b)=>gptVer(b) - gptVer(a));
   const prefs = [
     ()=>claudes.find(m=>/sonnet/i.test(m.model)),
     ()=>claudes.find(m=>/opus/i.test(m.model)),
     ()=>claudes[0],
-    ()=>list.find(m=>/^gpt-5/i.test(m.model) && !/nano|mini|codex/i.test(m.model)),
+    ()=>gpts[0],
     ()=>list.find(m=>m.family==="gpt" && !/nano|mini/i.test(m.model)),
     ()=>list.find(m=>/gemini.*pro/i.test(m.model)),
   ];
@@ -2890,10 +3913,12 @@ async function refreshAllModels(cfg){
 function updateModelChip(){
   const chip = document.getElementById("modelChip");
   if(!chip) return;
+  syncDrawChrome();
   const nameEl = document.getElementById("modelChipName");
   const dot = document.getElementById("modelChipDot");
   const keyed = hasKey();
-  const m = keyed ? selectedModel() : null;
+  const draw = isDrawMode();
+  const m = !keyed ? null : draw ? selectedImageModel() : selectedModel();
   chip.classList.toggle("need-key", !keyed);
   if(!keyed){ nameEl.textContent = t("model.needKey"); dot.className = "mdot"; chip.title = t("model.addKey"); }
   else if(!m){ nameEl.textContent = t("model.choose"); dot.className = "mdot"; chip.title = t("model.title"); }
@@ -2917,6 +3942,7 @@ function isModelMenuOpen(){ const m = document.getElementById("modelMenu"); retu
 let _modelMenuKb = -1;
 function openModelMenu(){
   if(!hasKey()){ openKeyModal(); return; }
+  closeImgOptMenu();
   const menu = document.getElementById("modelMenu");
   const search = document.getElementById("modelSearch");
   search.value = "";
@@ -2925,7 +3951,8 @@ function openModelMenu(){
   renderModelMenu();
   positionModelMenu();
   // Long lists are searchable right away; on phones don't pop the keyboard over the menu.
-  if(!isTouchUI() && visibleModels().length > 6) search.focus();
+  const count = isDrawMode() ? imageModels().length : visibleModels().length;
+  if(!isTouchUI() && count > 6) search.focus();
   else menu.querySelector(".model-item.active, .model-item")?.focus({preventScroll:true});
   menu.querySelector(".model-item.active")?.scrollIntoView({block:"nearest"});
 }
@@ -2935,21 +3962,14 @@ function closeModelMenu(){
   document.getElementById("modelChip").setAttribute("aria-expanded","false");
 }
 function positionModelMenu(){
-  const menu = document.getElementById("modelMenu");
-  const r = document.getElementById("modelChip").getBoundingClientRect();
-  const vw = window.innerWidth;
-  const narrow = vw < 520;                      // phones: full-width sheet above the composer
-  const w = narrow ? vw - 16 : Math.min(340, vw - 16);
-  menu.style.width = w + "px";
-  menu.style.left = (narrow ? 8 : Math.min(Math.max(8, r.left), vw - w - 8)) + "px";
-  menu.style.bottom = (window.innerHeight - r.top + 8) + "px";
-  document.getElementById("modelList").style.maxHeight = Math.max(160, Math.min(400, r.top - 130)) + "px";
+  positionPopup(document.getElementById("modelMenu"), document.getElementById("modelChip"), document.getElementById("modelList"), 340);
 }
 function renderModelMenu(){
   const listEl = document.getElementById("modelList");
   const q = (document.getElementById("modelSearch").value||"").trim().toLowerCase();
-  const all = visibleModels();
-  const cur = selectedModel();
+  const draw = isDrawMode();
+  const all = draw ? imageModels() : visibleModels();
+  const cur = draw ? selectedImageModel() : selectedModel();
   const shown = q ? all.filter(m=>m.name.toLowerCase().includes(q) || m.model.toLowerCase().includes(q)) : all;
   document.querySelector("#modelMenu .model-menu-search").style.display = all.length > 6 ? "" : "none";
   listEl.innerHTML = "";
@@ -2982,7 +4002,11 @@ function renderModelMenu(){
       b.innerHTML = `<span class="mdot f-${m.family}"></span><span class="mi-text"><span class="mi-name"></span><span class="mi-id"></span></span>${ICONS.check}`;
       b.querySelector(".mi-name").textContent = m.name;
       b.querySelector(".mi-id").textContent = m.model;
-      b.addEventListener("click", ()=>{ setChatModel(m.id); closeModelMenu(); focusInput(); });
+      b.addEventListener("click", ()=>{
+        if(draw){ state.general.imageModel = m.id; saveState(); updateModelChip(); }
+        else setChatModel(m.id);
+        closeModelMenu(); focusInput();
+      });
       listEl.appendChild(b);
     }
   }
@@ -3262,8 +4286,9 @@ function renderMessageEl(m, idx){
   div.innerHTML = `
     ${m.role==="assistant" ? '<div class="avatar"><img src="logo.png" alt="" /></div>' : `<div class="avatar">${escapeHtml(avatar)}</div>`}
     <div class="body">
-      <div class="role">${escapeHtml(roleLabel)}${m.role==="assistant" && m.model ? `<span class="model-tag" title="${escapeHtml(m.model)}">${escapeHtml(modelDisplayName(m.model))}</span>` : ""}${m.time?`<span class="msg-time" title="${escapeHtml(fmtMsgTimeFull(m.time))}">${escapeHtml(fmtMsgTime(m.time))}</span>`:""}</div>
+      <div class="role">${escapeHtml(roleLabel)}${m.role==="assistant" && m.model ? `<span class="model-tag${m.drawn ? " img" : ""}" title="${escapeHtml(m.model)}">${escapeHtml(modelDisplayName(m.model))}</span>` : ""}${m.imageModel ? `<span class="model-tag img" title="${escapeHtml(m.imageModel)}">${escapeHtml(modelDisplayName(m.imageModel))}</span>` : ""}${m.time?`<span class="msg-time" title="${escapeHtml(fmtMsgTimeFull(m.time))}">${escapeHtml(fmtMsgTime(m.time))}</span>`:""}</div>
       <div class="thinking-slot"></div>
+      <div class="gen-slot"></div>
       ${html}
       <div class="attachments"></div>
       ${m.meta?`<div class="meta">${escapeHtml(m.meta)}</div>`:""}
@@ -3277,6 +4302,7 @@ function renderMessageEl(m, idx){
     det.querySelector(".thinking-content").textContent = m.reasoning;
     slot.appendChild(det);
   }
+  if(m.role==="assistant") renderGenImages(div.querySelector(".gen-slot"), m);
   const contentEl = div.querySelector(".content");
   // virtualized content: messages with i18nKey re-translate at render time
   const liveContent = m.i18nKey ? t(m.i18nKey) : (m.content || "");
@@ -3290,7 +4316,7 @@ function renderMessageEl(m, idx){
       enhanceCodeBlocks(contentEl);
       renderMathIn(contentEl);
       enhanceMermaid(contentEl);
-    }else if(!m.thought && !m.reasoning){
+    }else if(!m.thought && !m.reasoning && !m.imageJob && !(m.images||[]).length){
       // 等待首个 token：显示三点跳动占位
       contentEl.innerHTML = `<span class="typing-dots" aria-label="${escapeHtml(t("waiting.aria"))}"><span></span><span></span><span></span></span>`;
     }
@@ -3299,8 +4325,13 @@ function renderMessageEl(m, idx){
   const attEl = div.querySelector(".attachments");
   for(const a of (m.attachments||[])){
     if(a.kind==="image"){
-      const img = document.createElement("img"); img.src = a.dataUrl; img.title = a.name||"image";
-      attEl.appendChild(img);
+      const wrap = document.createElement("span");
+      wrap.className = "att-img";
+      const img = document.createElement("img"); img.title = a.name||"image"; fillImg(img, a);
+      img.addEventListener("click", ()=>openImageViewer(a));
+      wrap.appendChild(img);
+      if(a.maskBlobId){ const b = document.createElement("span"); b.className = "mask-badge"; b.textContent = t("img.maskBadge"); wrap.appendChild(b); }
+      attEl.appendChild(wrap);
     }else{
       const c = document.createElement("div"); c.className="att";
       c.textContent = "📎 "+(a.name||"file")+ (a.text?` (${a.text.length} chars)`:"");
@@ -3343,6 +4374,22 @@ function renderMessageEl(m, idx){
 async function regenerateAssistant(idx){
   const chat = currentChat(); if(!chat) return;
   if(!hasKey()){ openKeyModal(); return; }
+  const old = chat.messages[idx];
+  if(old && old.drawn){
+    // A manual drawing: draw again from the same prompt and images.
+    const user = chat.messages[idx-1];
+    const im = selectedImageModel();
+    const target = im && resolveTarget(im.id);
+    if(!target || !user || user.role !== "user"){ openSettings("account"); return; }
+    if(isStreaming(chat.id)) return;
+    chat.messages = chat.messages.slice(0, idx);
+    const aiMsg = { role:"assistant", content:"", images:[], drawn:true, model:im.model, imageJob:{ status:"running", prompt:user.content, startedAt:Date.now() }, time:Date.now() };
+    chat.messages.push(aiMsg);
+    saveState(); renderMessages();
+    await runImageJob(chat, aiMsg, { target, prompt:user.content, refs:(user.attachments||[]).filter(a=>a.kind==="image").map(rec=>({ rec })),
+                                     size: state.general.imageSize, quality: state.general.imageQuality });
+    return;
+  }
   const sel = selectedModel();
   if(!sel){ openSettings("account"); return; }
   if(isStreaming(chat.id)){ abortStream(chat.id); await new Promise(r=>setTimeout(r,80)); }
@@ -3391,14 +4438,27 @@ function escapeHtml(s){ return (s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"
 function renderAttachStrip(){
   const s = document.getElementById("attachStrip");
   s.innerHTML = "";
+  const canEdit = imageModels().length > 0;
   pendingAttachments.forEach((a,i)=>{
-    const chip = document.createElement("div"); chip.className="attach-chip";
+    const chip = document.createElement("div"); chip.className = "attach-chip" + (a.maskBlobId ? " has-mask" : "");
     if(a.kind==="image"){
-      const img = document.createElement("img"); img.src=a.dataUrl; chip.appendChild(img);
+      const img = document.createElement("img"); fillImg(img, a); chip.appendChild(img);
     }else{
       const ico = document.createElement("span"); ico.textContent="📎"; chip.appendChild(ico);
     }
     const name = document.createElement("span"); name.className="name"; name.textContent=a.name||"file"; chip.appendChild(name);
+    if(a.maskBlobId){ const b = document.createElement("span"); b.className = "mask-badge"; b.textContent = t("img.maskBadge"); chip.appendChild(b); }
+    if(a.kind==="image" && canEdit){
+      // Paint the area to change → partial edit with the image model
+      const brush = document.createElement("span");
+      brush.className = "brush"; brush.innerHTML = ICONS.brush; brush.title = t("img.attachEdit");
+      brush.setAttribute("role", "button");
+      brush.addEventListener("click", ()=>openMaskEditor(a, (maskId)=>{
+        if(maskId) a.maskBlobId = maskId; else delete a.maskBlobId;
+        if(maskId && !isDrawMode()) setDrawMode(true); else renderAttachStrip();
+      }));
+      chip.appendChild(brush);
+    }
     const x = document.createElement("span"); x.className="x"; x.textContent="×"; x.addEventListener("click",()=>{ pendingAttachments.splice(i,1); renderAttachStrip(); });
     chip.appendChild(x);
     s.appendChild(chip);
@@ -3410,7 +4470,8 @@ function renderAttachStrip(){
 const IMAGE_PRESETS = {
   high:     { maxSide:1568, maxPixels:1568*1568, quality:0.85, detail:"high" },   // max detail
   standard: { maxSide:1024, maxPixels:1024*1024, quality:0.82, detail:"high" },   // near-lossless, fewer tokens
-  low:      { maxSide:640,  maxPixels:640*640,   quality:0.8,  detail:"low" }     // OpenAI low = flat 85 tokens
+  low:      { maxSide:640,  maxPixels:640*640,   quality:0.8,  detail:"low" },    // OpenAI low = flat 85 tokens
+  edit:     { maxSide:2048, maxPixels:2048*2048, quality:0.92, detail:"high" }    // images to edit (draw mode)
 };
 function imagePreset(){
   return IMAGE_PRESETS[state.general.imageDetail] || IMAGE_PRESETS.standard;
@@ -3425,8 +4486,7 @@ async function compressImage(file, preset){
       const im = new Image(); im.onload=()=>res(im); im.onerror=rej; im.src=url;
     });
     let {naturalWidth:w, naturalHeight:h} = img;
-    // Compute a single downscale factor honoring both the long-edge and total-pixel caps.
-    // Never upscale (factor capped at 1).
+    // One downscale factor honoring both the long-edge and total-pixel caps; never upscale.
     let scale = 1;
     if(Math.max(w,h) > maxSide) scale = maxSide / Math.max(w,h);
     if(w*h*scale*scale > maxPixels) scale = Math.min(scale, Math.sqrt(maxPixels/(w*h)));
@@ -3435,19 +4495,25 @@ async function compressImage(file, preset){
     const canvas = document.createElement("canvas");
     canvas.width = w; canvas.height = h;
     const ctx = canvas.getContext("2d");
+    // Images to edit keep their transparency (PNG); everything else becomes a compact JPEG.
+    const type = (preset === IMAGE_PRESETS.edit && /png|webp|gif/.test(file.type)) ? "image/png" : "image/jpeg";
+    if(type === "image/jpeg"){ ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h); }
     ctx.drawImage(img, 0, 0, w, h);
-    return canvas.toDataURL("image/jpeg", quality);
+    return await new Promise((res, rej)=>canvas.toBlob(b=>b ? res(b) : rej(new Error("encode failed")), type, quality));
   }finally{ URL.revokeObjectURL(url); }
 }
 
 async function handleFiles(files){
-  const preset = imagePreset();
+  const preset = isDrawMode() ? IMAGE_PRESETS.edit : imagePreset();
   for(const file of files){
     if(file.type.startsWith("image/")){
-      let dataUrl;
-      try{ dataUrl = await compressImage(file, preset); }
-      catch{ dataUrl = await fileToDataUrl(file); }
-      pendingAttachments.push({kind:"image", name:file.name, mime:"image/jpeg", dataUrl, detail:preset.detail});
+      let blob;
+      try{ blob = await compressImage(file, preset); }
+      catch{ blob = file; }
+      const { w, h } = await imageDims(blob);
+      const rec = { kind:"image", name:file.name, mime: blob.type || "image/jpeg", detail:preset.detail, w, h };
+      if(DB) rec.blobId = await putBlob(blob); else rec.dataUrl = await blobToDataUrl(blob);
+      pendingAttachments.push(rec);
     }else{
       let text = "";
       try{
@@ -3464,11 +4530,6 @@ async function handleFiles(files){
     }
   }
   renderAttachStrip();
-}
-function fileToDataUrl(file){
-  return new Promise((res,rej)=>{
-    const r = new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file);
-  });
 }
 async function extractPdf(file){
   const buf = await file.arrayBuffer();
@@ -3489,6 +4550,7 @@ async function sendMessage(){
   if(!text && pendingAttachments.length===0) return;
   // No key yet: pop the key modal; once the key works, this message goes out automatically.
   if(!hasKey()){ openKeyModal({ resend:true }); return; }
+  if(isDrawMode()) return sendDrawMessage(text);
   const sel = selectedModel();
   if(!sel){ openSettings("account"); return; }
   let chat = currentChat();
@@ -3505,11 +4567,7 @@ async function sendMessage(){
   pendingAttachments = []; renderAttachStrip();
   ta.value = ""; autoresize(ta);
 
-  // Auto title from the first message
-  const defaultTitles = new Set(["", "New chat", "新对话", t("chat.new.default")]);
-  if(chat.messages.filter(m=>m.role==="user").length===1 && defaultTitles.has(chat.title||"")){
-    chat.title = (text || userMsg.attachments[0]?.name || t("chat.new.default")).replace(/\s+/g," ").slice(0,30);
-  }
+  autoTitle(chat, text, userMsg);
 
   const aiMsg = { role:"assistant", content:"", reasoning:"", reasoningMs:0, thought:false, model:sel.model, time:Date.now() };
   chat.messages.push(aiMsg);
@@ -3518,6 +4576,37 @@ async function sendMessage(){
   await streamResponse(chat, aiMsg, sel.id);
   // Scenario chats: auto-fold older context into long-term memory when it grows too large.
   maybeAutoCompress(chat);
+}
+
+/* Name a chat after its first message. */
+function autoTitle(chat, text, userMsg){
+  const defaultTitles = new Set(["", "New chat", "新对话", t("chat.new.default")]);
+  if(chat.messages.filter(m=>m.role==="user").length===1 && defaultTitles.has(chat.title||"")){
+    chat.title = (text || userMsg.attachments[0]?.name || t("chat.new.default")).replace(/\s+/g," ").slice(0,30);
+  }
+}
+/* Draw mode: the message goes straight to the image model. Attached images are edited
+   (the first one's painted mask, if any, limits the change to that area). */
+async function sendDrawMessage(text){
+  const ta = document.getElementById("input");
+  if(!text){ flashStatus(t("draw.needPrompt"), 2500); ta.focus(); return; }
+  const im = selectedImageModel();
+  const target = im && resolveTarget(im.id);
+  if(!target){ openSettings("account"); return; }
+  let chat = currentChat();
+  if(!chat){ newChat(); chat = currentChat(); }
+  if(isStreaming(chat.id)) return;
+  const userMsg = { role:"user", content:text, attachments: pendingAttachments.slice(), time: Date.now() };
+  chat.messages.push(userMsg);
+  pendingAttachments = []; renderAttachStrip();
+  ta.value = ""; autoresize(ta);
+  autoTitle(chat, text, userMsg);
+  const aiMsg = { role:"assistant", content:"", images:[], drawn:true, model: im.model,
+                  imageJob:{ status:"running", prompt:text, startedAt:Date.now() }, time: Date.now() };
+  chat.messages.push(aiMsg);
+  saveState(); renderChatList(); renderMessages(); updateTopBar();
+  await runImageJob(chat, aiMsg, { target, prompt:text, refs: userMsg.attachments.filter(a=>a.kind==="image").map(rec=>({ rec })),
+                                   size: state.general.imageSize, quality: state.general.imageQuality });
 }
 
 // 解析内联 <think>/<thinking> 标签的流式状态机
@@ -3652,10 +4741,10 @@ async function streamResponse(chat, aiMsg, modelId){
     saveState(); if(state.activeChatId === chatId) renderMessages();
     return;
   }
-  // 本次请求是否携带了图片（用于在 400 时提示"该模型/服务可能不支持视觉"）
+  // Whether this request carries images (for the "model may not support vision" hint on 400)
   const _allowImg = computeAttachmentAllowSet(lastN(chat.messages, chat));
   const sentImages = [..._allowImg].some(m => (m.attachments||[]).some(a=>a.kind==="image"));
-  // 仅当此会话正处于前台时才允许操作 DOM —— 这是会话隔离的关键。
+  // Only the chat in the foreground may touch the DOM — this keeps chats isolated.
   const onActive = ()=> state.activeChatId === chatId;
   const ctrl = new AbortController();
   streamStart(chatId, ctrl, t("status.connecting"));
@@ -3664,7 +4753,9 @@ async function streamResponse(chat, aiMsg, modelId){
   let inReasoning = false;
   let firstChunkSeen = false;
   let firstChunkAt = 0;
-  let lastActivity = Date.now();   // 供超时看门狗判定停顿
+  let lastActivity = Date.now();   // for the stall watchdog
+  let roundBreak = false;          // a tool round just finished: separate the next text
+  let toolUsed = false;            // an image was (attempted to be) drawn: never retry the whole turn
 
   const markFirstChunk = ()=>{
     lastActivity = Date.now();
@@ -3672,12 +4763,16 @@ async function streamResponse(chat, aiMsg, modelId){
     firstChunkSeen = true; firstChunkAt = Date.now();
     streamPhase(chatId, t("status.generating"));
   };
+  const msgEl = ()=>{
+    const idx = chat.messages.indexOf(aiMsg);
+    return idx < 0 ? null : document.querySelectorAll(".messages .msg-wrap > *")[idx] || null;
+  };
 
   const refresh = ()=>{
-    if(!onActive()) return; // 后台会话：只累积数据，不触碰前台 DOM
-    const msgEl = document.querySelector(".messages .msg-wrap .msg:last-child");
-    if(!msgEl) return;
-    const body = msgEl.querySelector(".body");
+    if(!onActive()) return; // background chat: accumulate data only
+    const el = msgEl();
+    if(!el) return;
+    const body = el.querySelector(".body");
     let panel = body.querySelector(".thinking-panel");
     // Thinking indicator: shown whenever the model is thinking
     if(aiMsg.thought){
@@ -3687,7 +4782,6 @@ async function streamResponse(chat, aiMsg, modelId){
         panel.open = true;
         panel.innerHTML = `<summary><span class="dot"></span><span class="label">${escapeHtml(t("thinking.streaming"))}</span></summary><div class="thinking-content"></div>`;
         body.querySelector(".thinking-slot").appendChild(panel);
-        // 思考开始 → 清掉气泡里的"等待"占位
         const tdots = body.querySelector(".content .typing-dots");
         if(tdots) tdots.remove();
       }
@@ -3697,7 +4791,6 @@ async function streamResponse(chat, aiMsg, modelId){
         tc.scrollTop = tc.scrollHeight;
       }
     }
-    // 正文
     const contentEl = body.querySelector(".content");
     if(aiMsg.content){
       if(panel && panel.classList.contains("streaming")){
@@ -3707,40 +4800,48 @@ async function streamResponse(chat, aiMsg, modelId){
       }
       contentEl.innerHTML = renderMarkdown(aiMsg.content)+'<span class="cursor-blink"></span>';
       enhanceCodeBlocks(contentEl);
+    }else if(aiMsg.imageJob || (aiMsg.images||[]).length){
+      contentEl.innerHTML = "";
     }
-    // 只在用户未离开底部时自动跟随，否则只更新按钮的"新内容"提示
+    // Follow the stream only while the user hasn't scrolled away from the bottom
     maybeAutoScroll();
+  };
+  const refreshImages = ()=>{
+    if(!onActive()) return;
+    const el = msgEl();
+    const slot = el && el.querySelector(".gen-slot");
+    if(slot) renderGenImages(slot, aiMsg);
+    refresh();
   };
 
   // Return the assistant bubble to its "waiting" state before a retry, so a
   // failed attempt's partial output (if any) doesn't linger on screen.
   const resetAssistantBubble = ()=>{
     if(!onActive()) return;
-    const msgEl = document.querySelector(".messages .msg-wrap .msg:last-child");
-    if(!msgEl) return;
-    const panel = msgEl.querySelector(".thinking-panel");
+    const el = msgEl();
+    if(!el) return;
+    const panel = el.querySelector(".thinking-panel");
     if(panel) panel.remove();
-    const c = msgEl.querySelector(".content");
+    const c = el.querySelector(".content");
     if(c) c.innerHTML = `<span class="typing-dots" aria-label="${escapeHtml(t("waiting.aria"))}"><span></span><span></span><span></span></span>`;
   };
 
   const onReasoning = (delta)=>{
     if(!delta) return;
     markFirstChunk(); lastActivity = Date.now();
-    // 不管开关都标记"在思考"，让指示器始终可见，避免假死
     if(!inReasoning){ inReasoning = true; reasoningStart = Date.now(); aiMsg.thought = true; }
-    // 始终累积。隐藏思考时若不累积，一条"只有 CoT、没有正文"的响应会被判成空响应
-    // 并整轮重试（本地小模型在 <think> 里撞上 max_tokens 时很常见）。
+    // Always accumulate, so a thinking-only answer isn't mistaken for an empty one.
     aiMsg.reasoning += delta;
     refresh();
   };
   const onContent = (delta)=>{
     markFirstChunk(); lastActivity = Date.now();
     if(inReasoning){ aiMsg.reasoningMs = Date.now() - reasoningStart; inReasoning = false; }
+    if(roundBreak){ roundBreak = false; if(aiMsg.content.trim()) aiMsg.content += "\n\n"; }
     aiMsg.content += delta;
     refresh();
   };
-  // 解析器发现"孤儿 </think>"时回调：把已经当正文流出去的内容改判为思考。
+  // The parser found an orphan </think>: what streamed as content so far was thinking.
   const onOrphanThink = ()=>{
     if(!aiMsg.content) return;
     aiMsg.thought = true;
@@ -3748,15 +4849,59 @@ async function streamResponse(chat, aiMsg, modelId){
     aiMsg.reasoning = aiMsg.content + aiMsg.reasoning;
     aiMsg.content = "";
     if(onActive()){
-      const el = document.querySelector(".messages .msg-wrap .msg:last-child .content");
+      const el = msgEl()?.querySelector(".content");
       if(el) el.innerHTML = `<span class="typing-dots" aria-label="${escapeHtml(t("waiting.aria"))}"><span></span><span></span><span></span></span>`;
     }
     refresh();
   };
-
-  // Any bytes on the wire (SSE pings, empty thinking blocks) count as activity for the watchdog.
+  // Any bytes on the wire (SSE pings, keep-alives, empty thinking blocks) count as activity.
   const onActivity = ()=>{ lastActivity = Date.now(); };
-  const runOnce = (signal)=>callModel(target, chat, signal, {onContent, onReasoning, onOrphanThink, onActivity});
+  const onRoundBreak = ()=>{ roundBreak = true; };
+  // The chat model asked for an image (tool call): draw it with the image model.
+  const onToolCall = async (tc, signal)=>{
+    if(tc.name !== IMAGE_TOOL.name) return { status:"error", message:`Unknown tool: ${tc.name}` };
+    toolUsed = true;
+    if(inReasoning){ aiMsg.reasoningMs = Date.now() - reasoningStart; inReasoning = false; }
+    const args = tc.args || {};
+    const prompt = String(args.prompt || "").trim();
+    if(!prompt) return { status:"error", message:"The prompt argument is required." };
+    const im = selectedImageModel();
+    const itarget = im && resolveTarget(im.id);
+    if(!itarget) return { status:"error", message:"No image model is available for this API key." };
+    const index = chatImageIndex(chat);
+    const refs = (Array.isArray(args.reference_images) ? args.reference_images : []).map(l=>index.get(l)).filter(Boolean);
+    const size = IMAGE_SIZES.includes(args.size) && args.size !== "auto" ? args.size : (state.general.imageSize || "auto");
+    aiMsg.images = aiMsg.images || [];
+    aiMsg.imageError = "";
+    aiMsg.imageJob = { status:"running", prompt, startedAt: Date.now() };
+    streamPhase(chatId, t("img.status.drawing"));
+    refreshImages();
+    const keepAlive = setInterval(onActivity, 5000);   // drawing takes a while; don't trip the watchdog
+    try{
+      const imgs = await generateImages({ target: itarget, prompt, refs, size, quality: state.general.imageQuality, signal, onActivity,
+        onPartial: (b64, fmt)=>{ if(aiMsg.imageJob){ aiMsg.imageJob.preview = `data:image/${String(fmt||"png").replace("jpg","jpeg")};base64,${b64}`; refreshImages(); } } });
+      const added = [];
+      for(const img of imgs){ const rec = await storeGeneratedImage(img, { prompt, model: itarget.model }); aiMsg.images.push(rec); added.push(rec); }
+      aiMsg.imageModel = itarget.model;
+      const labels = added.map(r=>chatImageIndex(chat).byRec.get(r)).filter(Boolean);
+      return { status:"ok", image_ids: labels,
+               note:"The image is displayed to the user above your reply. Reply briefly in the user's language (one or two sentences); do not include the image or a link." };
+    }catch(e){
+      if(e.name === "AbortError") throw e;
+      aiMsg.imageError = e.message || String(e);
+      return { status:"error", message: e.message || String(e) };
+    }finally{
+      clearInterval(keepAlive);
+      aiMsg.imageJob = null;
+      streamPhase(chatId, t("status.generating"));
+      saveState();
+      refreshImages();
+    }
+  };
+  const tools = imageToolAvailable();
+  const runOnce = (signal)=>callModel(target, chat, signal,
+    { onContent, onReasoning, onOrphanThink, onActivity, onRoundBreak, onToolCall: (tc)=>onToolCall(tc, signal) },
+    { tools });
 
   // Watchdog: "connect" timeout until the first token, then a "stall" timeout between chunks.
   const CONNECT_MS = Math.max(5000, Number(state.general.connectTimeoutMs) || 90000);
@@ -3765,20 +4910,19 @@ async function streamResponse(chat, aiMsg, modelId){
   // A transient empty / network / 5xx response is retried once before it's surfaced.
   // Tunable via state.general.emptyRetries.
   const maxAttempts = Math.max(1, (Number(state.general.emptyRetries) || 1) + 1);
-  let lastErr = null;
   for(let attempt=1; attempt<=maxAttempts; attempt++){
     // Reset accumulation + indicators for this attempt.
     aiMsg.content = ""; aiMsg.reasoning = ""; aiMsg.thought = false; aiMsg.reasoningMs = 0;
-    aiMsg.error = false;
-    firstChunkSeen = false; firstChunkAt = 0; inReasoning = false;
+    aiMsg.error = false; aiMsg.images = []; aiMsg.imageJob = null; aiMsg.imageError = "";
+    firstChunkSeen = false; firstChunkAt = 0; inReasoning = false; roundBreak = false;
     if(attempt>1){
       resetAssistantBubble();
       streamPhase(chatId, t("status.retrying", attempt, maxAttempts));
-      await new Promise(r=>setTimeout(r, 400*(attempt-1))); // small linear backoff
+      await sleep(400*(attempt-1)); // small linear backoff
     }
 
-    // 每次尝试独立的中止信号：用户停止 or 看门狗超时都会触发它，
-    // 但共享的 ctrl（停止按钮）只创建一次、不会因超时而作废后续重试。
+    // Each attempt has its own abort signal: the stop button or the watchdog trigger it,
+    // but the shared ctrl (stop button) survives a watchdog timeout for the next retry.
     const attemptCtrl = new AbortController();
     const onUserAbort = ()=>attemptCtrl.abort();
     if(ctrl.signal.aborted) attemptCtrl.abort();
@@ -3796,18 +4940,17 @@ async function streamResponse(chat, aiMsg, modelId){
     catch(e){ err = e; }
     finally{ clearInterval(watch); ctrl.signal.removeEventListener("abort", onUserAbort); }
 
-    // 用户主动停止：中止且非超时触发
-    if(err && err.name==="AbortError" && !timedOut){ aiMsg.content += "\n\n" + t("msg.aborted"); aiMsg.error = true; break; }
-    // 看门狗触发的中止：转成可重试的超时错误
+    // User pressed stop (abort that wasn't the watchdog)
+    if(err && err.name==="AbortError" && !timedOut){ aiMsg.content += "\n\n" + t("msg.aborted"); aiMsg.error = !(aiMsg.images||[]).length; break; }
+    // Watchdog abort → retryable timeout error
     if(timedOut && err && err.name==="AbortError"){
       err = new Error(firstChunkSeen ? t("msg.timeout.stall") : t("msg.timeout.connect"));
       err.name = "TimeoutError";
     }
-    lastErr = err;
 
-    const gotSomething = aiMsg.content.trim()!=="" || aiMsg.reasoning.trim()!=="";
-    if(!err && gotSomething) break;                                  // good response
-    if(attempt < maxAttempts && isRetryableLLM(err)) continue;       // transient → retry
+    const gotSomething = aiMsg.content.trim()!=="" || aiMsg.reasoning.trim()!=="" || (aiMsg.images||[]).length > 0;
+    if(!err && gotSomething) break;                                               // good response
+    if(attempt < maxAttempts && isRetryableLLM(err) && !toolUsed) continue;       // transient → retry
 
     // Out of attempts, or a non-retryable error: surface the outcome.
     if(err){
@@ -3815,32 +4958,20 @@ async function streamResponse(chat, aiMsg, modelId){
       if(isContextOverflow(err)) hint = t("msg.error.contextMaybe") + "\n\n" + hint;
       if(err.status === 400 && sentImages) hint = t("msg.error.visionMaybe") + "\n\n" + hint;
       aiMsg.content += `\n\n> ❌ **${t("msg.error.label")}**: ${err.message}\n\n${hint}`;
-      aiMsg.error = true;
+      aiMsg.error = !(aiMsg.images||[]).length;
     }
     else if(!gotSomething){ aiMsg.content = t("msg.empty"); aiMsg.error = true; }
     break;
   }
+  aiMsg.imageJob = null;
   if(inReasoning){ aiMsg.reasoningMs = Date.now() - reasoningStart; }
-  // 只有思考、没有正文：明确说明，而不是留个空气泡或误报"空响应"。
-  if(!aiMsg.content.trim() && aiMsg.reasoning.trim()) aiMsg.content = t("msg.thinkingOnly");
-  // 最终渲染：仅当此会话在前台时更新 DOM；否则数据已存入 aiMsg，
-  // 切回该会话时由 renderMessages 重建。
+  // Thinking but no answer: say so, instead of an empty bubble or a misleading "empty response".
+  if(!aiMsg.content.trim() && aiMsg.reasoning.trim() && !(aiMsg.images||[]).length) aiMsg.content = t("msg.thinkingOnly");
+  // Final render (foreground only; a background chat is rebuilt by renderMessages on switch).
   if(onActive()){
-    const msgEl = document.querySelector(".messages .msg-wrap .msg:last-child");
-    if(msgEl){
-      const panel = msgEl.querySelector(".thinking-panel");
-      if(panel){
-        panel.classList.remove("streaming");
-        panel.open = false;
-        panel.querySelector(".label").textContent = thinkingDoneLabel(aiMsg.reasoningMs);
-        if(!aiMsg.reasoning) panel.remove();
-      }
-      const last = msgEl.querySelector(".content");
-      last.innerHTML = renderMarkdown(aiMsg.content);
-      enhanceCodeBlocks(last);
-      renderMathIn(last);
-      enhanceMermaid(last);
-    }
+    // Rebuild the finished message (role tags, images, collapsed thinking, final markdown).
+    const el = msgEl();
+    if(el){ el.replaceWith(renderMessageEl(aiMsg, chat.messages.indexOf(aiMsg))); maybeAutoScroll(); }
   }
   streamEnd(chatId);
   saveState();
@@ -3920,10 +5051,22 @@ async function postWithDegrade(url, headers, body, degrade, signal){
 }
 
 /* -------- Message building -------- */
-function assistantRequestContent(m){
+/* imgIndex (from chatImageIndex) is passed when the image tool is offered: images are then
+   labelled (img1, img2 …) in the text so the model can refer to them. */
+function imageNote(rec, imgIndex, role){
+  const label = imgIndex && imgIndex.byRec.get(rec);
+  if(role === "assistant"){
+    const p = String(rec.revisedPrompt || rec.prompt || "").replace(/\s+/g, " ").slice(0, 300);
+    return `[Generated image${label ? " " + label : ""}${p ? ": " + p : ""}]`;
+  }
+  return label ? `[Image ${label}${rec.maskBlobId ? " — the user painted the area to edit" : ""}]` : "";
+}
+function assistantRequestContent(m, imgIndex){
   // Error / aborted / empty bubbles are hints for humans — never feed them back to the model.
-  if(m?.error) return null;
-  const content = (m?.content ?? "").toString();
+  if(m?.error && !(m.images||[]).length) return null;
+  let content = m?.error ? "" : (m?.content ?? "").toString();
+  const notes = (m?.images||[]).map(r=>imageNote(r, imgIndex, "assistant"));
+  if(notes.length) content = [content.trim(), ...notes].filter(Boolean).join("\n\n");
   return content.trim() ? content : null;
 }
 /* Merge adjacent same-role messages. Dropping unusable assistant turns can leave two user
@@ -3937,32 +5080,45 @@ function mergeAdjacentRoles(list, mergeInto){
   }
   return out;
 }
-function attachmentText(m, attachments){
+function attachmentText(m, attachments, imgIndex){
   let txt = m.content || "";
   const files = attachments.filter(a=>a.kind==="file" && a.text);
   if(files.length) txt += "\n\n" + files.map(f=>`${t("attach.label", f.name)}\n${f.text}`).join("\n\n");
+  if(imgIndex){
+    const notes = (m.attachments||[]).filter(a=>a.kind==="image").map(a=>imageNote(a, imgIndex, "user")).filter(Boolean);
+    if(notes.length) txt += (txt ? "\n\n" : "") + notes.join(" ");
+  }
   return txt;
 }
 function imageParts(attachments){
-  return attachments.filter(a=>a.kind==="image" && a.dataUrl).map(img=>{
-    const [meta, b64] = img.dataUrl.split(",");
-    return { img, mime: (meta.match(/data:(.*?);/)||[])[1] || "image/png", b64 };
-  });
+  return attachments.filter(a=>a.kind==="image").map(img=>{
+    const dataUrl = attDataUrl(img);
+    if(!dataUrl) return null;
+    const [meta, b64] = dataUrl.split(",");
+    return { img, dataUrl, mime: (meta.match(/data:(.*?);/)||[])[1] || "image/png", b64 };
+  }).filter(Boolean);
 }
-function buildOpenAIMessages(chat){
+/* Load the image attachments this request will send, so the builders can read them sync. */
+async function hydrateRequestImages(chat){
+  const msgs = lastN(chat.messages, chat);
+  for(const m of computeAttachmentAllowSet(msgs)){
+    for(const a of (m.attachments||[])) if(a.kind==="image" && a.blobId && !a.dataUrl) await blobDataUrl(a.blobId);
+  }
+}
+function buildOpenAIMessages(chat, imgIndex){
   const out = [];
   const sys = effectiveSystemPrompt(chat);
   if(sys) out.push({role:"system", content:sys});
   const msgs = lastN(chat.messages, chat);
   const allow = computeAttachmentAllowSet(msgs);
   for(const m of msgs){
-    if(m.role==="assistant"){ const c = assistantRequestContent(m); if(c) out.push({role:"assistant", content:c}); continue; }
+    if(m.role==="assistant"){ const c = assistantRequestContent(m, imgIndex); if(c) out.push({role:"assistant", content:c}); continue; }
     const attachments = allow.has(m) ? (m.attachments||[]) : [];
-    const txt = attachmentText(m, attachments);
+    const txt = attachmentText(m, attachments, imgIndex);
     const images = imageParts(attachments);
     if(images.length){
       const parts = [{type:"text", text:txt}];
-      for(const {img} of images) parts.push({type:"image_url", image_url:{url:img.dataUrl, detail: img.detail || "auto"}});
+      for(const {img, dataUrl} of images) parts.push({type:"image_url", image_url:{url:dataUrl, detail: img.detail || "auto"}});
       out.push({role:"user", content:parts});
     }else{
       out.push({role:"user", content:txt});
@@ -3974,21 +5130,23 @@ function buildOpenAIMessages(chat){
     else a.content = [...parts(a.content), ...parts(b.content)];
   });
 }
+function safeJson(s){ try{ const v = JSON.parse(s || "{}"); return v && typeof v === "object" ? v : {}; }catch{ return {}; } }
 
 /* -------- OpenAI compatible (GPT / DeepSeek / Qwen / Grok …) -------- */
 function isOpenAIReasoningModel(model){
   const m = String(model||"").toLowerCase();
   return /^(o\d|gpt-5|gpt-[6-9]|codex)/.test(m) && !/chat-latest|gpt-5-chat/.test(m);
 }
-async function callOpenAICompat({base, key, model, chat, signal, onContent, onReasoning, onOrphanThink, onActivity, think}){
+async function callOpenAICompat({base, key, model, chat, signal, onContent, onReasoning, onOrphanThink, onActivity, think, tools, extra, imgIndex}){
   const url = base + "/v1/chat/completions";
-  const body = { model, messages: buildOpenAIMessages(chat), stream:true };
+  const body = { model, messages: buildOpenAIMessages(chat, imgIndex).concat(extra || []), stream:true };
   const reasoning = isOpenAIReasoningModel(model);
   const temp = userTemp();
   if(temp !== null && !reasoning) body.temperature = temp;
   const maxT = optNum(state.general.maxTokens);
   if(maxT) body[reasoning ? "max_completion_tokens" : "max_tokens"] = maxT;
   if(reasoning) body.reasoning_effort = think ? "high" : "low";
+  if(tools) body.tools = [{ type:"function", function: IMAGE_TOOL }];
   const headers = { "Content-Type":"application/json", "Authorization":"Bearer " + key };
   const OPTIONAL = ["reasoning_effort","temperature","max_tokens","max_completion_tokens"];
   const r = await postWithDegrade(url, headers, body, (b, msg)=>{
@@ -3999,7 +5157,8 @@ async function callOpenAICompat({base, key, model, chat, signal, onContent, onRe
     return null;
   }, signal);
   const parser = makeThinkTagParser(onReasoning, onContent, onOrphanThink);
-  let streamErr = null, finish = "";
+  let streamErr = null, finish = "", roundText = "";
+  const calls = [];
   await readSSE(r, (json)=>{
     // Some gateways report errors inside an HTTP 200 stream
     if(json.error){ streamErr = new Error(streamErrMessage(json.error)); return; }
@@ -4011,12 +5170,25 @@ async function callOpenAICompat({base, key, model, chat, signal, onContent, onRe
     else if(typeof delta.reasoning === "string" && delta.reasoning) onReasoning(delta.reasoning);
     else if(typeof delta.thinking === "string" && delta.thinking) onReasoning(delta.thinking);
     // Regular content, with inline <think>/<thinking> tags split out
-    if(delta.content) parser(delta.content);
+    if(delta.content){ roundText += delta.content; parser(delta.content); }
+    for(const tc of (delta.tool_calls || [])){
+      const i = Number.isInteger(tc.index) ? tc.index : calls.length;
+      const c = calls[i] || (calls[i] = { id:"", name:"", args:"" });
+      if(tc.id) c.id = tc.id;
+      if(tc.function?.name) c.name += tc.function.name;
+      if(tc.function?.arguments) c.args += tc.function.arguments;
+    }
   }, onActivity);
   parser.flush();
   if(streamErr) throw streamErr;
+  const toolCalls = calls.filter(c=>c && c.name).map((c, i)=>({ id: c.id || `call_${i}`, name: c.name, args: safeJson(c.args), raw: c.args || "{}" }));
+  if(toolCalls.length){
+    return { toolCalls, assistantTurn: { role:"assistant", content: roundText || null,
+      tool_calls: toolCalls.map(c=>({ id:c.id, type:"function", function:{ name:c.name, arguments:c.raw } })) } };
+  }
   if(finish === "length") onContent("\n\n> ⚠️ " + t("msg.truncated"));
   else if(finish === "content_filter") onContent("\n\n> ⚠️ " + t("msg.blocked"));
+  return null;
 }
 
 /* -------- Anthropic Messages (Claude) --------
@@ -4026,22 +5198,23 @@ async function callOpenAICompat({base, key, model, chat, signal, onContent, onRe
                          5.x always thinks (Opus 5.5 can't turn it off) — "off" means effort "low".
      Claude 3.7 – 4.5  : thinking {type:"enabled", budget_tokens}.
      Newer models reject a custom temperature.
-   Anything a particular model rejects is handled by postWithDegrade. */
+   Anything a particular model rejects is handled by postWithDegrade. With tool use, the
+   assistant turn is replayed verbatim (thinking blocks keep their signatures). */
 function claudeMaxTokens(ver){
   const user = optNum(state.general.maxTokens);
   if(user) return user;
   if(ver !== null && ver < 3.7) return 8192;
   return 32000;
 }
-function buildClaudeMessages(chat){
+function buildClaudeMessages(chat, imgIndex){
   const messages = [];
   const msgs = lastN(chat.messages, chat);
   const allow = computeAttachmentAllowSet(msgs);
   for(const m of msgs){
-    if(m.role==="assistant"){ const c = assistantRequestContent(m); if(c) messages.push({role:"assistant", content:c}); continue; }
+    if(m.role==="assistant"){ const c = assistantRequestContent(m, imgIndex); if(c) messages.push({role:"assistant", content:c}); continue; }
     const attachments = allow.has(m) ? (m.attachments||[]) : [];
     const blocks = imageParts(attachments).map(({mime, b64})=>({type:"image", source:{type:"base64", media_type:mime, data:b64}}));
-    const txt = attachmentText(m, attachments);
+    const txt = attachmentText(m, attachments, imgIndex);
     if(txt) blocks.push({type:"text", text:txt});
     if(!blocks.length) blocks.push({type:"text", text:"…"});
     messages.push({role:"user", content:blocks});
@@ -4055,12 +5228,12 @@ function buildClaudeMessages(chat){
   while(merged.length && merged[merged.length-1].role === "assistant") merged.pop();
   return merged;
 }
-async function callClaude({base, key, model, chat, signal, onContent, onReasoning, onActivity, think}){
+async function callClaude({base, key, model, chat, signal, onContent, onReasoning, onActivity, think, tools, extra, imgIndex}){
   const url = base + "/v1/messages";
   const ver = claudeVersion(model);
   const modern = ver === null || ver >= 4.6;         // adaptive thinking + effort
   const alwaysThinks = ver === null || ver >= 5;     // 5.x thinks by default
-  const body = { model, messages: buildClaudeMessages(chat), stream:true, max_tokens: claudeMaxTokens(ver) };
+  const body = { model, messages: buildClaudeMessages(chat, imgIndex).concat(extra || []), stream:true, max_tokens: claudeMaxTokens(ver) };
   const sys = effectiveSystemPrompt(chat);
   if(sys) body.system = sys;
   if(think){
@@ -4075,6 +5248,7 @@ async function callClaude({base, key, model, chat, signal, onContent, onReasonin
     body.thinking = {type:"adaptive", display:"summarized"};
     body.output_config = {effort:"low"};
   }
+  if(tools) body.tools = [{ name: IMAGE_TOOL.name, description: IMAGE_TOOL.description, input_schema: IMAGE_TOOL.parameters }];
   const temp = userTemp();
   if(temp !== null && !body.thinking) body.temperature = temp;
   const headers = {
@@ -4107,32 +5281,56 @@ async function callClaude({base, key, model, chat, signal, onContent, onReasonin
     return null;
   }, signal);
   let streamErr = null, stopReason = "";
+  const blocks = [];                                  // content blocks by index, for tool-use replay
+  const blockAt = (i, type)=>blocks[i] || (blocks[i] = type === "thinking" ? {type:"thinking", thinking:"", signature:""}
+                                                  : type === "tool_use" ? {type:"tool_use", id:"", name:"", input:{}, _json:""}
+                                                  : {type:"text", text:""});
   await readSSE(r, (json)=>{
     // Anthropic sends `event: error` with data {type:"error", error:{...}} mid-stream
     if(json.type === "error"){ streamErr = new Error(streamErrMessage(json.error)); return; }
     if(json.type === "message_delta" && json.delta?.stop_reason) stopReason = json.delta.stop_reason;
+    if(json.type === "content_block_start"){
+      const cb = json.content_block || {};
+      if(cb.type === "tool_use") blocks[json.index] = { type:"tool_use", id: cb.id, name: cb.name, input:{}, _json:"" };
+      else if(cb.type === "thinking") blocks[json.index] = { type:"thinking", thinking: cb.thinking || "", signature: cb.signature || "" };
+      else if(cb.type === "redacted_thinking") blocks[json.index] = { type:"redacted_thinking", data: cb.data };
+      else if(cb.type === "text") blocks[json.index] = { type:"text", text: cb.text || "" };
+    }
     if(json.type === "content_block_delta"){
       const d = json.delta || {};
-      if(d.type === "text_delta" && d.text) onContent(d.text);
-      else if(d.type === "thinking_delta" && d.thinking) onReasoning(d.thinking);
+      if(d.type === "text_delta" && d.text){ blockAt(json.index, "text").text += d.text; onContent(d.text); }
+      else if(d.type === "thinking_delta" && d.thinking){ blockAt(json.index, "thinking").thinking += d.thinking; onReasoning(d.thinking); }
+      else if(d.type === "signature_delta" && d.signature){ blockAt(json.index, "thinking").signature += d.signature; }
+      else if(d.type === "input_json_delta"){ blockAt(json.index, "tool_use")._json += d.partial_json || ""; }
+    }
+    if(json.type === "content_block_stop"){
+      const b = blocks[json.index];
+      if(b && b.type === "tool_use") b.input = safeJson(b._json);
     }
   }, onActivity);
   if(streamErr) throw streamErr;
+  const uses = blocks.filter(b=>b && b.type === "tool_use");
+  if(uses.length){
+    uses.forEach(b=>{ if(b._json) b.input = safeJson(b._json); });
+    const content = blocks.filter(b=>b && !(b.type === "text" && !b.text)).map(b=>{ const { _json, ...rest } = b; return rest; });
+    return { toolCalls: uses.map(b=>({ id:b.id, name:b.name, args:b.input })), assistantTurn: { role:"assistant", content } };
+  }
   if(stopReason === "max_tokens") onContent("\n\n> ⚠️ " + t("msg.truncated"));
   else if(stopReason === "refusal") onContent("\n\n> ⚠️ " + t("msg.blocked"));
+  return null;
 }
 
 /* -------- Google Gemini (native) -------- */
-async function callGemini({base, key, model, chat, signal, onContent, onReasoning, onActivity, think}){
+async function callGemini({base, key, model, chat, signal, onContent, onReasoning, onActivity, think, tools, extra, imgIndex}){
   const url = `${base}/v1beta/models/${encodeURIComponent(model)}:streamGenerateContent?alt=sse`;
   const contents = [];
   const msgs = lastN(chat.messages, chat);
   const allow = computeAttachmentAllowSet(msgs);
   for(const m of msgs){
-    if(m.role==="assistant"){ const c = assistantRequestContent(m); if(c) contents.push({role:"model", parts:[{text:c}]}); continue; }
+    if(m.role==="assistant"){ const c = assistantRequestContent(m, imgIndex); if(c) contents.push({role:"model", parts:[{text:c}]}); continue; }
     const attachments = allow.has(m) ? (m.attachments||[]) : [];
     const parts = [];
-    const txt = attachmentText(m, attachments);
+    const txt = attachmentText(m, attachments, imgIndex);
     if(txt) parts.push({text:txt});
     // Gemini REST wants camelCase
     for(const {mime, b64} of imageParts(attachments)) parts.push({inlineData:{mimeType:mime, data:b64}});
@@ -4146,9 +5344,10 @@ async function callGemini({base, key, model, chat, signal, onContent, onReasonin
   // (2.5 Pro and newer can't switch thinking off anyway).
   if(think) genCfg.thinkingConfig = { includeThoughts: true };
   const body = {
-    contents: mergeAdjacentRoles(contents, (a,b)=>{ a.parts = [...(a.parts||[]), ...(b.parts||[])]; }),
+    contents: mergeAdjacentRoles(contents, (a,b)=>{ a.parts = [...(a.parts||[]), ...(b.parts||[])]; }).concat(extra || []),
     generationConfig: genCfg
   };
+  if(tools) body.tools = [{ functionDeclarations: [{ name: IMAGE_TOOL.name, description: IMAGE_TOOL.description, parameters: IMAGE_TOOL.parameters }] }];
   const sys = effectiveSystemPrompt(chat);
   if(sys) body.systemInstruction = {parts:[{text:sys}]};
   const headers = { "Content-Type":"application/json", "x-goog-api-key": key };
@@ -4159,6 +5358,7 @@ async function callGemini({base, key, model, chat, signal, onContent, onReasonin
     return null;
   }, signal);
   let streamErr = null, finish = "";
+  const modelParts = [], calls = [];
   await readSSE(r, (json)=>{
     if(json.error){ streamErr = new Error(streamErrMessage(json.error)); return; }
     // Prompt blocked by safety: no candidates, only promptFeedback.blockReason
@@ -4167,26 +5367,64 @@ async function callGemini({base, key, model, chat, signal, onContent, onReasonin
     const cand = json.candidates?.[0];
     if(cand?.finishReason && cand.finishReason !== "STOP") finish = cand.finishReason;
     for(const p of (cand?.content?.parts || [])){
+      // Keep the model turn verbatim for tool-call replay (thought signatures included);
+      // consecutive plain text chunks are merged.
+      const prev = modelParts[modelParts.length - 1];
+      if(p.text !== undefined && !p.thought && !p.thoughtSignature && prev && prev.text !== undefined && !prev.thought && !prev.thoughtSignature && !prev.functionCall) prev.text += p.text;
+      else modelParts.push({ ...p });
+      if(p.functionCall) calls.push(p.functionCall);
       if(!p.text) continue;
       if(p.thought) onReasoning(p.text);
       else onContent(p.text);
     }
   }, onActivity);
   if(streamErr) throw streamErr;
+  if(calls.length){
+    return { toolCalls: calls.map((fc, i)=>({ id: fc.id || "", name: fc.name, args: fc.args || {} })),
+             assistantTurn: { role:"model", parts: modelParts } };
+  }
   if(finish === "MAX_TOKENS") onContent("\n\n> ⚠️ " + t("msg.truncated"));
   else if(finish === "SAFETY" || finish === "RECITATION") onContent("\n\n> ⚠️ " + t("msg.blocked") + " (" + finish + ")");
+  return null;
 }
 
-/* Dispatch by protocol. If the gateway has no native endpoint for it (404), retry once
+/* Tool results in each protocol's own format. */
+function toolResultTurns(protocol, calls, results){
+  if(protocol === "claude"){
+    return [{ role:"user", content: calls.map((c, i)=>({ type:"tool_result", tool_use_id:c.id, content: JSON.stringify(results[i]) })) }];
+  }
+  if(protocol === "gemini"){
+    return [{ role:"user", parts: calls.map((c, i)=>({ functionResponse: { ...(c.id ? { id:c.id } : {}), name:c.name, response: results[i] } })) }];
+  }
+  return calls.map((c, i)=>({ role:"tool", tool_call_id:c.id, content: JSON.stringify(results[i]) }));
+}
+/* Dispatch by protocol and run the tool loop: when the model calls a tool, execute it via
+   handlers.onToolCall, append the call + result, and ask the model again (max 3 rounds).
+   If the gateway has no native endpoint for the protocol (404 on the first round), retry
    through the OpenAI-compatible endpoint. */
 async function callModel(target, chat, signal, handlers, opts){
-  const args = { ...target, chat, signal, ...handlers, think: wantThink(opts) };
-  if(target.protocol === "openai") return callOpenAICompat(args);
-  try{
-    return target.protocol === "claude" ? await callClaude(args) : await callGemini(args);
-  }catch(e){
-    if(e && e.status === 404) return callOpenAICompat(args);
-    throw e;
+  await hydrateRequestImages(chat);
+  const think = wantThink(opts);
+  const tools = !!(opts && opts.tools && handlers.onToolCall);
+  const imgIndex = tools ? chatImageIndex(chat) : null;
+  const extra = [];
+  let protocol = target.protocol;
+  for(let round = 0; round < 4; round++){
+    const args = { ...target, chat, signal, ...handlers, think, tools, extra, imgIndex };
+    let res;
+    if(protocol === "openai") res = await callOpenAICompat(args);
+    else{
+      try{ res = protocol === "claude" ? await callClaude(args) : await callGemini(args); }
+      catch(e){
+        if(e && e.status === 404 && round === 0){ protocol = "openai"; res = await callOpenAICompat(args); }
+        else throw e;
+      }
+    }
+    if(!res || !res.toolCalls || !res.toolCalls.length || round === 3) return;
+    const results = [];
+    for(const tc of res.toolCalls) results.push(await handlers.onToolCall(tc));
+    extra.push(res.assistantTurn, ...toolResultTurns(protocol, res.toolCalls, results));
+    handlers.onRoundBreak?.();
   }
 }
 
@@ -4320,6 +5558,8 @@ function openSettings(tab){
   document.getElementById("cfg_scenario_autocompress").checked = g.scenarioAutoCompress !== false;
   set("cfg_scenario_compress_chars", g.scenarioCompressChars || 4000);
   set("cfg_scenario_memory_max_chars", g.scenarioMemoryMaxChars || 800);
+  document.getElementById("cfg_auto_image").checked = g.autoImage !== false;
+  updateStorageUsage();
   document.getElementById("settingsStatus").textContent = "";
   setSettingsTab(tab || "account");
   document.getElementById("settingsModal").classList.remove("hide");
@@ -4459,13 +5699,38 @@ async function saveSettings(){
   g.scenarioAutoCompress = document.getElementById("cfg_scenario_autocompress").checked;
   g.scenarioCompressChars = Math.max(500, Number(str("cfg_scenario_compress_chars")) || 4000);
   g.scenarioMemoryMaxChars = Math.max(200, Number(str("cfg_scenario_memory_max_chars")) || 800);
+  g.autoImage = document.getElementById("cfg_auto_image").checked;
   d.keys.forEach(k=>delete k.checking);
   state.config = d;
   // The selected model may have been removed or hidden — fall back to the recommended one.
   const list = visibleModels();
   if(!findModel(state.lastModel, list)){ const m = pickDefaultModel(list); state.lastModel = m ? m.id : ""; }
-  saveState(); updateModelChip(); renderChatList(); renderMessages(); updateTopBar();
+  saveState(); updateModelChip(); renderChatList(); renderMessages(); updateTopBar(); renderAttachStrip();
   closeSettings();
+}
+async function updateStorageUsage(){
+  const el = document.getElementById("storageUsage");
+  if(!el) return;
+  let used = "";
+  try{
+    const est = await navigator.storage?.estimate?.();
+    if(est && est.usage != null) used = fmtBytes(est.usage);
+  }catch{}
+  el.textContent = t("storage.usage", state.chats.length, allImageRecords().length, used || "—") + (DB ? "" : " · " + t("storage.fallback"));
+}
+async function clearAllImages(){
+  const n = allImageRecords().length;
+  const status = document.getElementById("settingsStatus");
+  if(!n){ status.textContent = t("storage.none"); return; }
+  if(!confirm(t("storage.clearImages.confirm", n))) return;
+  for(const c of state.chats) for(const m of (c.messages||[])){
+    if((m.images||[]).length){ m.images = []; if(!(m.content||"").trim()) m.content = t("storage.imageRemoved"); }
+    if(m.attachments) m.attachments = m.attachments.filter(a=>a.kind !== "image");
+  }
+  saveState(); await flushChats();
+  await gcBlobs(-1000);                 // every unreferenced blob, however new
+  renderMessages(); updateStorageUsage();
+  status.textContent = t("storage.cleared", n);
 }
 
 /* Mobile sidebar */
@@ -4473,28 +5738,51 @@ function openMobileSidebar(){ document.getElementById("sidebar").classList.add("
 function closeMobileSidebar(){ document.getElementById("sidebar").classList.remove("open"); document.getElementById("mobileMask").classList.remove("show"); }
 
 /* Export / Import */
-function exportData(){
-  const blob = new Blob([JSON.stringify(state,null,2)], {type:"application/json"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a"); a.href=url; a.download = `totoro-chat-${new Date().toISOString().slice(0,10)}.json`; a.click();
-  URL.revokeObjectURL(url);
+async function exportData(){
+  await flushChats();
+  const recs = allImageRecords().filter(r=>r.blobId || r.maskBlobId);
+  const withImages = recs.length > 0 && confirm(t("export.withImages", recs.length));
+  const data = { app:"totoro-chat", version:2, exportedAt: new Date().toISOString(), ...metaForStorage(), chats: state.chats };
+  if(withImages){
+    data.blobs = {};
+    for(const r of recs) for(const id of [r.blobId, r.maskBlobId]){
+      if(id && !data.blobs[id]){ const b = await getBlob(id); if(b) data.blobs[id] = await blobToDataUrl(b); }
+    }
+  }
+  triggerDownload(new Blob([JSON.stringify(data)], {type:"application/json"}), `totoro-chat-${new Date().toISOString().slice(0,10)}.json`);
 }
 function importData(file){
   const r = new FileReader();
-  r.onload = ()=>{
+  r.onload = async ()=>{
     try{
       const s = JSON.parse(r.result);
-      if(!s.chats) throw new Error(t("error.invalidFile"));
+      if(!Array.isArray(s.chats)) throw new Error(t("error.invalidFile"));
+      for(const [id, dataUrl] of Object.entries(s.blobs || {})){
+        try{ await putBlob(await dataUrlToBlob(dataUrl), id); }catch{}
+      }
+      const incoming = s.chats.filter(c=>c && c.id);
+      for(const c of incoming) await externalizeChatImages(c);
       if(confirm(t("confirm.import"))){
-        state = normalizeState(s);
+        const { blobs, ...meta } = s;
+        state = normalizeState({ ...meta, chats: incoming });
       }else{
-        state.chats = (s.chats||[]).concat(state.chats);
+        const have = new Set(state.chats.map(c=>c.id));
+        state.chats = incoming.filter(c=>!have.has(c.id)).concat(state.chats);
       }
       if(!currentChat()) state.activeChatId = state.chats[0]?.id || null;
-      saveState(); applyTheme(); applyI18n(); renderChatList(); renderMessages(); updateTopBar(); updateThinkChip();
+      saveState(); await flushChats();
+      applyTheme(); applyI18n(); applySidebar(); renderChatList(); renderMessages(); updateTopBar(); updateThinkChip(); updateDrawUI();
+      updateStorageUsage();
     }catch(e){ alert(t("alert.importFailed")+e.message); }
   };
   r.readAsText(file);
+}
+
+/* Collapsible sidebar (desktop); on phones the sidebar is an off-canvas drawer. */
+function applySidebar(){ document.querySelector(".app")?.classList.toggle("sidebar-collapsed", !!state.general.sidebarCollapsed); }
+function toggleSidebar(force){
+  state.general.sidebarCollapsed = typeof force === "boolean" ? force : !state.general.sidebarCollapsed;
+  saveState(); applySidebar();
 }
 
 /* ------------------------- Notepad ------------------------- */
@@ -4991,17 +6279,19 @@ function updateThinkChip(){
   el.setAttribute("aria-pressed", on ? "true" : "false");
 }
 
-function init(){
+async function init(){
   const $ = (id)=>document.getElementById(id);
+  await loadPersisted();
   applyTheme();
   applyI18n();
+  applySidebar();
   applyStandaloneClass();
   setupPWA();
   setupServiceWorker();
   setupPullToRefresh();
   if(!currentChat()) state.activeChatId = state.chats[0]?.id || null;
   if(!state.activeChatId) newChat();
-  renderChatList(); renderMessages(); updateTopBar(); updateThinkChip(); syncComposerUI();
+  renderChatList(); renderMessages(); updateTopBar(); updateThinkChip(); updateDrawUI(); syncComposerUI();
 
   $("newChatBtn").onclick = newChat;
   $("topNewChatBtn").onclick = newChat;
@@ -5073,6 +6363,7 @@ function init(){
   $("manualModelAdd").onclick = addManualModel;
   $("manualModelInput").addEventListener("keydown", (e)=>{ if(e.key==="Enter"){ e.preventDefault(); addManualModel(); } });
   $("exportBtn").onclick = exportData;
+  $("clearImagesBtn").onclick = clearAllImages;
   $("importBtn").onclick = ()=>$("importFileInput").click();
   $("importFileInput").onchange = (e)=>{ const f = e.target.files[0]; if(f) importData(f); e.target.value=""; };
 
@@ -5089,10 +6380,33 @@ function init(){
   $("modelSearch").addEventListener("input", renderModelMenu);
   $("modelMenu").addEventListener("keydown", modelMenuKeydown);
   $("modelManageBtn").onclick = ()=>{ closeModelMenu(); openSettings("account"); };
-  const outsideMenu = (e)=>{ if(isModelMenuOpen() && !e.target.closest("#modelPick")) closeModelMenu(); };
+  const outsideMenu = (e)=>{
+    if(isModelMenuOpen() && !e.target.closest("#modelPick")) closeModelMenu();
+    if(isImgOptOpen() && !e.target.closest("#imgOptPick")) closeImgOptMenu();
+  };
   document.addEventListener("mousedown", outsideMenu);
   document.addEventListener("touchstart", outsideMenu, {passive:true});
-  window.addEventListener("resize", ()=>{ if(isModelMenuOpen()) positionModelMenu(); });
+  window.addEventListener("resize", ()=>{
+    if(isModelMenuOpen()) positionModelMenu();
+    if(isImgOptOpen()) positionPopup($("imgOptMenu"), $("imgOptChip"), $("imgOptMenu").querySelector(".model-list"), 300);
+  });
+
+  // Drawing: composer switch, size/quality menu, image viewer, mask editor
+  $("drawChip").onclick = ()=>{ setDrawMode(!isDrawMode()); flashStatus(t(isDrawMode() ? "draw.on" : "draw.off")); focusInput(); };
+  $("imgOptChip").onclick = (e)=>{ e.stopPropagation(); if(isImgOptOpen()) closeImgOptMenu(); else openImgOptMenu(); };
+  $("imgViewer").addEventListener("click", async (e)=>{
+    const act = e.target.closest("[data-act]")?.dataset.act;
+    const rec = _viewerRec;
+    if(!act){ if(e.target.id === "imgViewer" || e.target.id === "ivStage") closeImageViewer(); return; }
+    if(act === "close") closeImageViewer();
+    else if(act === "download" && rec) downloadImage(rec);
+    else if(act === "edit" && rec) editImageRegion(rec);
+    else if(act === "ref" && rec) useImageAsReference(rec);
+    else if(act === "copy" && rec){
+      try{ await navigator.clipboard.writeText(rec.revisedPrompt || rec.prompt || ""); flashStatus(t("img.copied")); }catch{}
+    }
+  });
+  setupMaskEditor();
 
   // Deep think toggle
   $("thinkChip").onclick = ()=>{
@@ -5101,7 +6415,8 @@ function init(){
     flashStatus(t(state.general.deepThink ? "think.on" : "think.off"));
   };
   $("clearCtxBtn").onclick = ()=>clearContext();
-  $("menuBtn").onclick = openMobileSidebar;
+  $("menuBtn").onclick = ()=>{ if(isTouchUI()) openMobileSidebar(); else toggleSidebar(false); };
+  $("collapseBtn").onclick = ()=>toggleSidebar(true);
   $("mobileMask").onclick = closeMobileSidebar;
 
   const ta = $("input");
@@ -5149,6 +6464,9 @@ function init(){
   // Esc closes the topmost layer
   window.addEventListener("keydown",(e)=>{
     if(e.key!=="Escape") return;
+    if(isMaskEditorOpen()){ closeMaskEditor(); return; }
+    if(isImageViewerOpen()){ closeImageViewer(); return; }
+    if(isImgOptOpen()){ closeImgOptMenu(); return; }
     if(isModelMenuOpen()){ closeModelMenu(); return; }
     if(isKeyModalOpen()){ closeKeyModal(); return; }
     if(isSettingsOpen()){ closeSettings(); return; }

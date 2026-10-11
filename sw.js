@@ -11,7 +11,7 @@
  *
  * Bump VERSION to force-refresh the cache after shipping a new index.html.
  */
-const VERSION = "totoro-chat-v1";
+const VERSION = "totoro-chat-v2";
 const APP_SHELL = "./"; // resolves to the directory index = index.html
 // Best-effort precache. Each is added individually so one 404 (e.g. icons not
 // deployed) doesn't abort the whole install.
