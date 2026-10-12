@@ -92,10 +92,74 @@ test('the current turn is always kept, so a huge last message leaves little to f
   const plan = ctx.compressionPlan(chat, 20);
   assert.equal(plan.start, 2);
   assert(plan.foldTokens < plan.total * 0.1);
-  // One turn later the paste is no longer the current turn and gets folded.
+  // One turn later the paste is no longer the current turn: it is folded, its end carried.
   chat.messages.push({ role: 'user', content: 'what is slow?' }, { role: 'assistant', content: 'regex' });
   const next = ctx.compressionPlan(chat, 20);
-  assert.equal(next.fold.length, 4);
+  assert.equal(next.fold.length, 3);
+  assert.equal(next.carry.role, 'user');
+});
+
+test('a long message right before the kept part is folded, but its end stays word for word', () => {
+  const ctx = fixture();
+  const paste = 'HEAD\n' + text(400, 'paste') + '\nTAIL-LINE';
+  const chat = { messages: [
+    { role: 'user', content: 'hi' }, { role: 'assistant', content: 'hello' },
+    { role: 'user', content: paste }, { role: 'assistant', content: 'ok, the regex is slow' },
+    { role: 'user', content: 'what is slow?' }, { role: 'assistant', content: 'regex' },
+  ] };
+  const plan = ctx.compressionPlan(chat, 20);
+  assert.equal(plan.start, 3);                        // the reply to the paste stays
+  assert.equal(plan.fold.length, 3);                  // the paste itself goes to memory
+  assert.equal(plan.carry.role, 'user');
+  assert(paste.endsWith(plan.carry.text) && plan.carry.text.endsWith('TAIL-LINE') && !plan.carry.text.includes('HEAD'));
+  assert(plan.keptTokens <= plan.total * 0.2 + 1 && plan.keptTokens >= plan.total * 0.15, `${plan.keptTokens} / ${plan.total}`);
+  // After the fold the window opens with the carried end, then the kept turns.
+  chat.messages.splice(3, 0, { role: 'divider', memory: true, carry: plan.carry });
+  const win = ctx.windowMessages(chat);
+  assert.deepEqual(Array.from(win, m => m.role), ['user', 'assistant', 'user', 'assistant']);
+  assert(win[0].carried && win[0].content.startsWith('[The beginning of this message') && win[0].content.endsWith('TAIL-LINE'));
+  assert.equal(ctx.windowMessages(chat)[0], win[0]);  // built once per divider (token counts stay cached)
+  // A plain ✂ divider carries nothing.
+  chat.messages[3] = { role: 'divider', carry: plan.carry };
+  assert.equal(ctx.windowMessages(chat).length, 3);
+});
+
+test('a long reply is carried after a short note, so the window still opens with a user turn', () => {
+  const ctx = fixture();
+  const chat = { messages: [
+    { role: 'user', content: 'explain the parser' }, { role: 'assistant', content: text(400, 'reply') + ' END' },
+    { role: 'user', content: 'and the cache?' }, { role: 'assistant', content: 'it is cold' },
+  ] };
+  const plan = ctx.compressionPlan(chat, 20);
+  assert.equal(plan.start, 2);
+  assert.equal(plan.carry.role, 'assistant');
+  chat.messages.splice(2, 0, { role: 'divider', memory: true, carry: plan.carry });
+  const win = ctx.windowMessages(chat);
+  assert.deepEqual(Array.from(win, m => m.role), ['user', 'assistant', 'user', 'assistant']);
+  assert(win[0].content.startsWith('[Earlier turns') && win[1].content.endsWith('END'));
+});
+
+test('little room left: no carry, and the kept part still starts at a user turn', () => {
+  const ctx = fixture();
+  const chat = { messages: [
+    { role: 'user', content: 'q1' }, { role: 'assistant', content: text(400, 'long') },
+    { role: 'user', content: text(60, 'q2') }, { role: 'assistant', content: text(40, 'a2') },
+  ] };
+  const plan = ctx.compressionPlan(chat, 20);
+  assert.equal(plan.carry, null);
+  assert.equal(plan.win[plan.start].role, 'user');
+});
+
+test('the old carry is folded whole with newer turns, never summarized on its own', () => {
+  const ctx = fixture();
+  const chat = { messages: [
+    { role: 'user', content: 'old' }, { role: 'divider', memory: true, carry: { role: 'user', text: text(60, 'carried') } },
+    { role: 'user', content: 'q' }, { role: 'assistant', content: 'a' },
+  ] };
+  assert.equal(ctx.compressionPlan(chat, 20).fold.length, 0);
+  for (let i = 0; i < 6; i++) chat.messages.push({ role: 'user', content: text(20, 'u' + i) }, { role: 'assistant', content: text(10, 'a' + i) });
+  const plan = ctx.compressionPlan(chat, 20);
+  assert(plan.fold[0].carried && plan.fold.some(m => !m.carried) && !plan.win[plan.start].carried);
 });
 
 test('the summarizer input is capped: long turns keep head and tail, short turns stay whole', () => {
