@@ -13,7 +13,7 @@ function section(start, end) {
 function fixture() {
   const urls = new Map();
   const ctx = vm.createContext({
-    Blob, FormData, Map, t: key => key,
+    Blob, FormData, Map, console, t: key => key,
     state: { general: {} },
     lastN: messages => messages,
     computeAttachmentAllowSet: messages => new Set(messages.filter(m => m.attachments?.length)),
@@ -143,4 +143,63 @@ test('new generation keeps its prompt and English masked edits retain scope', as
   assert.equal(sent.prompt, 'Draw a mountain');
   assert.match(ctx.maskedEditPrompt('Make it blue'), /original mask defines the scope/);
   assert.match(ctx.maskedEditPrompt('Make it blue'), /Do not change unmasked areas/);
+});
+test('image ids written loosely by the model still resolve, unknown ones do not', () => {
+  const { ctx, chat } = fixture(), index = ctx.chatImageIndex(chat);
+  for (const label of ['img4', 'IMG 4', ' image_4 ', '图4', '图片4', '#4', 4]) assert.equal(index.get(label)?.label, 'img4', String(label));
+  for (const label of ['img4-preview', 'img9', '', null]) assert.equal(index.get(label), null, String(label));
+});
+test('a preview the browser cannot decode is skipped, a missing file still stops the request', async () => {
+  const { ctx, chat, current } = fixture();
+  ctx.console = { warn() {} };
+  ctx.maskedSelectionPreview = async () => { throw new Error('decode failed'); };
+  const index = ctx.chatImageIndex(chat);
+  await ctx.hydrateRequestImages(chat, index);
+  assert.equal(index.previews.size, 0);
+  const text = ctx.buildOpenAIMessages(chat, index).at(-1).content[0].text;
+  assert.match(text, /\[Image img4 — the user painted the area to edit\]/);
+  assert(!text.includes('选区预览'));
+  ctx.maskedSelectionPreview = async () => { throw Object.assign(new Error('img.err.missing'), { code: 'missing' }); };
+  await assert.rejects(ctx.hydrateRequestImages(chat, ctx.chatImageIndex(chat)), /img.err.missing/);
+  assert(current.maskBlobId);
+});
+function editFixture(opaque) {
+  const { ctx, current, plain } = fixture();
+  const original = new Blob(['original-png'], { type: 'image/png' });
+  const sent = [];
+  Object.assign(ctx, {
+    IMAGE_SIZES: ['auto'], IMAGE_QUALITIES: ['auto'], imageExt: () => 'png',
+    recordBlob: async () => original, getBlob: async () => new Blob(['mask'], { type: 'image/png' }),
+    imageIsOpaque: async () => opaque, sleep: async () => {},
+    readImagesResponse: async () => [{ blob: original }],
+  });
+  ctx.fetch = async (url, options) => { sent.push(options.body); return { ok: true }; };
+  const run = (prompt, refs = [{ rec: current }]) => ctx.generateImages({ target: { base: 'https://example.invalid', key: 'test', model: 'image' }, prompt, refs, size: 'auto', quality: 'auto' });
+  return { ctx, sent, run, plain };
+}
+test('a local edit of an opaque picture asks for an opaque result', async () => {
+  const { sent, run } = editFixture(true);
+  await run('改成暹罗猫');
+  assert.equal(sent[0].get('background'), 'opaque');
+});
+test('transparent pictures, transparency requests and whole-image edits keep the model default', async () => {
+  let f = editFixture(false);
+  await f.run('改成暹罗猫');
+  assert.equal(f.sent[0].has('background'), false);
+  f = editFixture(true);
+  await f.run('把涂抹的背景改成透明');
+  assert.equal(f.sent[0].has('background'), false);
+  f = editFixture(true);
+  await f.run('Make it blue', [{ rec: f.plain }]);
+  assert.equal(f.sent[0].has('background'), false);
+});
+test('a gateway that rejects background gets the request again without it', async () => {
+  const { ctx, sent, run } = editFixture(true);
+  ctx.httpError = async () => Object.assign(new Error('Unknown parameter: background'), { status: 400 });
+  let calls = 0;
+  ctx.fetch = async (url, options) => { sent.push(options.body); return { ok: ++calls > 1 }; };
+  await run('改成暹罗猫');
+  assert.equal(sent.length, 2);
+  assert.equal(sent[0].get('background'), 'opaque');
+  assert.equal(sent[1].has('background'), false);
 });

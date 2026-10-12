@@ -682,6 +682,7 @@ html[data-theme="dark"] .key-row-status.ok{color:#34d399}
 .mask-badge{position:absolute;left:6px;top:6px;font-size:10.5px;font-weight:600;line-height:1.6;padding:0 7px;border-radius:999px;background:var(--draw);color:#fff}
 .attach-chip .mask-badge{position:static}
 .attach-chip.has-mask{box-shadow:inset 0 0 0 1.5px var(--draw)}
+.attach-chip.has-mask img{width:44px;height:44px}
 .attach-chip .brush{cursor:pointer;color:var(--fg-2);display:inline-flex;align-items:center}
 .attach-chip .brush:hover{color:var(--draw)}
 .attach-chip .brush .fi{width:15px;height:15px}
@@ -1219,6 +1220,7 @@ html[data-theme="dark"] .key-row-status.ok{color:#34d399}
   <div class="iv-bar">
     <div class="iv-prompt" id="ivPrompt"></div>
     <div class="iv-actions">
+      <button type="button" class="btn ghost small" data-act="sel"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.88 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.88 0"/><circle cx="12" cy="12" r="3"/></svg><span id="ivSelLabel">Original</span></button>
       <button type="button" class="btn ghost small" data-act="download"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg><span data-i18n="img.download">Download</span></button>
       <button type="button" class="btn ghost small" data-act="edit"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9.06 11.9 8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08"/><path d="M7.07 14.94c-1.66 0-3 1.35-3 3.02 0 1.33-2.5 1.52-2 2.02 1.08 1.1 2.49 2.02 4 2.02 2.2 0 4-1.8 4-4.04a3.01 3.01 0 0 0-3-3.02z"/></svg><span data-i18n="img.edit">Edit part</span></button>
       <button type="button" class="btn ghost small" data-act="ref"><svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/></svg><span data-i18n="img.useAsRef">Edit this image</span></button>
@@ -1342,7 +1344,7 @@ const I18N = {
   en: {
     "general.drawSmart.label":"Understand the conversation when drawing (recommended)",
     "general.drawSmart.hint":"In draw mode the chat model first reads the chat history, memory, attached files and earlier pictures, then hands a clear instruction to the image model (one small extra chat call) — so \"make the last one blue\" works. Off: your text goes straight to the image model.",
-    "img.err.plan":"Couldn't prepare the drawing instructions. Please retry.",
+    "img.err.plan":"Couldn't prepare the drawing instructions. Please retry. If it keeps failing, pick another chat model, or turn off “Understand the conversation when drawing” in Settings to send your text straight to the image model.",
     "img.err.reference":"Couldn't find the reference image. Please attach it again and retry.",
     "general.data.export":"⬇ Export (with images)",
     "general.data.import":"⬆ Import",
@@ -1424,6 +1426,8 @@ const I18N = {
     "img.err.interrupted":"_[Drawing was interrupted — the page was closed before it finished.]_",
     "img.failed":"Image generation failed: {0}",
     "img.maskBadge":"Area",
+    "img.sel.original":"Show original",
+    "img.sel.show":"Show selection",
     "img.attachEdit":"Paint the area to change",
     "mask.title":"Paint over the area to change",
     "mask.tip":"The painted area is redrawn from your description; the rest stays as it is.",
@@ -1670,7 +1674,7 @@ const I18N = {
   zh: {
     "general.drawSmart.label":"画图时理解上下文（推荐）",
     "general.drawSmart.hint":"画图模式下，先由对话模型读取聊天记录、记忆、附件和之前的图片，再把清楚的指令交给画图模型（多一次很小的对话调用），可以直接说「把上一张改成蓝色」。关闭后，输入原样交给画图模型。",
-    "img.err.plan":"没能整理出绘图要求，请重试。",
+    "img.err.plan":"没能整理出绘图要求，请重试。一直失败的话，可以换一个对话模型，或在设置里关闭「画图时理解上下文」，直接把文字交给画图模型。",
     "img.err.reference":"没有找到参考图片，请重新附图后重试。",
     "general.data.export":"⬇ 导出（含图片）",
     "general.data.import":"⬆ 导入",
@@ -1752,6 +1756,8 @@ const I18N = {
     "img.err.interrupted":"_[画图被中断：页面在完成前被关闭了。]_",
     "img.failed":"画图失败：{0}",
     "img.maskBadge":"局部",
+    "img.sel.original":"查看原图",
+    "img.sel.show":"查看选区",
     "img.attachEdit":"涂抹要修改的区域",
     "mask.title":"涂抹要修改的区域",
     "mask.tip":"涂过的地方会按你的描述重画，其余部分尽量保持不变",
@@ -2283,6 +2289,7 @@ async function loadPersisted(){
 
 /* -------- Blobs (images, masks) -------- */
 const _blobUrls = new Map();         // blobId → object URL for <img>
+const _selUrls = new Map();          // "maskBlobId|size" → Promise<object URL> of the image with its selection
 const _dataUrls = new Map();         // blobId → data: URL for API requests (small LRU)
 const _memBlobs = new Map();         // session-only store when IndexedDB is unavailable
 function newBlobId(){ return `b_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,8)}`; }
@@ -2336,6 +2343,28 @@ async function imageSrc(rec){
   return rec.url || "";
 }
 function fillImg(img, rec){ imageSrc(rec).then(u=>{ if(u) img.src = u; else img.classList.add("missing"); }); }
+/* An image picked for a local edit is shown with the painted area tinted, so the user can see
+   what will change. Falls back to the plain image when the mask can't be drawn. */
+function selectionImageUrl(rec, maxSide){
+  const key = rec.maskBlobId + "|" + maxSide;
+  if(!_selUrls.has(key)){
+    _selUrls.set(key, (async ()=>{
+      const c = await selectionCanvas(rec, maxSide, false);
+      const b = await new Promise(res=>c.toBlob(res, "image/png"));
+      return b ? URL.createObjectURL(b) : "";
+    })().catch(()=>""));
+    if(_selUrls.size > 40){
+      const [oldKey, oldUrl] = _selUrls.entries().next().value;
+      _selUrls.delete(oldKey);
+      oldUrl.then(u=>{ if(u) URL.revokeObjectURL(u); });
+    }
+  }
+  return _selUrls.get(key).then(u=>u || imageSrc(rec));
+}
+function fillSelectionImg(img, rec, maxSide){
+  if(!rec.maskBlobId) return fillImg(img, rec);
+  selectionImageUrl(rec, maxSide).then(u=>{ if(u) img.src = u; else img.classList.add("missing"); });
+}
 async function recordBlob(rec){
   if(!rec) return null;
   if(rec.blobId) return getBlob(rec.blobId);
@@ -3302,7 +3331,14 @@ async function generateImages({ target, prompt, refs, size, quality, signal, onA
   // streaming succeeds. Generations stream fine (keep-alives keep the connection warm).
   const opt = { size: IMAGE_SIZES.includes(size) && size !== "auto" ? size : "",
                 quality: IMAGE_QUALITIES.includes(quality) && quality !== "auto" ? quality : "",
-                stream: !edit };
+                stream: !edit, background: "" };
+  // A local edit of an opaque picture must stay opaque: GPT Image sometimes returns an
+  // illustration on white with a transparent background, which changes everything outside
+  // the mask. Leave it to the model when the user asks for transparency.
+  if(edit && refs[0].rec.maskBlobId && !/透明|抠图|去背景|transparen|remove (the )?background/i.test(prompt)){
+    const first = await recordBlob(refs[0].rec);
+    if(first && await imageIsOpaque(first)) opt.background = "opaque";
+  }
   let retried = false;
   for(let attempt = 0; attempt < 6; attempt++){
     let r;
@@ -3313,6 +3349,7 @@ async function generateImages({ target, prompt, refs, size, quality, signal, onA
       fd.append("n", "1");
       if(opt.size) fd.append("size", opt.size);
       if(opt.quality) fd.append("quality", opt.quality);
+      if(opt.background) fd.append("background", opt.background);
       if(opt.stream) fd.append("stream", "true");
       const field = refs.length > 1 ? "image[]" : "image";
       for(let i = 0; i < refs.length; i++){
@@ -3342,6 +3379,7 @@ async function generateImages({ target, prompt, refs, size, quality, signal, onA
         // Drop whichever optional parameter this model/gateway rejected, then resend.
         if(opt.stream && /stream/.test(msg)){ opt.stream = false; continue; }
         if(opt.quality && /quality/.test(msg)){ opt.quality = ""; continue; }
+        if(opt.background && /background/.test(msg)){ opt.background = ""; continue; }
         if(opt.size && /size/.test(msg)){ opt.size = ""; continue; }
         throw e;
       }
@@ -3351,6 +3389,23 @@ async function generateImages({ target, prompt, refs, size, quality, signal, onA
     }
   }
   throw new Error(t("img.err.empty"));
+}
+/* True when a picture has no transparent pixels. Unknown (can't decode) counts as not opaque. */
+async function imageIsOpaque(blob){
+  if(/jpe?g/i.test(blob.type || "")) return true;
+  try{
+    const bm = await createImageBitmap(blob);
+    try{
+      const s = Math.min(1, 256 / Math.max(bm.width, bm.height));
+      const c = document.createElement("canvas");
+      c.width = Math.max(1, Math.round(bm.width * s)); c.height = Math.max(1, Math.round(bm.height * s));
+      const ctx = c.getContext("2d", { willReadFrequently: true });
+      ctx.drawImage(bm, 0, 0, c.width, c.height);
+      const d = ctx.getImageData(0, 0, c.width, c.height).data;
+      for(let i = 3; i < d.length; i += 4) if(d[i] < 250) return false;
+      return true;
+    }finally{ bm.close(); }
+  }catch{ return false; }
 }
 async function storeGeneratedImage(im, meta){
   const rec = { kind:"image", prompt: meta.prompt || "", model: meta.model || "" };
@@ -3378,7 +3433,9 @@ function chatImageIndex(chat){
       byRec.set(rec, label);
     }
   }
-  return { list, byRec, get: (label)=>list.find(x=>x.label === String(label||"").trim().toLowerCase()) || null };
+  // Models sometimes write "IMG 2", "image_2", "图2" or just 2; they all mean img2.
+  const norm = (label)=>{ const s = String(label ?? "").trim().toLowerCase(); const n = /^(?:#|img|image|pic|picture|图片?)?[\s_#-]*(\d+)$/.exec(s); return n ? "img" + Number(n[1]) : s; };
+  return { list, byRec, get: (label)=>list.find(x=>x.label === norm(label)) || null };
 }
 /* Tool the chat model may call (OpenAI function schema; converted for Anthropic / Gemini). */
 const IMAGE_TOOL = {
@@ -3599,19 +3656,30 @@ function editImageRegion(rec){
 }
 
 /* -------- Image viewer -------- */
-let _viewerRec = null;
+let _viewerRec = null, _viewerSel = false, _viewerTok = 0;
 function openImageViewer(rec){
   _viewerRec = rec;
+  _viewerSel = !!rec.maskBlobId;
   const v = document.getElementById("imgViewer");
-  const img = document.getElementById("ivImg");
-  img.removeAttribute("src");
-  fillImg(img, rec);
+  showViewerImage();
+  v.querySelector('[data-act="sel"]').style.display = rec.maskBlobId ? "" : "none";
   const p = rec.revisedPrompt || rec.prompt || "";
   document.getElementById("ivPrompt").textContent = p;
   v.querySelector('[data-act="copy"]').style.display = p ? "" : "none";
   v.querySelector('[data-act="edit"]').style.display = imageModels().length ? "" : "none";
   v.querySelector('[data-act="ref"]').style.display = imageModels().length ? "" : "none";
   v.classList.remove("hide");
+}
+/* A masked image opens with its selection shown; the button switches to the original. */
+function showViewerImage(){
+  const rec = _viewerRec, tok = ++_viewerTok;
+  const img = document.getElementById("ivImg");
+  img.removeAttribute("src"); img.classList.remove("missing");
+  (_viewerSel ? selectionImageUrl(rec, 2048) : imageSrc(rec)).then(u=>{
+    if(tok !== _viewerTok) return;
+    if(u) img.src = u; else img.classList.add("missing");
+  });
+  document.getElementById("ivSelLabel").textContent = t(_viewerSel ? "img.sel.original" : "img.sel.show");
 }
 function closeImageViewer(){ document.getElementById("imgViewer")?.classList.add("hide"); _viewerRec = null; }
 function isImageViewerOpen(){ const v = document.getElementById("imgViewer"); return !!v && !v.classList.contains("hide"); }
@@ -4444,7 +4512,7 @@ function renderMessageEl(m, idx){
     if(a.kind==="image"){
       const wrap = document.createElement("span");
       wrap.className = "att-img";
-      const img = document.createElement("img"); img.title = a.name||"image"; fillImg(img, a);
+      const img = document.createElement("img"); img.title = a.name||"image"; fillSelectionImg(img, a, 480);
       img.addEventListener("click", ()=>openImageViewer(a));
       wrap.appendChild(img);
       if(a.maskBlobId){ const b = document.createElement("span"); b.className = "mask-badge"; b.textContent = t("img.maskBadge"); wrap.appendChild(b); }
@@ -4557,7 +4625,7 @@ function renderAttachStrip(){
   pendingAttachments.forEach((a,i)=>{
     const chip = document.createElement("div"); chip.className = "attach-chip" + (a.maskBlobId ? " has-mask" : "");
     if(a.kind==="image"){
-      const img = document.createElement("img"); fillImg(img, a); chip.appendChild(img);
+      const img = document.createElement("img"); fillSelectionImg(img, a, 160); chip.appendChild(img);
     }else{
       const ico = document.createElement("span"); ico.textContent="📎"; chip.appendChild(ico);
     }
@@ -4738,6 +4806,8 @@ const DRAW_HINT = `用户已开启画图模式，当前消息是一项绘图或�
 - 不要重新设计整张图片或重新描述整只主体的外观。
 - 保留区域外的原图内容。
 - 如果选区对应的部位不明确，直接称为“用户涂抹的区域”，不要自行猜测或扩大范围。
+- 画图模型只会收到原图和不带颜色的遮罩，看不到选区预览。最终提示词用画面里的实际部位（例如“猫的头部”）说明修改范围，
+  不要提到紫色标记、选区预览、涂抹痕迹或遮罩颜色，也不要写“不要出现紫色”之类的话；用户自己要求的颜色照常写。
 
 局部修改规则优先于补充视觉细节的规则。
 最终提示词应完整表达用户要求的变化及保留范围，并引用当前带遮罩图片对应的原图 ID。`;
@@ -5310,27 +5380,35 @@ function imageParts(attachments, imgIndex){
 }
 /* Request-only selection guidance for the planner. The edit API keeps the original + mask. */
 async function maskedSelectionPreview(rec){
+  // A PNG preview can dwarf a compressed photo; keep this extra planner image small.
+  return (await selectionCanvas(rec, 1536, true)).toDataURL("image/jpeg", 0.85);
+}
+/* The image with the user's selection tinted purple (the mask's transparent area), at most
+   maxSide px. Used for the planner preview and for showing the selection in the UI.
+   flatten: put the image on white first; JPEG has no alpha and would turn it black. */
+async function selectionCanvas(rec, maxSide, flatten){
   const original = await recordBlob(rec), mask = await getBlob(rec.maskBlobId);
-  if(!original || !mask) throw new Error(t("img.err.missing"));
+  if(!original || !mask) throw Object.assign(new Error(t("img.err.missing")), { code:"missing" });
   const image = await createImageBitmap(original);
   let selection;
   try{
     selection = await createImageBitmap(mask);
-    const scale = Math.min(1, 1536 / Math.max(image.width, image.height));
+    const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
+    const w = Math.max(1, Math.round(image.width * scale)), h = Math.max(1, Math.round(image.height * scale));
     const paint = document.createElement("canvas");
-    paint.width = Math.round(image.width * scale); paint.height = Math.round(image.height * scale);
+    paint.width = w; paint.height = h;
     const px = paint.getContext("2d");
-    px.fillStyle = "#a855f7"; px.fillRect(0, 0, paint.width, paint.height);
+    px.fillStyle = "#a855f7"; px.fillRect(0, 0, w, h);
     px.globalCompositeOperation = "destination-out";
-    px.drawImage(selection, 0, 0, paint.width, paint.height);
-    const preview = document.createElement("canvas");
-    preview.width = paint.width; preview.height = paint.height;
-    const ctx = preview.getContext("2d");
-    ctx.drawImage(image, 0, 0, preview.width, preview.height);
+    px.drawImage(selection, 0, 0, w, h);
+    const out = document.createElement("canvas");
+    out.width = w; out.height = h;
+    const ctx = out.getContext("2d");
+    if(flatten){ ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h); }
+    ctx.drawImage(image, 0, 0, w, h);
     ctx.globalAlpha = 0.45;
     ctx.drawImage(paint, 0, 0);
-    // A PNG preview can dwarf a compressed photo; keep this extra planner image small.
-    return preview.toDataURL("image/jpeg", 0.85);
+    return out;
   }finally{ image.close(); selection?.close(); }
 }
 /* Load the image attachments this request will send, so the builders can read them sync. */
@@ -5344,7 +5422,13 @@ async function hydrateRequestImages(chat, imgIndex){
     imgIndex.previews = new Map();
     const current = msgs.findLast(m=>m.role==="user");
     if(current && allow.has(current)){
-      for(const a of (current.attachments||[])) if(a.kind==="image" && a.maskBlobId) imgIndex.previews.set(a, await maskedSelectionPreview(a));
+      for(const a of (current.attachments||[])){
+        if(a.kind!=="image" || !a.maskBlobId) continue;
+        // A missing file stops the request; a picture the browser can't decode only loses
+        // the preview (the note then says "painted area" without promising a second image).
+        try{ imgIndex.previews.set(a, await maskedSelectionPreview(a)); }
+        catch(e){ if(e.code === "missing") throw e; console.warn("Selection preview failed.", e); }
+      }
     }
   }
 }
@@ -6710,6 +6794,7 @@ async function init(){
     if(!act){ if(e.target.id === "imgViewer" || e.target.id === "ivStage") closeImageViewer(); return; }
     if(act === "close") closeImageViewer();
     else if(act === "download" && rec) downloadImage(rec);
+    else if(act === "sel" && rec){ _viewerSel = !_viewerSel; showViewerImage(); }
     else if(act === "edit" && rec) editImageRegion(rec);
     else if(act === "ref" && rec) useImageAsReference(rec);
     else if(act === "copy" && rec){
@@ -6717,6 +6802,18 @@ async function init(){
     }
   });
   setupMaskEditor();
+  // "Clear all data" in another tab: this tab still holds everything in memory, and its next
+  // save would bring settings and API keys back. Stop saving and reload.
+  window.addEventListener("storage", (e)=>{
+    if(e.storageArea !== localStorage || e.newValue !== null || (e.key !== LS_KEY && e.key !== null)) return;
+    _clearingData = true;
+    clearTimeout(_flushTimer); _flushTimer = null;
+    for(const s of activeStreams.values()) s.controller.abort();
+    showReloadOverlay();
+    // Give the clearing tab time to start fresh, so this one opens its new chat instead of
+    // adding a second blank one.
+    setTimeout(()=>location.reload(), 1500);
+  });
 
   // Deep think toggle
   $("thinkChip").onclick = ()=>{
