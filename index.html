@@ -343,6 +343,35 @@ html[data-theme="dark"] .composer{background:var(--bg-2);box-shadow:none}
 .composer-actions{display:flex;align-items:center;gap:4px;padding:0 4px}
 .composer-actions .spacer{flex:1}
 .composer-actions .hint{font-size:11px;color:var(--fg-2)}
+/* context ring */
+.ctx-wrap{position:relative;display:inline-flex}
+.ctx-ring{width:30px;height:30px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:var(--accent)}
+.ctx-ring:hover,.ctx-ring[aria-expanded="true"]{background:var(--bg-3)}
+.ctx-ring svg{width:19px;height:19px;transform:rotate(-90deg)}
+.ctx-ring circle{fill:none;stroke-width:3}
+.ctx-ring .track{stroke:var(--border)}
+.ctx-ring .bar{stroke:currentColor;stroke-linecap:round;transition:stroke-dasharray .35s ease}
+.ctx-ring.warn{color:#d97706}
+.ctx-ring.full{color:var(--danger)}
+.ctx-ring.busy svg{animation:ctx-spin 1.2s linear infinite}
+@keyframes ctx-spin{to{transform:rotate(270deg)}}
+.ctx-pop{position:absolute;right:-44px;bottom:calc(100% + 10px);width:300px;max-width:calc(100vw - 32px);background:var(--bg-2);border:1px solid var(--border);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.18);padding:12px 14px;z-index:60;font-size:12.5px;line-height:1.55;color:var(--fg)}
+.ctx-pop.hide{display:none}
+.ctx-pop .cp-title{font-weight:600;font-size:13px}
+.ctx-pop .cp-bar{position:relative;height:6px;border-radius:3px;background:var(--bg-3);margin:8px 0 6px;overflow:visible}
+.ctx-pop .cp-bar i{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--accent)}
+.ctx-pop .cp-bar b{position:absolute;top:-3px;bottom:-3px;width:2px;border-radius:1px;background:var(--fg-2);opacity:.55}
+.ctx-pop.warn .cp-bar i{background:#d97706}
+.ctx-pop.full .cp-bar i{background:var(--danger)}
+.ctx-pop .cp-note{color:var(--fg-2);font-size:12px;margin-top:4px}
+.ctx-pop .cp-warn{color:#b45309;background:rgba(217,119,6,.1);border-radius:8px;padding:6px 8px;margin-top:8px;font-size:12px}
+.ctx-pop .cp-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.ctx-pop .cp-actions .btn{font-size:12px;padding:5px 10px}
+.ctx-pop .cp-actions .btn:disabled{opacity:.45;cursor:not-allowed}
+html[data-theme="dark"] .ctx-pop{box-shadow:0 12px 32px rgba(0,0,0,.5)}
+html[data-theme="dark"] .ctx-pop .cp-warn{color:#fbbf24;background:rgba(251,191,36,.12)}
+html[data-theme="dark"] .ctx-ring.warn{color:#fbbf24}
+@media (max-width:640px){ .ctx-pop{right:-80px} }
 .send-btn{background:var(--brand-grad);color:#fff;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none;box-shadow:0 4px 12px var(--accent-ring);transition:filter .15s}
 .send-btn:hover{filter:brightness(1.06)}
 .send-btn .fi{width:18px;height:18px}
@@ -990,6 +1019,12 @@ html[data-theme="dark"] .key-row-status.ok{color:#34d399}
             </div>
             <span class="spacer"></span>
             <span class="hint" id="statusHint"></span>
+            <div class="ctx-wrap" id="ctxWrap">
+              <button type="button" class="ctx-ring" id="ctxRing" aria-haspopup="dialog" aria-expanded="false" aria-controls="ctxPop">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle class="track" cx="12" cy="12" r="8.5"/><circle class="bar" id="ctxRingBar" cx="12" cy="12" r="8.5" pathLength="100" stroke-dasharray="0 100"/></svg>
+              </button>
+              <div class="ctx-pop hide" id="ctxPop" role="dialog"></div>
+            </div>
             <button type="button" class="icon-btn" id="clearCtxBtn" data-i18n-title="context.clear.title" title="Clear context (Ctrl/⌘+K)">
               <svg class="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="3"/><path d="M8.12 8.12 12 12"/><path d="M20 4 8.12 15.88"/><circle cx="6" cy="18" r="3"/><path d="M14.8 14.8 20 20"/></svg>
             </button>
@@ -1121,11 +1156,16 @@ html[data-theme="dark"] .key-row-status.ok{color:#34d399}
         <section class="set-section">
           <div class="set-head"><h4 data-i18n="general.memory">Context &amp; memory</h4></div>
           <div class="row-2">
-            <div class="form-row"><label data-i18n="general.ctxBudget.label">Context limit (tokens)</label><input id="cfg_ctx_budget" type="number" min="1000" step="1000" inputmode="numeric" placeholder="200000" /></div>
+            <div class="form-row"><label data-i18n="general.ctxBudget.label">Context limit (tokens)</label><input id="cfg_ctx_budget" type="number" min="1000" step="1000" inputmode="numeric" placeholder="250000" /></div>
             <div class="form-row"><label data-i18n="general.attachKeepRecent.label">Attachments kept</label><input id="cfg_attach_keep_recent" type="number" min="0" step="1" inputmode="numeric" placeholder="10" /></div>
           </div>
           <div class="form-row"><span class="hint" data-i18n="general.ctxBudget.hint"></span><span class="hint" data-i18n="general.attachKeepRecent.hint"></span></div>
           <div class="form-row"><label class="check-label"><input id="cfg_auto_memory" type="checkbox" /><span data-i18n="general.autoMemory.label">Automatic memory</span></label><span class="hint" data-i18n="general.autoMemory.hint"></span></div>
+          <div class="row-2">
+            <div class="form-row"><label data-i18n="general.memoryTrigger.label">Summarize at (% of limit)</label><input id="cfg_memory_trigger" type="number" min="50" max="95" step="5" inputmode="numeric" placeholder="80" /></div>
+            <div class="form-row"><label data-i18n="general.memoryKeep.label">Keep newest (% of context)</label><input id="cfg_memory_keep" type="number" min="5" max="50" step="5" inputmode="numeric" placeholder="20" /></div>
+          </div>
+          <div class="form-row"><span class="hint" data-i18n="general.memoryPct.hint"></span></div>
           <div class="form-row"><label data-i18n="general.memoryMaxChars.label">Memory size limit (characters)</label><input id="cfg_memory_max_chars" type="number" min="500" step="500" inputmode="numeric" placeholder="8000" /><span class="hint" data-i18n="general.memoryMaxChars.hint"></span></div>
         </section>
         <section class="set-section">
@@ -1325,13 +1365,15 @@ const DEFAULT_STATE = {
     temperature:"",     // empty = model default (most new models reject custom values)
     maxTokens:"",       // empty = automatic
     deepThink:false,    // the composer's "Deep think" switch
-    contextTokenBudget:"200000", // tokens sent per request at most (older turns become memory)
+    contextTokenBudget:"250000", // context limit in tokens (older turns become memory before it)
+    memoryTriggerPct:80, // summarize when the context reaches this share of the limit …
+    memoryKeepPct:20,    // … keeping this share of the newest context word for word
     historyN:1000,
     userName:"",
     aiName:"",
     autoMemory:true,     // fold older turns into a summary before they fall out of the context
     memoryMaxChars:8000,
-    settingsVersion:2,
+    settingsVersion:3,
     imageDetail:"standard",
     attachmentKeepRecent:10
   },
@@ -1379,20 +1421,37 @@ const I18N = {
     "folder.newAndMove":"New folder…",
     "memory.open":"Chat memory",
     "memory.title":"Chat memory",
-    "memory.hint":"When a chat gets close to the context limit, its earlier part is summarized here automatically and sent along with every message, so the model doesn't forget it. You can edit it.",
+    "memory.hint":"When a chat reaches the summarize point of the context limit, its earlier part is summarized here automatically and sent along with every message, so the model doesn't forget it. You can edit it.",
     "memory.restore":"Restore this version",
     "memory.clear":"Clear memory",
     "memory.running":"Summarizing earlier messages into memory…",
-    "memory.done":"Memory updated — earlier messages were summarized",
+    "memory.done":"Memory updated: {0} earlier messages (~{1} tokens) summarized — context is now ~{2}",
     "memory.failed":"Memory update failed: {0}",
     "memory.divider":"Earlier messages were summarized into memory (🧠 at the top to view)",
+    "memory.divider.n":"{0} messages above (~{1} tokens) were summarized into memory (🧠 at the top to view)",
+    "general.memoryTrigger.label":"Summarize at (% of limit)",
+    "general.memoryKeep.label":"Keep newest (% of context)",
+    "general.memoryPct.hint":"Default 80 / 20: at 80% of the context limit, everything except the newest 20% is summarized into memory, so the next message carries memory + recent context. The current turn is always kept.",
+    "ctx.title":"Context window: {0}% used ({1}% left)",
+    "ctx.used":"{0} of {1} tokens used",
+    "ctx.measured":"Calibrated with the API's real count. ",
+    "ctx.lastReq":"Last request: {0} tokens, {1} from cache.",
+    "ctx.estimated":"Estimated — calibrated with the real count after the next reply.",
+    "ctx.auto":"At {0}% the older part is summarized into memory; the newest {1}% stays word for word.",
+    "ctx.autoOff":"Automatic memory is off: past the limit, the oldest messages are no longer sent.",
+    "ctx.memory":"Earlier messages are in memory ({0} characters).",
+    "ctx.blocked":"The newest messages take up most of the context, so there is little older content to summarize. Start a new chat, or delete a long paste.",
+    "ctx.trimmed":"{0} older messages didn't fit in the limit and weren't sent last time.",
+    "ctx.compressNow":"Summarize now",
+    "ctx.viewMemory":"View memory",
+    "ctx.nothing":"Nothing older to summarize yet.",
     "general.memory":"Context & memory",
     "general.ctxBudget.label":"Context limit (tokens)",
-    "general.ctxBudget.hint":"How much of the conversation is sent with each message, at most (default 200,000). When a chat gets close, its earlier part is summarized into memory automatically.",
+    "general.ctxBudget.hint":"The model's context limit in tokens (default 250,000). Counts come from the API's real usage after each reply.",
     "general.attachKeepRecent.label":"Messages that keep attachments",
     "general.attachKeepRecent.hint":"Images and files from the latest N messages with attachments are sent to the model again (default 10); older attachments are no longer sent.",
     "general.autoMemory.label":"Automatic memory (recommended)",
-    "general.autoMemory.hint":"When a chat nears the context limit, earlier messages are summarized into memory instead of silently dropping out, so the model keeps remembering them.",
+    "general.autoMemory.hint":"When a chat reaches the summarize point, its older part is summarized into memory and only the newest part is sent word for word — nothing silently drops out.",
     "general.memoryMaxChars.label":"Memory size limit (characters)",
     "general.memoryMaxChars.hint":"Upper bound for one chat's memory (default 8000). Memory only stores text, never attachment content.",
     "sidebar.collapse":"Collapse sidebar",
@@ -1709,20 +1768,37 @@ const I18N = {
     "folder.newAndMove":"新建文件夹…",
     "memory.open":"对话记忆",
     "memory.title":"对话记忆",
-    "memory.hint":"对话快到上下文上限时，较早的部分会自动总结到这里，并随每条消息一起发给模型，所以不会“失忆”。你也可以手动修改。",
+    "memory.hint":"对话达到上限的整理比例时，较早的部分会自动总结到这里，并随每条消息一起发给模型，所以不会“失忆”。你也可以手动修改。",
     "memory.restore":"恢复此版本",
     "memory.clear":"清空记忆",
     "memory.running":"正在把较早的对话整理进记忆…",
-    "memory.done":"记忆已更新：较早的对话已整理",
+    "memory.done":"已整理记忆：较早的 {0} 条消息（约 {1} tokens）已总结，当前上下文约 {2}",
     "memory.failed":"记忆整理失败：{0}",
     "memory.divider":"较早的对话已整理进记忆（点顶部 🧠 查看）",
+    "memory.divider.n":"以上 {0} 条消息（约 {1} tokens）已整理进记忆（点顶部 🧠 查看）",
+    "general.memoryTrigger.label":"达到上限的多少时整理（%）",
+    "general.memoryKeep.label":"整理后保留最近（%）",
+    "general.memoryPct.hint":"默认 80 / 20：上下文达到上限的 80% 时，除最近 20% 以外的内容都会总结进记忆，之后每条消息带上“记忆 + 最近上下文”。当前这一轮始终原样保留。",
+    "ctx.title":"上下文窗口：{0}% 已用（剩余 {1}%）",
+    "ctx.used":"已用 {0} tokens，共 {1}",
+    "ctx.measured":"已按接口返回的实际用量校准。",
+    "ctx.lastReq":"上次请求 {0} tokens，其中缓存命中 {1}。",
+    "ctx.estimated":"估算值，下次回复后按实际用量校准。",
+    "ctx.auto":"达到 {0}% 时，较早的对话会自动整理进记忆，最近 {1}% 保留原文。",
+    "ctx.autoOff":"自动记忆已关闭：超过上限后，最早的消息将不再发送。",
+    "ctx.memory":"较早的对话已整理进记忆（{0} 字）。",
+    "ctx.blocked":"最近的几条消息本身就占了大部分上下文，较早的内容不多，整理也省不了多少。可以新开对话，或删掉大段粘贴的内容。",
+    "ctx.trimmed":"上次有 {0} 条较早的消息超出上限，没有发送。",
+    "ctx.compressNow":"立即整理记忆",
+    "ctx.viewMemory":"查看记忆",
+    "ctx.nothing":"暂时没有可以整理的较早内容。",
     "general.memory":"上下文与记忆",
     "general.ctxBudget.label":"上下文上限（tokens）",
-    "general.ctxBudget.hint":"每次最多把多少对话内容发给模型（默认 20 万）。快到上限时，较早的部分会自动整理成记忆。",
+    "general.ctxBudget.hint":"模型的上下文上限（默认 25 万 tokens）。用量以每次回复后接口返回的实际数为准。",
     "general.attachKeepRecent.label":"保留附件的消息数",
     "general.attachKeepRecent.hint":"最近 N 条带附件的消息，其图片和文件会继续发给模型（默认 10）；更早的附件不再发送。",
     "general.autoMemory.label":"自动记忆（推荐）",
-    "general.autoMemory.hint":"对话接近上下文上限时，自动把较早的消息整理成记忆，而不是悄悄丢掉，模型会一直记得。",
+    "general.autoMemory.hint":"达到整理比例时，较早的部分自动总结成记忆，只把最近的部分原文发给模型，不会悄悄丢掉内容。",
     "general.memoryMaxChars.label":"记忆上限（字符）",
     "general.memoryMaxChars.hint":"单个对话记忆的最大长度（默认 8000）。记忆只保存文字，不包含附件内容。",
     "sidebar.collapse":"收起侧栏",
@@ -2132,6 +2208,11 @@ function normalizeState(s){
     if(Number(g.scenarioMemoryMaxChars) > 8000) g.memoryMaxChars = Number(g.scenarioMemoryMaxChars);
     delete g.scenarioAutoCompress; delete g.scenarioCompressChars; delete g.scenarioMemoryMaxChars;
     g.settingsVersion = 2;
+  }
+  if((Number((s.general || {}).settingsVersion) || 0) < 3){
+    // v3: token counts come from the API now, so the default limit can be 250K.
+    if(String(g.contextTokenBudget) === "200000") g.contextTokenBudget = "250000";
+    g.settingsVersion = 3;
   }
   out.chats.forEach(c=>migrateChat(c, g.systemPrompt));
   if(!Array.isArray(out.config.keys)) out.config.keys = [];
@@ -2961,13 +3042,6 @@ function effectiveSystemPrompt(chat){
   return p;
 }
 
-/* Messages in the currently-active context window (after the last divider, excluding dividers). */
-function activeWindowMessages(chat){
-  const msgs = chat.messages || [];
-  let start = 0;
-  for(let i=msgs.length-1;i>=0;i--){ if(msgs[i].role==="divider"){ start=i+1; break; } }
-  return msgs.slice(start).filter(m=>(m.role==="user"||m.role==="assistant") && (m.content||"").trim());
-}
 
 /* -------- Memory viewer / editor (🧠 in the top bar) -------- */
 function updateMemoryUI(){
@@ -3164,64 +3238,291 @@ function pushMemoryHistory(chat, prevValue){
   }
 }
 
-/* Keep the most recent N real messages verbatim; everything older gets folded into memory. */
-const MEMORY_KEEP_RECENT = 10;
-let _autoCompressing = false;
-function contextBudget(){ const b = optNum(state.general.contextTokenBudget); return b && b > 0 ? b : 200000; }
-/* Rough token size of what the next request would send. */
-function windowTokens(chat){
-  const win = activeWindowMessages(chat);
+/* -------- Context accounting --------
+   Token counts come from the API whenever possible: after every reply the request's real
+   prompt_tokens calibrate this chat's estimate (chat.tokenCal.ratio = real / estimated), so
+   the ring, the memory trigger and the hard limit all follow what the model actually sees.
+   The character-class estimate below only fills the gap until the first reply. */
+const _memFail = new Map();          // chatId → { used, at } after a failed summary (back off)
+const _compressions = new Map();     // chatId → running compression promise
+const _ctxRuntime = new Map();       // chatId → { trimmed, blocked } (not persisted)
+function contextBudget(){ const b = optNum(state.general.contextTokenBudget); return b && b > 0 ? b : 250000; }
+function memoryTriggerPct(){ const v = Number(state.general.memoryTriggerPct); return Number.isFinite(v) && v > 0 ? Math.min(95, Math.max(50, v)) : 80; }
+function memoryKeepPct(){ const v = Number(state.general.memoryKeepPct); const k = Number.isFinite(v) && v > 0 ? Math.min(50, Math.max(5, v)) : 20; return Math.min(k, memoryTriggerPct() - 10); }
+function tokenRatio(chat){ const r = Number(chat?.tokenCal?.ratio); return r >= 0.5 && r <= 3 ? r : 1; }
+/* The messages a request would carry (after the last divider). Error / empty assistant
+   bubbles are never sent, so they don't count. */
+function windowMessages(chat){
+  const msgs = chat.messages || [];
+  let start = 0;
+  for(let i=msgs.length-1;i>=0;i--){ if(msgs[i].role==="divider"){ start=i+1; break; } }
+  return msgs.slice(start).filter(isSentMessage);
+}
+function isSentMessage(m){
+  if(m.role === "user") return true;
+  if(m.role !== "assistant") return false;
+  if(m.error && !(m.images||[]).length) return false;
+  return !!((m.content||"").trim() || (m.images||[]).length);
+}
+/* The image tool's schema goes with every request that offers it (~250 tokens). */
+function toolSchemaTokens(tools){ return tools ? (toolSchemaTokens.n ??= estimateTokens(JSON.stringify(IMAGE_TOOL))) : 0; }
+/* Size of the whole active window as the model would count it. */
+function contextTokens(chat){
+  if(!chat) return 0;
+  const win = windowMessages(chat);
   const allow = computeAttachmentAllowSet(win);
-  return win.reduce((n, m)=>n + estimateMessageTokens(m, allow.has(m)), 0) + estimateTokens(effectiveSystemPrompt(chat));
+  const raw = win.reduce((n, m)=>n + estimateMessageTokens(m, allow.has(m)), 0) + estimateTokens(effectiveSystemPrompt(chat)) + toolSchemaTokens(imageToolAvailable());
+  return Math.round(raw * tokenRatio(chat));
+}
+/* What one request will send, uncalibrated (compared with the API's count afterwards). */
+function requestRawTokens(chat, tools){
+  const msgs = lastN(chat.messages || [], chat).filter(isSentMessage);
+  const allow = computeAttachmentAllowSet(msgs);
+  return msgs.reduce((n, m)=>n + estimateMessageTokens(m, allow.has(m)), 0) + estimateTokens(effectiveSystemPrompt(chat)) + toolSchemaTokens(tools);
+}
+/* Calibrate from a reply's usage. Tiny requests are mostly fixed overhead (tool schema,
+   role markers), so they don't move the ratio. */
+function recordUsage(chat, u, model){
+  if(!chat || !u || !(u.input > 0)) return;
+  const cal = Object.assign({}, chat.tokenCal || {}, { input: u.input, cached: u.cached || 0, output: u.output || 0, at: Date.now(), model: model || "" });
+  if(u.est >= 3000) cal.ratio = Math.min(2.5, Math.max(0.6, u.input / u.est));
+  chat.tokenCal = cal;
+}
+function fmtTokens(n){
+  n = Math.max(0, Math.round(n || 0));
+  if(n < 1000) return String(n);
+  if(n < 10000) return (n / 1000).toFixed(1).replace(/\.0$/, "") + "k";
+  if(n < 1e6) return Math.round(n / 1000) + "k";
+  return (n / 1e6).toFixed(n < 1e7 ? 2 : 1).replace(/\.?0+$/, "") + "M";
 }
 
-/* Core compression: fold the older part of the active window into chat.contextSummary,
-   leaving a memory divider before the kept-recent messages. Returns true on success. */
-async function runCompression(chat, opts={}){
-  const keepRecent = Math.max(0, opts.keepRecent ?? 0);
-  const win = activeWindowMessages(chat);
-  const toCompress = keepRecent > 0 ? win.slice(0, Math.max(0, win.length - keepRecent)) : win.slice();
-  if(toCompress.length < 2) return false;
+/* -------- Memory (compression) --------
+   When the window reaches memoryTriggerPct of the context limit, the oldest part is folded
+   into chat.contextSummary and only the newest memoryKeepPct of the context stays verbatim:
+   the next request is "memory + recent ~20%". Whole messages only; the current turn (last
+   user message and its reply) is always kept. A fold that would gain little is skipped, so
+   the prompt (and the provider's cache) isn't rewritten for nothing. */
+function compressionPlan(chat, keepPct){
+  const win = windowMessages(chat);
+  const allow = computeAttachmentAllowSet(win);
+  const ratio = tokenRatio(chat);
+  const costs = win.map(m=>estimateMessageTokens(m, allow.has(m)) * ratio);
+  const total = costs.reduce((a, b)=>a + b, 0) + estimateTokens(effectiveSystemPrompt(chat)) * ratio;
+  const keepBudget = total * keepPct / 100;
+  let lastUser = -1;
+  for(let i = win.length - 1; i >= 0; i--) if(win[i].role === "user"){ lastUser = i; break; }
+  const mustKeep = lastUser >= 0 ? lastUser : Math.max(0, win.length - 1);
+  let start = win.length, kept = 0;
+  for(let i = win.length - 1; i >= 0; i--){
+    if(i >= mustKeep || kept + costs[i] <= keepBudget){ kept += costs[i]; start = i; }
+    else break;
+  }
+  // Keep whole turns: the kept part starts with a user message when possible.
+  while(start < mustKeep && win[start].role !== "user"){ kept -= costs[start]; start++; }
+  const foldTokens = costs.slice(0, start).reduce((a, b)=>a + b, 0);
+  return { win, allow, costs, total, start, fold: win.slice(0, start), foldTokens, keptTokens: kept };
+}
+/* Text of one message for the summarizer: content, attached documents and image notes. */
+function memoryDumpText(m, withFiles){
+  const parts = [];
+  if((m.content||"").trim()) parts.push(m.content.trim());
+  if(m.role === "user"){
+    for(const a of (m.attachments||[])){
+      if(a.kind === "file" && a.text && withFiles) parts.push(`[file: ${a.name || "file"}]\n${a.text}`);
+      else if(a.kind === "image") parts.push("[image]");
+    }
+  }else{
+    for(const r of (m.images||[])) parts.push(`[generated image: ${String(r.revisedPrompt || r.prompt || "").replace(/\s+/g, " ").slice(0, 200)}]`);
+  }
+  return parts.join("\n\n");
+}
+/* Fit the folded turns into capTokens: the longest pieces are shortened first (head and
+   tail kept, the middle marked as omitted), short turns stay whole. */
+function memoryDump(msgs, allow, ratio, capTokens){
+  const pieces = msgs.map(m=>{ const text = memoryDumpText(m, allow.has(m)); return { role: m.role, text, tok: estimateTokens(text) * ratio }; });
+  const total = pieces.reduce((a, p)=>a + p.tok, 0);
+  if(total > capTokens){
+    let lo = 0, hi = Math.max(...pieces.map(p=>p.tok));
+    for(let k = 0; k < 30; k++){
+      const mid = (lo + hi) / 2;
+      if(pieces.reduce((a, p)=>a + Math.min(p.tok, mid), 0) > capTokens) hi = mid; else lo = mid;
+    }
+    for(const p of pieces){
+      if(p.tok <= lo) continue;
+      const keepChars = Math.max(200, Math.floor(p.text.length * lo / p.tok));
+      const head = Math.floor(keepChars * 0.7), tail = keepChars - head;
+      p.text = p.text.slice(0, head) + `\n…[${fmtTokens(p.tok - lo)} tokens omitted]…\n` + p.text.slice(-tail);
+    }
+  }
+  return pieces.map(p=>`${p.role === "user" ? "User" : "Assistant"}: ${p.text}`).join("\n\n");
+}
+/* Run (or join) a compression for this chat. opts.force skips the "too little to gain"
+   check (manual run, or the API said the context is too long). Resolves to
+   { ok, reason, folded, foldTokens, keptTokens }. */
+function compressChat(chat, opts={}){
+  if(!chat) return Promise.resolve({ ok:false, reason:"nothing" });
+  const running = _compressions.get(chat.id);
+  if(running) return running;
+  const p = runCompression(chat, opts).finally(()=>{ _compressions.delete(chat.id); updateCtxRing(); });
+  _compressions.set(chat.id, p);
+  updateCtxRing();
+  return p;
+}
+async function runCompression(chat, opts){
+  const plan = compressionPlan(chat, opts.keepPct ?? memoryKeepPct());
+  const rt = _ctxRuntime.get(chat.id) || {};
+  if(!plan.fold.length){ rt.blocked = plan.total; _ctxRuntime.set(chat.id, rt); return { ok:false, reason:"nothing" }; }
+  if(!opts.force && plan.foldTokens < plan.total * 0.1){ rt.blocked = plan.total; _ctxRuntime.set(chat.id, rt); return { ok:false, reason:"small" }; }
   const modelId = (findModel(chat.model, getAllModels()) || selectedModel())?.id;
-  if(!modelId) return false;
+  if(!modelId) return { ok:false, reason:"model" };
 
-  flashStatus(t("memory.running"), 60000);
+  flashStatus(t("memory.running"), 120000);
   const ctrl = new AbortController();
-  // Text only — attachments are deliberately never dumped into the summarizer input.
-  let dump = "";
-  toCompress.forEach(m=>{ dump += `${m.role === "user" ? "User" : "Assistant"}: ${m.content||""}\n\n`; });
+  const maxChars = memoryMaxChars();
+  // The memory is a few thousand characters at most: the summarizer doesn't need every byte
+  // of a huge paste (head and tail are kept), and a smaller request costs much less.
+  const cap = Math.min(60000, Math.max(16000, Math.round(contextBudget() * 0.25)));
   let userContent = "";
   if((chat.contextSummary||"").trim()) userContent += "【Prior memory】:\n" + chat.contextSummary.trim() + "\n\n";
-  userContent += "【New conversation turns to merge】:\n" + dump;
-
-  const maxChars = memoryMaxChars();
-  const summary = await oneShotLLM(modelId, buildSummarizerPrompt(maxChars), userContent, ctrl.signal);
-  if(!summary) return false;
+  userContent += "【New conversation turns to merge】:\n" + memoryDump(plan.fold, plan.allow, tokenRatio(chat), cap);
+  let summary;
+  try{ summary = await oneShotLLM(modelId, buildSummarizerPrompt(maxChars), userContent, ctrl.signal); }
+  catch(e){
+    _memFail.set(chat.id, { used: plan.total, at: Date.now() });
+    flashStatus(t("memory.failed", e.message || String(e)), 6000);
+    return { ok:false, reason:"error", error:e };
+  }
+  if(!summary){
+    _memFail.set(chat.id, { used: plan.total, at: Date.now() });
+    flashStatus(t("memory.failed", t("msg.empty")), 6000);
+    return { ok:false, reason:"error" };
+  }
+  // The chat may have changed while the summary was being written (edit, delete, clear):
+  // only apply it if the boundary message is still there.
+  const firstKeep = plan.win[plan.start];
+  const at = firstKeep ? chat.messages.indexOf(firstKeep) : -1;
+  if(at < 0 || !state.chats.includes(chat)) return { ok:false, reason:"changed" };
   pushMemoryHistory(chat, chat.contextSummary);
   // Hard cap as a safety net in case the model ignores the length instruction.
   chat.contextSummary = truncateMemoryText(summary, maxChars);
   // The summarized turns stay visible but leave the context, behind a memory divider.
-  const firstKeep = keepRecent > 0 ? win[win.length - keepRecent] : null;
-  const at = firstKeep ? chat.messages.indexOf(firstKeep) : -1;
-  const divider = { role:"divider", memory:true, time: Date.now() };
-  if(at >= 0) chat.messages.splice(at, 0, divider);
-  else if(chat.messages[chat.messages.length-1]?.role !== "divider") chat.messages.push(divider);
+  chat.messages.splice(at, 0, { role:"divider", memory:true, time: Date.now(), folded: plan.fold.length, tokens: Math.round(plan.foldTokens) });
+  _memFail.delete(chat.id);
+  rt.blocked = 0; _ctxRuntime.set(chat.id, rt);
   saveState();
   if(state.activeChatId === chat.id){ renderMessages(); updateTopBar(); }
-  flashStatus(t("memory.done"));
-  return true;
+  flashStatus(t("memory.done", plan.fold.length, fmtTokens(plan.foldTokens), fmtTokens(contextTokens(chat))), 6000);
+  return { ok:true, folded: plan.fold.length, foldTokens: plan.foldTokens, keptTokens: plan.keptTokens };
 }
 
-/* After each reply: once the conversation nears the context limit, fold the older part
-   into memory, so nothing silently drops out of what the model knows. */
+/* After each reply: at memoryTriggerPct of the limit, fold the old part into memory. */
 async function maybeAutoMemory(chat){
-  if(!chat || state.general.autoMemory === false || _autoCompressing) return;
-  if(windowTokens(chat) < contextBudget() * 0.8) return;
-  if(activeWindowMessages(chat).length <= MEMORY_KEEP_RECENT + 1) return; // too little to gain from
-  _autoCompressing = true;
-  try{ await runCompression(chat, { keepRecent: MEMORY_KEEP_RECENT }); }
-  catch(e){ flashStatus(t("memory.failed", e.message||String(e)), 4000); }
-  finally{ _autoCompressing = false; }
+  if(!chat || state.general.autoMemory === false) return;
+  const used = contextTokens(chat), budget = contextBudget();
+  const rt = _ctxRuntime.get(chat.id);
+  if(used < budget * memoryTriggerPct() / 100){ if(rt) rt.blocked = 0; updateCtxRing(); return; }
+  // After a failed attempt, wait for the chat to grow (or 10 minutes) before trying again.
+  const fail = _memFail.get(chat.id);
+  if(fail && used < fail.used + budget * 0.05 && Date.now() - fail.at < 600000) return;
+  await compressChat(chat);
+}
+/* Before a request: finish a running compression, and fold first if this request would
+   come close to the limit (e.g. a long paste). */
+async function ensureContextRoom(chat, onPhase){
+  const running = _compressions.get(chat.id);
+  if(running){ onPhase?.(t("memory.running")); await running.catch(()=>{}); }
+  if(state.general.autoMemory === false) return;
+  if(contextTokens(chat) < contextBudget() * 0.95) return;
+  onPhase?.(t("memory.running"));
+  await compressChat(chat);
+}
+
+/* -------- Context ring (composer) --------
+   How full the context is, at a glance; hover (or tap) for the numbers and what happens
+   next. */
+let _ctxPopPinned = false, _ctxPopTimer = 0;
+function ctxLevel(pct){ const trig = memoryTriggerPct(); return pct >= trig ? "full" : pct >= trig - 15 ? "warn" : "ok"; }
+function updateCtxRing(){
+  const ring = document.getElementById("ctxRing");
+  if(!ring) return;
+  const chat = currentChat();
+  const used = chat ? contextTokens(chat) : 0, budget = contextBudget();
+  const pct = Math.min(100, used / budget * 100);
+  const level = ctxLevel(pct);
+  ring.classList.toggle("warn", level === "warn");
+  ring.classList.toggle("full", level === "full");
+  ring.classList.toggle("busy", !!(chat && _compressions.has(chat.id)));
+  document.getElementById("ctxRingBar").setAttribute("stroke-dasharray", `${Math.max(pct > 0 ? 2 : 0, pct).toFixed(1)} 100`);
+  const label = t("ctx.title", Math.round(pct), Math.max(0, 100 - Math.round(pct))) + " · " + t("ctx.used", fmtTokens(used), fmtTokens(budget));
+  ring.setAttribute("aria-label", label);
+  if(!document.getElementById("ctxPop").classList.contains("hide")) renderCtxPop();
+}
+function renderCtxPop(){
+  const pop = document.getElementById("ctxPop");
+  const chat = currentChat();
+  const used = chat ? contextTokens(chat) : 0, budget = contextBudget();
+  const pct = used / budget * 100, shown = Math.min(100, Math.round(pct));
+  const level = ctxLevel(pct);
+  pop.className = "ctx-pop " + level + (pop.classList.contains("hide") ? " hide" : "");
+  const esc = escapeHtml;
+  let h = `<div class="cp-title">${esc(t("ctx.title", shown, Math.max(0, 100 - shown)))}</div>`;
+  h += `<div class="cp-bar"><i style="width:${Math.min(100, pct).toFixed(1)}%"></i>${state.general.autoMemory !== false ? `<b style="left:${memoryTriggerPct()}%"></b>` : ""}</div>`;
+  h += `<div>${esc(t("ctx.used", fmtTokens(used), fmtTokens(budget)))}</div>`;
+  const cal = chat?.tokenCal;
+  if(cal && cal.input) h += `<div class="cp-note">${esc(t("ctx.measured"))}${esc(t("ctx.lastReq", fmtTokens(cal.input), fmtTokens(cal.cached || 0)))}</div>`;
+  else h += `<div class="cp-note">${esc(t("ctx.estimated"))}</div>`;
+  h += `<div class="cp-note">${esc(state.general.autoMemory !== false ? t("ctx.auto", memoryTriggerPct(), memoryKeepPct()) : t("ctx.autoOff"))}</div>`;
+  if(chat && (chat.contextSummary || "").trim()) h += `<div class="cp-note">${esc(t("ctx.memory", chat.contextSummary.trim().length))}</div>`;
+  const rt = chat ? _ctxRuntime.get(chat.id) : null;
+  const busy = !!(chat && _compressions.has(chat.id));
+  if(busy) h += `<div class="cp-note">${esc(t("memory.running"))}</div>`;
+  else if(rt && rt.trimmed > 0) h += `<div class="cp-warn">${esc(t("ctx.trimmed", rt.trimmed))}</div>`;
+  else if(rt && rt.blocked && pct >= memoryTriggerPct()) h += `<div class="cp-warn">${esc(t("ctx.blocked"))}</div>`;
+  const canFold = !!chat && !busy && !isStreaming(chat.id) && compressionPlan(chat, memoryKeepPct()).fold.length > 0;
+  h += `<div class="cp-actions"><button type="button" class="btn ghost" data-act="compress"${canFold ? "" : " disabled"}>${esc(t("ctx.compressNow"))}</button>`;
+  if(chat && (chat.contextSummary || "").trim()) h += `<button type="button" class="btn ghost" data-act="memory">${esc(t("ctx.viewMemory"))}</button>`;
+  h += `</div>`;
+  pop.innerHTML = h;
+}
+function openCtxPop(pinned){
+  clearTimeout(_ctxPopTimer);
+  if(pinned) _ctxPopPinned = true;
+  renderCtxPop();
+  document.getElementById("ctxPop").classList.remove("hide");
+  document.getElementById("ctxRing").setAttribute("aria-expanded", "true");
+}
+function closeCtxPop(){
+  clearTimeout(_ctxPopTimer);
+  _ctxPopPinned = false;
+  document.getElementById("ctxPop").classList.add("hide");
+  document.getElementById("ctxRing").setAttribute("aria-expanded", "false");
+}
+function setupCtxRing(){
+  const wrap = document.getElementById("ctxWrap"), ring = document.getElementById("ctxRing"), pop = document.getElementById("ctxPop");
+  const hover = window.matchMedia("(hover: hover)").matches;
+  if(hover){
+    wrap.addEventListener("mouseenter", ()=>openCtxPop(false));
+    wrap.addEventListener("mouseleave", ()=>{ if(!_ctxPopPinned) _ctxPopTimer = setTimeout(closeCtxPop, 250); });
+  }
+  ring.addEventListener("click", (e)=>{
+    e.stopPropagation();
+    if(_ctxPopPinned) closeCtxPop(); else openCtxPop(true);
+  });
+  pop.addEventListener("click", async (e)=>{
+    e.stopPropagation();
+    const act = e.target.closest("[data-act]")?.dataset.act;
+    const chat = currentChat();
+    if(!act || !chat) return;
+    if(act === "memory"){ closeCtxPop(); openMemoryModal(); return; }
+    if(act === "compress"){
+      const r = compressChat(chat, { force:true });
+      renderCtxPop();
+      const res = await r;
+      if(!res.ok && res.reason === "nothing") flashStatus(t("ctx.nothing"), 3000);
+    }
+  });
+  document.addEventListener("click", (e)=>{ if(!wrap.contains(e.target)) closeCtxPop(); });
+  document.addEventListener("keydown", (e)=>{ if(e.key === "Escape" && !pop.classList.contains("hide")) closeCtxPop(); });
 }
 
 /* Inline icons used by dynamic UI (single-color line icons, same style as the sidebar). */
@@ -4354,6 +4655,7 @@ function renderChatList(){
 
 function updateTopBar(){
   const c = currentChat();
+  updateCtxRing();
   document.getElementById("chatTitle").textContent = c?.title || t("chat.new.default");
   updateMemoryUI();
   updateModelChip();
@@ -4362,6 +4664,7 @@ function updateTopBar(){
 function renderMessages(){
   const box = document.getElementById("messages");
   const chat = currentChat();
+  updateCtxRing();
   box.innerHTML = "";
   if(!chat || chat.messages.length===0){
     const h = new Date().getHours();
@@ -4446,7 +4749,7 @@ function renderMessageEl(m, idx){
     const lbl = document.createElement("span"); lbl.className = "lbl";
     const ico = document.createElement("span"); ico.className = "ico"; ico.textContent = m.memory ? "🧠" : "✂";
     if(m.memory) d.classList.add("memory");
-    const text = document.createElement("span"); text.className = "text"; text.textContent = t(m.memory ? "memory.divider" : "context.divider");
+    const text = document.createElement("span"); text.className = "text"; text.textContent = m.memory && m.folded ? t("memory.divider.n", m.folded, fmtTokens(m.tokens)) : t(m.memory ? "memory.divider" : "context.divider");
     const x = document.createElement("span"); x.className = "x"; x.textContent = "×";
     x.title = t("context.divider.remove");
     x.setAttribute("role","button");
@@ -5167,11 +5470,13 @@ async function streamResponse(chat, aiMsg, modelId, opts){
   };
   const tools = forceImage ? imageModels().length > 0 : imageToolAvailable();
   // Draw mode: the drawing instruction is added to this request only (never stored).
-  const reqChat = forceImage
+  // Built per attempt: a compression in between changes the memory in the system prompt.
+  const reqChat = ()=>forceImage
     ? { ...chat, systemPrompt: [chat.systemPrompt ?? state.general.systemPrompt ?? "", DRAW_HINT].filter(Boolean).join("\n\n") }
     : chat;
-  const runOnce = (signal)=>callModel(target, reqChat, signal,
-    { onContent, onReasoning, onOrphanThink, onActivity, onRoundBreak, onToolCall: (tc)=>onToolCall(tc, signal) },
+  const onUsage = (u)=>{ recordUsage(chat, u, target.model); };
+  const runOnce = (signal)=>callModel(target, reqChat(), signal,
+    { onContent, onReasoning, onOrphanThink, onActivity, onRoundBreak, onUsage, onToolCall: (tc)=>onToolCall(tc, signal) },
     forceImage ? { tools, forceTool: true, stopAfterTool: true, think: false } : { tools });
 
   // Watchdog: "connect" timeout until the first token, then a "stall" timeout between chunks.
@@ -5181,6 +5486,9 @@ async function streamResponse(chat, aiMsg, modelId, opts){
   // A transient empty / network / 5xx response is retried once before it's surfaced.
   // Tunable via state.general.emptyRetries.
   const maxAttempts = Math.max(1, (Number(state.general.emptyRetries) || 1) + 1);
+  let overflowRetried = false;
+  // A running compression finishes first; a request that would hit the limit folds first.
+  await ensureContextRoom(chat, (phase)=>streamPhase(chatId, phase));
   for(let attempt=1; attempt<=maxAttempts; attempt++){
     // Reset accumulation + indicators for this attempt.
     aiMsg.content = ""; aiMsg.reasoning = ""; aiMsg.thought = false; aiMsg.reasoningMs = 0;
@@ -5221,6 +5529,13 @@ async function streamResponse(chat, aiMsg, modelId, opts){
 
     const gotSomething = aiMsg.content.trim()!=="" || aiMsg.reasoning.trim()!=="" || (aiMsg.images||[]).length > 0 || !!aiMsg.imageError;
     if(!err && gotSomething) break;                                               // good response
+    // The API says the context is too long: fold the old part into memory and send again.
+    if(err && isContextOverflow(err) && !overflowRetried && !toolUsed && state.general.autoMemory !== false){
+      overflowRetried = true;
+      streamPhase(chatId, t("memory.running"));
+      const r = await compressChat(chat, { force:true });
+      if(r.ok){ attempt--; continue; }
+    }
     if(attempt < maxAttempts && isRetryableLLM(err) && !toolUsed) continue;       // transient → retry
 
     // Out of attempts, or a non-retryable error: surface the outcome.
@@ -5251,6 +5566,7 @@ async function streamResponse(chat, aiMsg, modelId, opts){
   }
   streamEnd(chatId);
   saveState();
+  updateCtxRing();
 }
 
 /* ------------------------- Providers (via Totoro API) ------------------------- */
@@ -5464,9 +5780,10 @@ function isOpenAIReasoningModel(model){
   const m = String(model||"").toLowerCase();
   return /^(o\d|gpt-5|gpt-[6-9]|codex)/.test(m) && !/chat-latest|gpt-5-chat/.test(m);
 }
-async function callOpenAICompat({base, key, model, chat, signal, onContent, onReasoning, onOrphanThink, onActivity, think, tools, forceTool, extra, imgIndex}){
+async function callOpenAICompat({base, key, model, chat, signal, onContent, onReasoning, onOrphanThink, onActivity, onUsage, think, tools, forceTool, extra, imgIndex}){
   const url = base + "/v1/chat/completions";
-  const body = { model, messages: buildOpenAIMessages(chat, imgIndex).concat(extra || []), stream:true };
+  // include_usage: the last chunk reports the real token counts (used to size the context).
+  const body = { model, messages: buildOpenAIMessages(chat, imgIndex).concat(extra || []), stream:true, stream_options:{ include_usage:true } };
   const reasoning = isOpenAIReasoningModel(model);
   const temp = userTemp();
   if(temp !== null && !reasoning) body.temperature = temp;
@@ -5476,7 +5793,7 @@ async function callOpenAICompat({base, key, model, chat, signal, onContent, onRe
   if(tools) body.tools = [{ type:"function", function: IMAGE_TOOL }];
   if(tools && forceTool) body.tool_choice = { type:"function", function:{ name: IMAGE_TOOL.name } };
   const headers = { "Content-Type":"application/json", "Authorization":"Bearer " + key };
-  const OPTIONAL = ["reasoning_effort","temperature","max_tokens","max_completion_tokens","tool_choice"];
+  const OPTIONAL = ["reasoning_effort","temperature","max_tokens","max_completion_tokens","tool_choice","stream_options"];
   const r = await postWithDegrade(url, headers, body, (b, msg)=>{
     // Drop only the field the error names; if none is named, drop all optional ones once.
     const named = OPTIONAL.filter(k=>k in b && msg.includes(k));
@@ -5490,6 +5807,7 @@ async function callOpenAICompat({base, key, model, chat, signal, onContent, onRe
   await readSSE(r, (json)=>{
     // Some gateways report errors inside an HTTP 200 stream
     if(json.error){ streamErr = new Error(streamErrMessage(json.error)); return; }
+    if(json.usage && json.usage.prompt_tokens) onUsage?.({ input: json.usage.prompt_tokens, cached: json.usage.prompt_tokens_details?.cached_tokens || 0, output: json.usage.completion_tokens || 0 });
     const choice = json.choices?.[0] || {};
     const delta = choice.delta || {};
     if(choice.finish_reason) finish = choice.finish_reason;
@@ -5556,7 +5874,7 @@ function buildClaudeMessages(chat, imgIndex){
   while(merged.length && merged[merged.length-1].role === "assistant") merged.pop();
   return merged;
 }
-async function callClaude({base, key, model, chat, signal, onContent, onReasoning, onActivity, think, tools, extra, imgIndex}){
+async function callClaude({base, key, model, chat, signal, onContent, onReasoning, onActivity, onUsage, think, tools, extra, imgIndex}){
   const url = base + "/v1/messages";
   const ver = claudeVersion(model);
   const modern = ver === null || ver >= 4.6;         // adaptive thinking + effort
@@ -5608,7 +5926,7 @@ async function callClaude({base, key, model, chat, signal, onContent, onReasonin
     }
     return null;
   }, signal);
-  let streamErr = null, stopReason = "";
+  let streamErr = null, stopReason = "", claudeUsage = {};
   const blocks = [];                                  // content blocks by index, for tool-use replay
   const blockAt = (i, type)=>blocks[i] || (blocks[i] = type === "thinking" ? {type:"thinking", thinking:"", signature:""}
                                                   : type === "tool_use" ? {type:"tool_use", id:"", name:"", input:{}, _json:""}
@@ -5617,6 +5935,13 @@ async function callClaude({base, key, model, chat, signal, onContent, onReasonin
     // Anthropic sends `event: error` with data {type:"error", error:{...}} mid-stream
     if(json.type === "error"){ streamErr = new Error(streamErrMessage(json.error)); return; }
     if(json.type === "message_delta" && json.delta?.stop_reason) stopReason = json.delta.stop_reason;
+    // Input = uncached + cache reads + cache writes (Anthropic reports them separately).
+    const cu = json.type === "message_start" ? json.message?.usage : json.type === "message_delta" ? json.usage : null;
+    if(cu){
+      claudeUsage = { ...claudeUsage, ...Object.fromEntries(Object.entries(cu).filter(([, v])=>typeof v === "number")) };
+      const input = (claudeUsage.input_tokens || 0) + (claudeUsage.cache_read_input_tokens || 0) + (claudeUsage.cache_creation_input_tokens || 0);
+      if(input) onUsage?.({ input, cached: claudeUsage.cache_read_input_tokens || 0, output: claudeUsage.output_tokens || 0 });
+    }
     if(json.type === "content_block_start"){
       const cb = json.content_block || {};
       if(cb.type === "tool_use") blocks[json.index] = { type:"tool_use", id: cb.id, name: cb.name, input:{}, _json:"" };
@@ -5649,7 +5974,7 @@ async function callClaude({base, key, model, chat, signal, onContent, onReasonin
 }
 
 /* -------- Google Gemini (native) -------- */
-async function callGemini({base, key, model, chat, signal, onContent, onReasoning, onActivity, think, tools, forceTool, extra, imgIndex}){
+async function callGemini({base, key, model, chat, signal, onContent, onReasoning, onActivity, onUsage, think, tools, forceTool, extra, imgIndex}){
   const url = `${base}/v1beta/models/${encodeURIComponent(model)}:streamGenerateContent?alt=sse`;
   const contents = [];
   const msgs = lastN(chat.messages, chat);
@@ -5694,6 +6019,8 @@ async function callGemini({base, key, model, chat, signal, onContent, onReasonin
     // Prompt blocked by safety: no candidates, only promptFeedback.blockReason
     const block = json.promptFeedback?.blockReason;
     if(block){ streamErr = new Error(t("msg.blocked") + " (" + block + ")"); return; }
+    const um = json.usageMetadata;
+    if(um && um.promptTokenCount) onUsage?.({ input: um.promptTokenCount, cached: um.cachedContentTokenCount || 0, output: (um.candidatesTokenCount || 0) + (um.thoughtsTokenCount || 0) });
     const cand = json.candidates?.[0];
     if(cand?.finishReason && cand.finishReason !== "STOP") finish = cand.finishReason;
     for(const p of (cand?.content?.parts || [])){
@@ -5738,10 +6065,13 @@ async function callModel(target, chat, signal, handlers, opts){
   const forceTool = tools && !!(opts && opts.forceTool);
   const imgIndex = tools ? chatImageIndex(chat) : null;
   await hydrateRequestImages(chat, imgIndex);
+  // The first round sends exactly the chat window: its real size calibrates the estimate.
+  const est = handlers.onUsage ? requestRawTokens(chat, tools) : 0;
   const extra = [];
   let protocol = target.protocol;
   for(let round = 0; round < 4; round++){
-    const args = { ...target, chat, signal, ...handlers, think, tools, forceTool: forceTool && round === 0, extra, imgIndex };
+    let usage = null;
+    const args = { ...target, chat, signal, ...handlers, onUsage: (u)=>{ usage = u; }, think, tools, forceTool: forceTool && round === 0, extra, imgIndex };
     let res;
     if(protocol === "openai") res = await callOpenAICompat(args);
     else{
@@ -5751,6 +6081,7 @@ async function callModel(target, chat, signal, handlers, opts){
         else throw e;
       }
     }
+    if(usage && round === 0) handlers.onUsage?.({ ...usage, est });
     if(!res || !res.toolCalls || !res.toolCalls.length || round === 3) return;
     const results = [];
     for(const tc of opts && opts.stopAfterTool ? res.toolCalls.slice(0, 1) : res.toolCalls) results.push(await handlers.onToolCall(tc));
@@ -5797,40 +6128,74 @@ function lastN(messages, chat){
   return fitTokenBudget(slice.slice(-n), chat);
 }
 
-/* 粗略 token 估算：CJK 按 1 字/token，其余按 4 字符/token。只用于"别把上下文窗口
-   撑爆"的二级裁剪，不追求精确 —— 条数窗口（historyN）挡不住夹带 PDF 正文的长消息。 */
+/* Token estimate, fitted on the o200k tokenizer (what GPT-5/6 report) over code, JSON,
+   logs, CSV, Markdown, Chinese and English: mean error ≈4%, ≤14% per kind of text (the old
+   "CJK 1, other chars/4" rule was off by up to 40% on JSON and logs). It counts the way
+   BPE splits text: a run of letters is about one token, digits go in groups of three,
+   punctuation and CJK characters count one by one. Each chat then calibrates it against
+   the API's real count (tokenRatio). */
 function estimateTokens(text){
   const s = String(text||"");
   if(!s) return 0;
-  const cjk = (s.match(/[\u3400-\u9fff\u3040-\u30ff\uac00-\ud7af]/g)||[]).length;
-  return Math.ceil(cjk + (s.length - cjk)/4);
+  let n = 0, letters = 0, digits = 0, spaces = 0;
+  for(let i = 0; i <= s.length; i++){
+    const c = i < s.length ? s.charCodeAt(i) : -1;
+    const isLetter = (c >= 97 && c <= 122) || (c >= 65 && c <= 90), isDigit = c >= 48 && c <= 57, isSpace = c === 32 || c === 9;
+    if(letters && !isLetter){ n += 0.885 + Math.max(0, letters - 6) * 0.216; letters = 0; }
+    if(digits && !isDigit){ n += Math.ceil(digits / 3) * 1.408; digits = 0; }
+    if(spaces && !isSpace){ if(spaces > 1) n += 1.164; spaces = 0; }
+    if(c < 0) break;
+    if(isLetter) letters++;
+    else if(isDigit) digits++;
+    else if(isSpace) spaces++;
+    else if(c === 10) n += 0.296;
+    else if(c < 128){ if(c > 32 && c < 127) n += 0.604; }
+    else if((c >= 0x3400 && c <= 0x9fff) || (c >= 0xf900 && c <= 0xfaff)) n += 0.704;   // CJK
+    else if((c >= 0x3000 && c <= 0x303f) || (c >= 0xff00 && c <= 0xffef) || (c >= 0x2018 && c <= 0x201f) || c === 0x2026) n += 1.503;
+    else n += 0.574;
+  }
+  return Math.ceil(n);
 }
 const IMAGE_TOKEN_COST = { low:300, standard:1200, high:1800 };
+const _msgTokens = new WeakMap();    // message → cached estimate (content changes invalidate it)
 function estimateMessageTokens(m, withAttachments){
-  let n = estimateTokens(m.content) + 8;   // 角色/分隔符开销
+  const atts = m.attachments || [], imgs = m.images || [];
+  const key = (withAttachments ? atts.length : -1) + "|" + imgs.length + "|" + (state.general.imageDetail || "");
+  const c = _msgTokens.get(m);
+  if(c && c.content === m.content && c.key === key) return c.n;
+  let n = estimateTokens(m.content) + 8;   // role / separator overhead
   if(withAttachments){
-    for(const a of (m.attachments||[])){
+    for(const a of atts){
       if(a.kind === "file" && a.text) n += estimateTokens(a.text);
       else if(a.kind === "image") n += IMAGE_TOKEN_COST[state.general.imageDetail] ?? IMAGE_TOKEN_COST.standard;
     }
   }
+  for(const r of imgs) n += 12 + estimateTokens(String(r.revisedPrompt || r.prompt || "").slice(0, 300));
+  _msgTokens.set(m, { content: m.content, key, n });
   return n;
 }
-/* 在条数窗口之上再按 token 预算从最旧的一端裁剪；留空 = 不启用。
-   预算里先扣掉 system prompt 和预留的输出长度，最后一条消息永远保留。 */
+/* Last line of defense under the memory: if a request would still exceed the context
+   limit, the oldest messages of the window are left out (the last one always goes). The
+   ring tells the user when this happens. */
 function fitTokenBudget(list, chat){
   const budget = optNum(state.general.contextTokenBudget);
   if(!budget || budget <= 0 || !list.length) return list;
-  const allow = computeAttachmentAllowSet(list);   // 只对真正会发出去的附件计费
+  const allow = computeAttachmentAllowSet(list);   // only attachments that will be sent count
+  const ratio = tokenRatio(chat);
   let left = budget
-    - estimateTokens(chat ? effectiveSystemPrompt(chat) : "")
+    - estimateTokens(chat ? effectiveSystemPrompt(chat) : "") * ratio
     - (Number(state.general.maxTokens) || 0);
   const kept = [];
   for(let i = list.length-1; i >= 0; i--){
-    const cost = estimateMessageTokens(list[i], allow.has(list[i]));
+    const cost = estimateMessageTokens(list[i], allow.has(list[i])) * ratio;
     if(kept.length && left - cost < 0) break;
     left -= cost;
     kept.unshift(list[i]);
+  }
+  if(chat && chat.id){
+    const rt = _ctxRuntime.get(chat.id) || {};
+    rt.trimmed = list.length - kept.length;
+    _ctxRuntime.set(chat.id, rt);
   }
   return kept;
 }
@@ -5888,6 +6253,8 @@ function openSettings(tab){
   set("cfg_attach_keep_recent", g.attachmentKeepRecent ?? 1);
   document.getElementById("cfg_auto_memory").checked = g.autoMemory !== false;
   set("cfg_memory_max_chars", g.memoryMaxChars || 8000);
+  set("cfg_memory_trigger", memoryTriggerPct());
+  set("cfg_memory_keep", memoryKeepPct());
   document.getElementById("cfg_auto_image").checked = g.autoImage !== false;
   document.getElementById("cfg_draw_smart").checked = g.drawSmart !== false;
   updateStorageUsage();
@@ -6023,7 +6390,12 @@ async function saveSettings(){
   g.aiName = str("cfg_ai_name");
   g.temperature = str("cfg_temp");
   g.maxTokens = str("cfg_max_tokens");
-  g.contextTokenBudget = str("cfg_ctx_budget") === "" ? "200000" : String(Math.max(1000, Number(str("cfg_ctx_budget")) || 200000));
+  g.contextTokenBudget = str("cfg_ctx_budget") === "" ? "250000" : String(Math.max(1000, Math.round(Number(str("cfg_ctx_budget"))) || 250000));
+  // Percentages are kept in range (and "keep" at least 10 points under "summarize at"),
+  // otherwise every reply would trigger another summary.
+  const pct = (id, lo, hi, def)=>{ const v = Math.round(Number(str(id))); return str(id) === "" || !Number.isFinite(v) ? def : Math.min(hi, Math.max(lo, v)); };
+  g.memoryTriggerPct = pct("cfg_memory_trigger", 50, 95, 80);
+  g.memoryKeepPct = Math.min(pct("cfg_memory_keep", 5, 50, 20), g.memoryTriggerPct - 10);
   g.imageDetail = document.getElementById("cfg_image_detail").value || "standard";
   g.attachmentKeepRecent = str("cfg_attach_keep_recent") === "" ? 10 : Math.max(0, Number(str("cfg_attach_keep_recent")) || 0);
   g.autoMemory = document.getElementById("cfg_auto_memory").checked;
@@ -6802,6 +7174,7 @@ async function init(){
     }
   });
   setupMaskEditor();
+  setupCtxRing();
   // "Clear all data" in another tab: this tab still holds everything in memory, and its next
   // save would bring settings and API keys back. Stop saving and reload.
   window.addEventListener("storage", (e)=>{
