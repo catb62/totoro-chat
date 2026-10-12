@@ -1158,9 +1158,9 @@ html[data-theme="dark"] .key-row-status.ok{color:#34d399}
           <div class="set-head"><h4 data-i18n="general.memory">Context &amp; memory</h4></div>
           <div class="row-2">
             <div class="form-row"><label data-i18n="general.ctxBudget.label">Context limit (tokens)</label><input id="cfg_ctx_budget" type="number" min="1000" step="1000" inputmode="numeric" placeholder="250000" /></div>
-            <div class="form-row"><label data-i18n="general.attachKeepRecent.label">Attachments kept</label><input id="cfg_attach_keep_recent" type="number" min="0" step="1" inputmode="numeric" placeholder="10" /></div>
+            <div class="form-row"><label data-i18n="general.imageKeep.label">Images sent (max)</label><input id="cfg_image_keep" type="number" min="1" max="50" step="1" inputmode="numeric" placeholder="50" /></div>
           </div>
-          <div class="form-row"><span class="hint" data-i18n="general.ctxBudget.hint"></span><span class="hint" data-i18n="general.attachKeepRecent.hint"></span></div>
+          <div class="form-row"><span class="hint" data-i18n="general.ctxBudget.hint"></span><span class="hint" data-i18n="general.imageKeep.hint"></span></div>
           <div class="form-row"><label class="check-label"><input id="cfg_auto_memory" type="checkbox" /><span data-i18n="general.autoMemory.label">Automatic memory</span></label><span class="hint" data-i18n="general.autoMemory.hint"></span></div>
           <div class="row-2">
             <div class="form-row"><label data-i18n="general.memoryTrigger.label">Summarize at (% of limit)</label><input id="cfg_memory_trigger" type="number" min="50" max="95" step="5" inputmode="numeric" placeholder="80" /></div>
@@ -1374,9 +1374,9 @@ const DEFAULT_STATE = {
     aiName:"",
     autoMemory:true,     // fold older turns into a summary before they fall out of the context
     memoryMaxChars:8000,
-    settingsVersion:3,
+    settingsVersion:4,
     imageDetail:"standard",
-    attachmentKeepRecent:10
+    imageKeepRecent:50
   },
   lastModel:"",
   folders:[]            // [{id, name, collapsed}] — chats point at them via chat.folderId
@@ -1450,12 +1450,12 @@ const I18N = {
     "general.memory":"Context & memory",
     "general.ctxBudget.label":"Context limit (tokens)",
     "general.ctxBudget.hint":"The model's context limit in tokens (default 250,000). Counts come from the API's real usage after each reply.",
-    "general.attachKeepRecent.label":"Messages that keep attachments",
-    "general.attachKeepRecent.hint":"Images and files from the latest N messages with attachments are sent to the model again (default 10); older attachments are no longer sent.",
+    "general.imageKeep.label":"Images sent per request (max)",
+    "general.imageKeep.hint":"Each request carries at most the newest N images (1–50, default 50); older images are no longer sent. Text attachments always go along while their message is in the context.",
     "general.autoMemory.label":"Automatic memory (recommended)",
     "general.autoMemory.hint":"When a chat reaches the summarize point, its older part is summarized into memory and only the newest part is sent word for word — nothing silently drops out.",
     "general.memoryMaxChars.label":"Memory size limit (characters)",
-    "general.memoryMaxChars.hint":"Upper bound for one chat's memory (default 8000). Memory only stores text, never attachment content.",
+    "general.memoryMaxChars.hint":"Upper bound for one chat's memory (default 8000). Memory is text only: what documents say is summarized into it, images aren't.",
     "sidebar.collapse":"Collapse sidebar",
     "model.family.image":"Image",
     "draw.label":"Image",
@@ -1804,12 +1804,12 @@ const I18N = {
     "general.memory":"上下文与记忆",
     "general.ctxBudget.label":"上下文上限（tokens）",
     "general.ctxBudget.hint":"模型的上下文上限（默认 25 万 tokens）。用量以每次回复后接口返回的实际数为准。",
-    "general.attachKeepRecent.label":"保留附件的消息数",
-    "general.attachKeepRecent.hint":"最近 N 条带附件的消息，其图片和文件会继续发给模型（默认 10）；更早的附件不再发送。",
+    "general.imageKeep.label":"每次最多携带的图片数",
+    "general.imageKeep.hint":"每次请求最多带上最近 N 张图片（1–50，默认 50），更早的图片不再发送。文字附件只要还在上下文里，就会一直随消息发送。",
     "general.autoMemory.label":"自动记忆（推荐）",
     "general.autoMemory.hint":"达到整理比例时，较早的部分自动总结成记忆，只把最近的部分原文发给模型，不会悄悄丢掉内容。",
     "general.memoryMaxChars.label":"记忆上限（字符）",
-    "general.memoryMaxChars.hint":"单个对话记忆的最大长度（默认 8000）。记忆只保存文字，不包含附件内容。",
+    "general.memoryMaxChars.hint":"单个对话记忆的最大长度（默认 8000）。记忆只保存文字：文档附件的内容会概括进去，图片不会。",
     "sidebar.collapse":"收起侧栏",
     "model.family.image":"画图",
     "draw.label":"画图",
@@ -2215,9 +2215,8 @@ function normalizeState(s){
   const g = out.general;
   // The stored version (not the merged default) tells whether old settings need upgrading.
   if((Number((s.general || {}).settingsVersion) || 0) < 2){
-    // v2 defaults: big context (200K tokens), 10 attachments, memory for every chat.
+    // v2 defaults: big context (200K tokens), memory for every chat.
     if(Number(g.historyN) === 40) g.historyN = 1000;
-    if(Number(g.attachmentKeepRecent) === 1) g.attachmentKeepRecent = 10;
     if(!g.contextTokenBudget) g.contextTokenBudget = "200000";
     if(g.scenarioAutoCompress === false) g.autoMemory = false;
     if(Number(g.scenarioMemoryMaxChars) > 8000) g.memoryMaxChars = Number(g.scenarioMemoryMaxChars);
@@ -2228,6 +2227,11 @@ function normalizeState(s){
     // v3: token counts come from the API now, so the default limit can be 250K.
     if(String(g.contextTokenBudget) === "200000") g.contextTokenBudget = "250000";
     g.settingsVersion = 3;
+  }
+  if((Number((s.general || {}).settingsVersion) || 0) < 4){
+    // v4: documents always go with their message; only images are capped (newest 50).
+    delete g.attachmentKeepRecent;
+    g.settingsVersion = 4;
   }
   out.chats.forEach(c=>migrateChat(c, g.systemPrompt));
   if(!Array.isArray(out.config.keys)) out.config.keys = [];
@@ -2338,8 +2342,7 @@ function cloneStateForStorage(keepAttachmentMessages){
   return s;
 }
 function saveStateLegacy(){
-  const configuredKeep = Math.max(0, Number(state.general?.attachmentKeepRecent ?? 1)||0);
-  for(const keep of [...new Set([configuredKeep, 1, 0])]){
+  for(const keep of [10, 1, 0]){
     try{ localStorage.setItem(LS_KEY, JSON.stringify(cloneStateForStorage(keep))); return true; }
     catch(e){ if(!isQuotaExceeded(e)) break; }
   }
@@ -3309,15 +3312,15 @@ function toolSchemaTokens(tools){ return tools ? (toolSchemaTokens.n ??= estimat
 function contextTokens(chat){
   if(!chat) return 0;
   const win = windowMessages(chat);
-  const allow = computeAttachmentAllowSet(win);
-  const raw = win.reduce((n, m)=>n + estimateMessageTokens(m, allow.has(m)), 0) + estimateTokens(effectiveSystemPrompt(chat)) + toolSchemaTokens(imageToolAvailable());
+  const images = sentImageSet(win);
+  const raw = win.reduce((n, m)=>n + estimateMessageTokens(m, images), 0) + estimateTokens(effectiveSystemPrompt(chat)) + toolSchemaTokens(imageToolAvailable());
   return Math.round(raw * tokenRatio(chat));
 }
 /* What one request will send, uncalibrated (compared with the API's count afterwards). */
 function requestRawTokens(chat, tools){
   const msgs = lastN(chat.messages || [], chat).filter(isSentMessage);
-  const allow = computeAttachmentAllowSet(msgs);
-  return msgs.reduce((n, m)=>n + estimateMessageTokens(m, allow.has(m)), 0) + estimateTokens(effectiveSystemPrompt(chat)) + toolSchemaTokens(tools);
+  const images = sentImageSet(msgs);
+  return msgs.reduce((n, m)=>n + estimateMessageTokens(m, images), 0) + estimateTokens(effectiveSystemPrompt(chat)) + toolSchemaTokens(tools);
 }
 /* Calibrate from a reply's usage. Tiny requests are mostly fixed overhead (tool schema,
    role markers), so they don't move the ratio. */
@@ -3347,9 +3350,9 @@ function fmtTokens(n){
 const CARRY_MIN_TOKENS = 1000;
 function compressionPlan(chat, keepPct){
   const win = windowMessages(chat);
-  const allow = computeAttachmentAllowSet(win);
+  const images = sentImageSet(win);
   const ratio = tokenRatio(chat);
-  const costs = win.map(m=>estimateMessageTokens(m, allow.has(m)) * ratio);
+  const costs = win.map(m=>estimateMessageTokens(m, images) * ratio);
   const total = costs.reduce((a, b)=>a + b, 0) + estimateTokens(effectiveSystemPrompt(chat)) * ratio;
   const keepBudget = total * keepPct / 100;
   // The previous fold's carry leads the window; it is folded or kept as a whole.
@@ -3361,7 +3364,7 @@ function compressionPlan(chat, keepPct){
   let start = win.length, kept = 0, carry = null;
   for(let i = win.length - 1; i >= 0; i--){
     if(i >= mustKeep || kept + costs[i] <= keepBudget){ kept += costs[i]; start = i; continue; }
-    if(i >= head) carry = carryTail(win[i], allow.has(win[i]), (keepBudget - kept) / ratio);
+    if(i >= head) carry = carryTail(win[i], (keepBudget - kept) / ratio);
     break;
   }
   if(carry) kept += carry.tokens * ratio;
@@ -3370,12 +3373,12 @@ function compressionPlan(chat, keepPct){
   // Everything but the old carry fits: there's nothing new to summarize.
   if(start <= head){ start = 0; carry = null; kept = costs.reduce((a, b)=>a + b, 0); }
   const foldTokens = costs.slice(0, start).reduce((a, b)=>a + b, 0);
-  return { win, allow, costs, total, start, fold: win.slice(0, start), foldTokens, keptTokens: kept, carry };
+  return { win, costs, total, start, fold: win.slice(0, start), foldTokens, keptTokens: kept, carry };
 }
 /* The end of message m that fits in maxTokens (uncalibrated), starting at a line break when
    one is close; null when there's too little room to be worth it. Images aren't carried. */
-function carryTail(m, withFiles, maxTokens){
-  const files = m.role === "user" && withFiles ? (m.attachments||[]).filter(a=>a.kind === "file" && a.text) : [];
+function carryTail(m, maxTokens){
+  const files = m.role === "user" ? (m.attachments||[]).filter(a=>a.kind === "file" && a.text) : [];
   const text = [m.content || "", ...files.map(f=>`[file: ${f.name || "file"}]\n${f.text}`)].filter(x=>x.trim()).join("\n\n");
   const overhead = estimateTokens(m.role === "assistant" ? CARRY_ASSISTANT_NOTE : CARRY_USER_NOTE) + 20;
   const room = maxTokens - overhead;
@@ -3393,12 +3396,12 @@ function carryTail(m, withFiles, maxTokens){
   return { role: m.role, text: tail, tokens: estimateTokens(tail) + overhead };
 }
 /* Text of one message for the summarizer: content, attached documents and image notes. */
-function memoryDumpText(m, withFiles){
+function memoryDumpText(m){
   const parts = [];
   if((m.content||"").trim()) parts.push(m.content.trim());
   if(m.role === "user"){
     for(const a of (m.attachments||[])){
-      if(a.kind === "file" && a.text && withFiles) parts.push(`[file: ${a.name || "file"}]\n${a.text}`);
+      if(a.kind === "file" && a.text) parts.push(`[file: ${a.name || "file"}]\n${a.text}`);
       else if(a.kind === "image") parts.push("[image]");
     }
   }else{
@@ -3408,8 +3411,8 @@ function memoryDumpText(m, withFiles){
 }
 /* Fit the folded turns into capTokens: the longest pieces are shortened first (head and
    tail kept, the middle marked as omitted), short turns stay whole. */
-function memoryDump(msgs, allow, ratio, capTokens){
-  const pieces = msgs.map(m=>{ const text = memoryDumpText(m, allow.has(m)); return { role: m.role, text, tok: estimateTokens(text) * ratio }; });
+function memoryDump(msgs, ratio, capTokens){
+  const pieces = msgs.map(m=>{ const text = memoryDumpText(m); return { role: m.role, text, tok: estimateTokens(text) * ratio }; });
   const total = pieces.reduce((a, p)=>a + p.tok, 0);
   if(total > capTokens){
     let lo = 0, hi = Math.max(...pieces.map(p=>p.tok));
@@ -3455,7 +3458,7 @@ async function runCompression(chat, opts){
   let userContent = "";
   if((chat.contextSummary||"").trim()) userContent += "【Prior memory】:\n" + chat.contextSummary.trim() + "\n\n";
   // The old carry was summarized with its whole message last time.
-  userContent += "【New conversation turns to merge】:\n" + memoryDump(plan.fold.filter(m=>!m.carried), plan.allow, tokenRatio(chat), cap);
+  userContent += "【New conversation turns to merge】:\n" + memoryDump(plan.fold.filter(m=>!m.carried), tokenRatio(chat), cap);
   let summary;
   try{ summary = await oneShotLLM(modelId, buildSummarizerPrompt(maxChars), userContent, ctrl.signal); }
   catch(e){
@@ -5376,8 +5379,7 @@ async function streamResponse(chat, aiMsg, modelId, opts){
     return;
   }
   // Whether this request carries images (for the "model may not support vision" hint on 400)
-  const _allowImg = computeAttachmentAllowSet(lastN(chat.messages, chat));
-  const sentImages = [..._allowImg].some(m => (m.attachments||[]).some(a=>a.kind==="image"));
+  const sentImages = sentImageSet(lastN(chat.messages, chat)).size > 0;
   // Only the chat in the foreground may touch the DOM — this keeps chats isolated.
   const onActive = ()=> state.activeChatId === chatId;
   const ctrl = new AbortController();
@@ -5834,16 +5836,14 @@ async function selectionCanvas(rec, maxSide, flatten){
 /* Load the image attachments this request will send, so the builders can read them sync. */
 async function hydrateRequestImages(chat, imgIndex){
   const msgs = lastN(chat.messages, chat);
-  const allow = computeAttachmentAllowSet(msgs);
-  for(const m of allow){
-    for(const a of (m.attachments||[])) if(a.kind==="image" && a.blobId && !a.dataUrl) await blobDataUrl(a.blobId);
-  }
+  const images = sentImageSet(msgs);
+  for(const a of images) if(a.blobId && !a.dataUrl) await blobDataUrl(a.blobId);
   if(imgIndex){
     imgIndex.previews = new Map();
     const current = msgs.findLast(m=>m.role==="user");
-    if(current && allow.has(current)){
+    if(current){
       for(const a of (current.attachments||[])){
-        if(a.kind!=="image" || !a.maskBlobId) continue;
+        if(a.kind!=="image" || !a.maskBlobId || !images.has(a)) continue;
         // A missing file stops the request; a picture the browser can't decode only loses
         // the preview (the note then says "painted area" without promising a second image).
         try{ imgIndex.previews.set(a, await maskedSelectionPreview(a)); }
@@ -5857,10 +5857,10 @@ function buildOpenAIMessages(chat, imgIndex){
   const sys = effectiveSystemPrompt(chat);
   if(sys) out.push({role:"system", content:sys});
   const msgs = lastN(chat.messages, chat);
-  const allow = computeAttachmentAllowSet(msgs);
+  const sent = sentImageSet(msgs);   // images this request carries
   for(const m of msgs){
     if(m.role==="assistant"){ const c = assistantRequestContent(m, imgIndex); if(c) out.push({role:"assistant", content:c}); continue; }
-    const attachments = allow.has(m) ? (m.attachments||[]) : [];
+    const attachments = sentAttachments(m, sent);
     const txt = attachmentText(m, attachments, imgIndex);
     const images = imageParts(attachments, imgIndex);
     if(images.length){
@@ -5959,10 +5959,10 @@ function claudeMaxTokens(ver){
 function buildClaudeMessages(chat, imgIndex){
   const messages = [];
   const msgs = lastN(chat.messages, chat);
-  const allow = computeAttachmentAllowSet(msgs);
+  const sent = sentImageSet(msgs);   // images this request carries
   for(const m of msgs){
     if(m.role==="assistant"){ const c = assistantRequestContent(m, imgIndex); if(c) messages.push({role:"assistant", content:c}); continue; }
-    const attachments = allow.has(m) ? (m.attachments||[]) : [];
+    const attachments = sentAttachments(m, sent);
     const blocks = imageParts(attachments, imgIndex).map(({mime, b64})=>({type:"image", source:{type:"base64", media_type:mime, data:b64}}));
     const txt = attachmentText(m, attachments, imgIndex);
     if(txt) blocks.push({type:"text", text:txt});
@@ -6082,10 +6082,10 @@ async function callGemini({base, key, model, chat, signal, onContent, onReasonin
   const url = `${base}/v1beta/models/${encodeURIComponent(model)}:streamGenerateContent?alt=sse`;
   const contents = [];
   const msgs = lastN(chat.messages, chat);
-  const allow = computeAttachmentAllowSet(msgs);
+  const sent = sentImageSet(msgs);   // images this request carries
   for(const m of msgs){
     if(m.role==="assistant"){ const c = assistantRequestContent(m, imgIndex); if(c) contents.push({role:"model", parts:[{text:c}]}); continue; }
-    const attachments = allow.has(m) ? (m.attachments||[]) : [];
+    const attachments = sentAttachments(m, sent);
     const parts = [];
     const txt = attachmentText(m, attachments, imgIndex);
     if(txt) parts.push({text:txt});
@@ -6257,17 +6257,16 @@ function estimateTokens(text){
 }
 const IMAGE_TOKEN_COST = { low:300, standard:1200, high:1800 };
 const _msgTokens = new WeakMap();    // message → cached estimate (content changes invalidate it)
-function estimateMessageTokens(m, withAttachments){
-  const atts = m.attachments || [], imgs = m.images || [];
-  const key = (withAttachments ? atts.length : -1) + "|" + imgs.length + "|" + (state.general.imageDetail || "");
+function estimateMessageTokens(m, images){
+  const atts = m.role === "user" ? sentAttachments(m, images) : [], imgs = m.images || [];
+  // The sent images of a message are always its newest ones, so their count is enough.
+  const key = atts.length + "|" + imgs.length + "|" + (state.general.imageDetail || "");
   const c = _msgTokens.get(m);
   if(c && c.content === m.content && c.key === key) return c.n;
   let n = estimateTokens(m.content) + 8;   // role / separator overhead
-  if(withAttachments){
-    for(const a of atts){
-      if(a.kind === "file" && a.text) n += estimateTokens(a.text);
-      else if(a.kind === "image") n += IMAGE_TOKEN_COST[state.general.imageDetail] ?? IMAGE_TOKEN_COST.standard;
-    }
+  for(const a of atts){
+    if(a.kind === "file" && a.text) n += estimateTokens(a.text);
+    else if(a.kind === "image") n += IMAGE_TOKEN_COST[state.general.imageDetail] ?? IMAGE_TOKEN_COST.standard;
   }
   for(const r of imgs) n += 12 + estimateTokens(String(r.revisedPrompt || r.prompt || "").slice(0, 300));
   _msgTokens.set(m, { content: m.content, key, n });
@@ -6279,14 +6278,14 @@ function estimateMessageTokens(m, withAttachments){
 function fitTokenBudget(list, chat){
   const budget = optNum(state.general.contextTokenBudget);
   if(!budget || budget <= 0 || !list.length) return list;
-  const allow = computeAttachmentAllowSet(list);   // only attachments that will be sent count
+  const images = sentImageSet(list);   // only images that will be sent count
   const ratio = tokenRatio(chat);
   let left = budget
     - estimateTokens(chat ? effectiveSystemPrompt(chat) : "") * ratio
     - (Number(state.general.maxTokens) || 0);
   const kept = [];
   for(let i = list.length-1; i >= 0; i--){
-    const cost = estimateMessageTokens(list[i], allow.has(list[i])) * ratio;
+    const cost = estimateMessageTokens(list[i], images) * ratio;
     if(kept.length && left - cost < 0) break;
     left -= cost;
     kept.unshift(list[i]);
@@ -6299,19 +6298,25 @@ function fitTokenBudget(list, chat){
   return kept;
 }
 
-/* Attachments (images/files) are expensive "memory" — resending them on every
-   turn multiplies their token cost by how many turns they stay in the window.
-   Only the most recent N user turns that carry attachments actually get their
-   attachments included in the outgoing request; older turns keep their text
-   only. This applies uniformly across all providers. */
-function attachmentKeepRecent(){
-  const v = Number(state.general.attachmentKeepRecent);
-  return Number.isFinite(v) ? Math.max(0, v) : 1;
+/* Attachments in a request. Documents are text: they always go with their message while
+   it's in the window (their size is the context limit's and the memory's business).
+   Images are capped as a safeguard: only the newest N in the window are sent (setting,
+   1–50, default 50; Claude takes at most 100 per request, and each adds ~100–200 KB);
+   older ones keep their "[Image 图N]" note. Same for every provider. */
+const IMAGE_KEEP_MAX = 50;
+function imageKeepRecent(){
+  const v = Math.floor(Number(state.general.imageKeepRecent));
+  return v >= 1 ? Math.min(IMAGE_KEEP_MAX, v) : IMAGE_KEEP_MAX;
 }
-function computeAttachmentAllowSet(msgs){
-  const withAttachments = msgs.filter(m => m.role==="user" && (m.attachments||[]).length);
-  const keep = attachmentKeepRecent();
-  return new Set(keep > 0 ? withAttachments.slice(-keep) : []);
+/* The image attachments a request over msgs sends. */
+function sentImageSet(msgs){
+  const images = [];
+  for(const m of msgs) if(m.role === "user") for(const a of (m.attachments||[])) if(a.kind === "image") images.push(a);
+  return new Set(images.slice(-imageKeepRecent()));
+}
+/* Message m's attachments in that request: every document, and the images in the set. */
+function sentAttachments(m, images){
+  return (m.attachments||[]).filter(a=>a.kind !== "image" || (images && images.has(a)));
 }
 
 /* ------------------------- UI wiring ------------------------- */
@@ -6349,7 +6354,7 @@ function openSettings(tab){
   set("cfg_max_tokens", g.maxTokens);
   set("cfg_ctx_budget", g.contextTokenBudget);
   set("cfg_image_detail", g.imageDetail || "standard");
-  set("cfg_attach_keep_recent", g.attachmentKeepRecent ?? 1);
+  set("cfg_image_keep", imageKeepRecent());
   document.getElementById("cfg_auto_memory").checked = g.autoMemory !== false;
   set("cfg_memory_max_chars", g.memoryMaxChars || 8000);
   set("cfg_memory_trigger", memoryTriggerPct());
@@ -6496,7 +6501,7 @@ async function saveSettings(){
   g.memoryTriggerPct = pct("cfg_memory_trigger", 50, 95, 80);
   g.memoryKeepPct = Math.min(pct("cfg_memory_keep", 5, 50, 20), g.memoryTriggerPct - 10);
   g.imageDetail = document.getElementById("cfg_image_detail").value || "standard";
-  g.attachmentKeepRecent = str("cfg_attach_keep_recent") === "" ? 10 : Math.max(0, Number(str("cfg_attach_keep_recent")) || 0);
+  g.imageKeepRecent = pct("cfg_image_keep", 1, IMAGE_KEEP_MAX, IMAGE_KEEP_MAX);
   g.autoMemory = document.getElementById("cfg_auto_memory").checked;
   g.memoryMaxChars = Math.max(500, Number(str("cfg_memory_max_chars")) || 8000);
   g.autoImage = document.getElementById("cfg_auto_image").checked;

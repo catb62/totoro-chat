@@ -13,15 +13,15 @@ function section(start, end) {
 function fixture(general = {}) {
   const ctx = vm.createContext({
     Map, WeakMap, Set, console, t: (key, ...a) => [key, ...a].join('|'),
-    state: { general: { attachmentKeepRecent: 10, contextTokenBudget: '250000', ...general }, chats: [] },
+    state: { general: { contextTokenBudget: '250000', ...general }, chats: [] },
     lastN: messages => messages.filter(m => m.role !== 'divider'),
     imageToolAvailable: () => false, IMAGE_TOOL: { name: 'generate_image' },
   });
   for (const [start, end] of [
     ['function optNum(', '/* Temperature: empty'],
     ['function effectiveSystemPrompt(', '/* -------- Memory viewer'],
-    ['/* Token estimate, fitted on the o200k tokenizer', '/* Attachments (images/files) are expensive'],
-    ['function attachmentKeepRecent(', '/* ------------------------- UI wiring'],
+    ['/* Token estimate, fitted on the o200k tokenizer', '/* Attachments in a request.'],
+    ['/* Attachments in a request.', '/* ------------------------- UI wiring'],
     ['/* -------- Context accounting --------', '/* -------- Context ring (composer) --------'],
   ]) vm.runInContext(section(start, end), ctx);
   return ctx;
@@ -169,7 +169,7 @@ test('the summarizer input is capped: long turns keep head and tail, short turns
     { role: 'user', content: 'HEAD ' + text(800, 'mid') + ' TAIL' },
     { role: 'assistant', content: 'short answer' },
   ];
-  const dump = ctx.memoryDump(msgs, new Set(), 1, 5000);
+  const dump = ctx.memoryDump(msgs, 1, 5000);
   assert(dump.includes('User: short question') && dump.includes('Assistant: short answer'));
   assert(dump.includes('HEAD') && dump.includes('TAIL') && dump.includes('tokens omitted'));
   assert(ctx.estimateTokens(dump) < 5600, String(ctx.estimateTokens(dump)));
@@ -178,8 +178,27 @@ test('the summarizer input is capped: long turns keep head and tail, short turns
 test('documents attached to the folded turns go to the summarizer, images as a marker', () => {
   const ctx = fixture();
   const m = { role: 'user', content: 'see file', attachments: [{ kind: 'file', name: 'a.log', text: 'ERROR x' }, { kind: 'image', blobId: 'i' }] };
-  assert.equal(ctx.memoryDumpText(m, true), 'see file\n\n[file: a.log]\nERROR x\n\n[image]');
-  assert.equal(ctx.memoryDumpText(m, false), 'see file\n\n[image]');
+  assert.equal(ctx.memoryDumpText(m), 'see file\n\n[file: a.log]\nERROR x\n\n[image]');
+});
+
+test('documents always go with their message; only the newest images (max 50) are sent', () => {
+  const ctx = fixture();
+  const img = (i) => ({ kind: 'image', blobId: 'b' + i });
+  const messages = [];
+  for (let i = 0; i < 30; i++) messages.push({ role: 'user', content: 'q' + i, attachments: [{ kind: 'file', name: i + '.txt', text: text(5, 'doc' + i) }, img(2 * i), img(2 * i + 1)] }, { role: 'assistant', content: 'a' + i });
+  const images = ctx.sentImageSet(messages);
+  assert.equal(images.size, 50);
+  assert(images.has(messages[58].attachments[2]) && !images.has(messages[0].attachments[1]) && !images.has(messages[8].attachments[2]) && images.has(messages[10].attachments[1]));
+  // The oldest message still sends its document, just not its images.
+  assert.deepEqual(Array.from(ctx.sentAttachments(messages[0], images), a => a.kind), ['file']);
+  assert.equal(ctx.sentAttachments(messages[58], images).length, 3);
+  // Token accounting follows: every document, 50 images.
+  const docs = messages.filter(m => m.role === 'user').reduce((n, m) => n + ctx.estimateTokens(m.attachments[0].text), 0);
+  const body = messages.reduce((n, m) => n + ctx.estimateTokens(m.content) + 8, 0);
+  assert.equal(ctx.contextTokens({ messages }), body + docs + 50 * 1200);
+  // A lower setting sends fewer; the cap stays at 50; nonsense falls back to 50.
+  assert.equal(fixture({ imageKeepRecent: 5 }).sentImageSet(messages).size, 5);
+  for (const v of [80, 0, -3, 'x', undefined]) assert.equal(fixture({ imageKeepRecent: v }).imageKeepRecent(), 50, String(v));
 });
 
 test('settings stay in range and "keep" stays 10 points under "summarize at"', () => {
