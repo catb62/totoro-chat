@@ -5075,6 +5075,7 @@ function imagePreset(){
 
 const HEIC_RE = /\.(?:heic|heif)$/i;
 let _heic2anyPromise = null;
+let _libheifPromise = null;
 function isHeicFile(file){
   return !!file && (/(?:^|\/)heic|(?:^|\/)heif/i.test(file.type || "") || HEIC_RE.test(file.name || ""));
 }
@@ -5093,6 +5094,19 @@ async function loadHeic2Any(){
   });
   try{ return await _heic2anyPromise; }
   catch(e){ _heic2anyPromise = null; throw e; }
+}
+async function loadLibheif(){
+  if(window.libheif?.HeifDecoder) return window.libheif;
+  if(_libheifPromise) return _libheifPromise;
+  _libheifPromise = new Promise((resolve, reject)=>{
+    const script = document.createElement("script");
+    script.src = "./vendor/libheif-bundle.js";
+    script.onload = ()=>window.libheif?.HeifDecoder ? resolve(window.libheif) : reject(new Error("libheif unavailable"));
+    script.onerror = ()=>reject(new Error("libheif failed to load"));
+    document.head.appendChild(script);
+  });
+  try{ return await _libheifPromise; }
+  catch(e){ _libheifPromise = null; throw e; }
 }
 async function normalizeHeicWithImageDecoder(blob){
   const Decoder = window.ImageDecoder;
@@ -5113,15 +5127,41 @@ async function normalizeHeicWithImageDecoder(blob){
   }catch{ return null; }
   finally{ image?.close?.(); decoder?.close?.(); }
 }
+async function normalizeHeicWithLibheif(blob){
+  const libheif = await loadLibheif();
+  const decoder = new libheif.HeifDecoder();
+  const images = decoder.decode(new Uint8Array(await blob.arrayBuffer()));
+  if(!images?.length) throw new Error("ERR_LIBHEIF no decodable image");
+  const image = images.find(x=>x.is_primary?.()) || images[0];
+  const width = image.get_width(), height = image.get_height();
+  const data = new ImageData(width, height);
+  await new Promise((resolve, reject)=>image.display(data, result=>result ? resolve() : reject(new Error("ERR_LIBHEIF image display failed"))));
+  const scale = Math.min(1, 2048 / Math.max(width, height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(width * scale));
+  canvas.height = Math.max(1, Math.round(height * scale));
+  const source = document.createElement("canvas");
+  source.width = width; source.height = height;
+  source.getContext("2d").putImageData(data, 0, 0);
+  canvas.getContext("2d").drawImage(source, 0, 0, canvas.width, canvas.height);
+  return await new Promise((resolve, reject)=>canvas.toBlob(b=>b ? resolve(b) : reject(new Error("libheif JPEG encode failed")), "image/jpeg", 0.92));
+}
 async function normalizeImageBlob(blob){
   if(!isHeicBlob(blob)) return blob;
   const native = await normalizeHeicWithImageDecoder(blob);
   if(native) return native;
+  let libheifError = null;
+  try{ return await normalizeHeicWithLibheif(blob); }
+  catch(e){ libheifError = e; }
   const convert = await loadHeic2Any();
-  const result = await convert({ blob, toType:"image/jpeg", quality:0.92 });
-  const converted = Array.isArray(result) ? result[0] : result;
-  if(!(converted instanceof Blob) || !converted.size) throw new Error("HEIC conversion returned no image");
-  return converted.type === "image/jpeg" ? converted : new Blob([converted], {type:"image/jpeg"});
+  try{
+    const result = await convert({ blob, toType:"image/jpeg", quality:0.92 });
+    const converted = Array.isArray(result) ? result[0] : result;
+    if(!(converted instanceof Blob) || !converted.size) throw new Error("HEIC conversion returned no image");
+    return converted.type === "image/jpeg" ? converted : new Blob([converted], {type:"image/jpeg"});
+  }catch(e){
+    throw new Error(`${e?.message || e}${libheifError ? `; libheif: ${libheifError.message || libheifError}` : ""}`);
+  }
 }
 async function normalizeImageFile(file){
   if(!isHeicFile(file)) return file;
