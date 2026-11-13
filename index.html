@@ -5086,8 +5086,7 @@ async function loadHeic2Any(){
   if(_heic2anyPromise) return _heic2anyPromise;
   _heic2anyPromise = new Promise((resolve, reject)=>{
     const script = document.createElement("script");
-    script.src = "https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js";
-    script.crossOrigin = "anonymous";
+    script.src = "./vendor/heic2any.min.js";
     script.onload = ()=>typeof window.heic2any === "function" ? resolve(window.heic2any) : reject(new Error("HEIC converter unavailable"));
     script.onerror = ()=>reject(new Error("HEIC converter failed to load"));
     document.head.appendChild(script);
@@ -5095,7 +5094,7 @@ async function loadHeic2Any(){
   try{ return await _heic2anyPromise; }
   catch(e){ _heic2anyPromise = null; throw e; }
 }
-async function normalizeImageBlob(blob, name){
+async function normalizeImageBlob(blob){
   if(!isHeicBlob(blob)) return blob;
   const convert = await loadHeic2Any();
   const result = await convert({ blob, toType:"image/jpeg", quality:0.92 });
@@ -5141,15 +5140,16 @@ async function handleFiles(files){
   const preset = isDrawMode() ? IMAGE_PRESETS.edit : imagePreset();
   for(const file of files){
     if(file.type.startsWith("image/") || isHeicFile(file)){
-      let blob;
+      let blob, source;
       try{
         if(isHeicFile(file)) flashStatus(t("attach.heic.converting"), 2500);
-        const source = await normalizeImageFile(file);
-        blob = await compressImage(source, preset);
+        source = await normalizeImageFile(file);
       }catch(e){
         if(isHeicFile(file)){ flashStatus(t("attach.heic.failed"), 5000); continue; }
-        blob = file;
+        source = file;
       }
+      try{ blob = await compressImage(source, preset); }
+      catch{ blob = source; }
       const { w, h } = await imageDims(blob);
       const rec = { kind:"image", name:isHeicFile(file) ? String(file.name).replace(HEIC_RE, ".jpg") : file.name,
                     mime: blob.type || "image/jpeg", detail:preset.detail, w, h };

@@ -15,7 +15,7 @@ const VERSION = "totoro-chat-v10";
 const APP_SHELL = "./"; // resolves to the directory index = index.html
 // Best-effort precache. Each is added individually so one 404 (e.g. icons not
 // deployed) doesn't abort the whole install.
-const PRECACHE = [APP_SHELL, "manifest.webmanifest", "logo.png", "apple-touch-icon.png", "icon-192.png", "icon-512.png", "icon-maskable-512.png"];
+const PRECACHE = [APP_SHELL, "manifest.webmanifest", "logo.png", "apple-touch-icon.png", "icon-192.png", "icon-512.png", "icon-maskable-512.png", "vendor/heic2any.min.js"];
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
