@@ -5074,26 +5074,12 @@ function imagePreset(){
 }
 
 const HEIC_RE = /\.(?:heic|heif)$/i;
-let _heic2anyPromise = null;
 let _libheifPromise = null;
 function isHeicFile(file){
   return !!file && (/(?:^|\/)heic|(?:^|\/)heif/i.test(file.type || "") || HEIC_RE.test(file.name || ""));
 }
 function isHeicBlob(blob){
   return !!blob && (/(?:^|\/)heic|(?:^|\/)heif/i.test(blob.type || ""));
-}
-async function loadHeic2Any(){
-  if(typeof window.heic2any === "function") return window.heic2any;
-  if(_heic2anyPromise) return _heic2anyPromise;
-  _heic2anyPromise = new Promise((resolve, reject)=>{
-    const script = document.createElement("script");
-    script.src = "./vendor/heic2any.min.js";
-    script.onload = ()=>typeof window.heic2any === "function" ? resolve(window.heic2any) : reject(new Error("HEIC converter unavailable"));
-    script.onerror = ()=>reject(new Error("HEIC converter failed to load"));
-    document.head.appendChild(script);
-  });
-  try{ return await _heic2anyPromise; }
-  catch(e){ _heic2anyPromise = null; throw e; }
 }
 async function loadLibheif(){
   if(window.libheif?.HeifDecoder) return window.libheif;
@@ -5157,18 +5143,7 @@ async function normalizeImageBlob(blob){
   if(!isHeicBlob(blob)) return blob;
   const native = await normalizeHeicWithImageDecoder(blob);
   if(native) return native;
-  let libheifError = null;
-  try{ return await normalizeHeicWithLibheif(blob); }
-  catch(e){ libheifError = e; }
-  const convert = await loadHeic2Any();
-  try{
-    const result = await convert({ blob, toType:"image/jpeg", quality:0.92 });
-    const converted = Array.isArray(result) ? result[0] : result;
-    if(!(converted instanceof Blob) || !converted.size) throw new Error("HEIC conversion returned no image");
-    return converted.type === "image/jpeg" ? converted : new Blob([converted], {type:"image/jpeg"});
-  }catch(e){
-    throw new Error(`${e?.message || e}${libheifError ? `; libheif: ${libheifError.message || libheifError}` : ""}`);
-  }
+  return normalizeHeicWithLibheif(blob);
 }
 async function normalizeImageFile(file){
   if(!isHeicFile(file)) return file;
