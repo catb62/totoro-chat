@@ -5101,7 +5101,14 @@ async function loadLibheif(){
   _libheifPromise = new Promise((resolve, reject)=>{
     const script = document.createElement("script");
     script.src = "./vendor/libheif-bundle.js";
-    script.onload = ()=>window.libheif?.HeifDecoder ? resolve(window.libheif) : reject(new Error("libheif unavailable"));
+    script.onload = async ()=>{
+      try{
+        const factory = window.libheif;
+        const module = typeof factory === "function" ? await factory() : factory;
+        if(module?.HeifDecoder){ window.libheif = module; resolve(module); }
+        else reject(new Error("libheif unavailable"));
+      }catch(e){ reject(e); }
+    };
     script.onerror = ()=>reject(new Error("libheif failed to load"));
     document.head.appendChild(script);
   });
