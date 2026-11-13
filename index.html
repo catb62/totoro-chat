@@ -1468,9 +1468,15 @@ const I18N = {
     "imgopt.size":"Size",
     "imgopt.quality":"Quality",
     "size.auto":"Auto ratio",
-    "size.square":"Square 1:1",
-    "size.landscape":"Landscape 3:2",
-    "size.portrait":"Portrait 2:3",
+    "size.square":"1K square",
+    "size.landscape":"1K landscape",
+    "size.portrait":"1K portrait",
+    "size.2k.square":"2K square",
+    "size.2k.landscape":"2K landscape",
+    "size.2k.portrait":"2K portrait",
+    "size.4k.square":"4K square",
+    "size.4k.landscape":"4K landscape",
+    "size.4k.portrait":"4K portrait",
     "quality.auto":"Auto quality",
     "quality.low":"Fast",
     "quality.medium":"Standard",
@@ -1596,6 +1602,8 @@ const I18N = {
     "msg.timeout.connect":"No output from the model after {0}.",
     "msg.timeout.stall":"The response stalled (no new tokens for a while).",
     "attach.label":"[Attachment: {0}]",
+    "attach.heic.converting":"Converting HEIC photo…",
+    "attach.heic.failed":"This HEIC photo could not be converted. Please export it as JPEG or PNG and try again.",
     "context.divider":"Context cleared — previous messages won't be sent to the model",
     "context.divider.remove":"Remove this divider — restore prior context",
     "context.empty":"Nothing to clear — context is already fresh.",
@@ -1719,6 +1727,7 @@ const I18N = {
     "msg.error.moderated":"This message didn't pass Totoro API's content review. Rephrase it and send again.",
     "msg.error.safety":"The model provider's safety system blocked this request. It reviews the whole conversation, earlier messages included, so rephrasing, starting a new chat or switching models usually helps.",
     "msg.error.contextMaybe":"The conversation may be too long for this model: start a new chat, clear the context (✂), or remove large attachments.",
+    "msg.error.emptyInput":"The request had no usable message content. Add a prompt or attachment and try again.",
     "msg.error.noModel":"This model is no longer available — pick another one from the model menu.",
     "key.title":"Welcome to Totoro Chat",
     "key.subtitle":"Paste your Totoro API key to chat with Claude, GPT, Gemini and more.",
@@ -1822,9 +1831,15 @@ const I18N = {
     "imgopt.size":"尺寸",
     "imgopt.quality":"画质",
     "size.auto":"自动比例",
-    "size.square":"方形 1:1",
-    "size.landscape":"横版 3:2",
-    "size.portrait":"竖版 2:3",
+    "size.square":"1K 方形",
+    "size.landscape":"1K 横版",
+    "size.portrait":"1K 竖版",
+    "size.2k.square":"2K 方形",
+    "size.2k.landscape":"2K 横版",
+    "size.2k.portrait":"2K 竖版",
+    "size.4k.square":"4K 方形",
+    "size.4k.landscape":"4K 横版",
+    "size.4k.portrait":"4K 竖版",
     "quality.auto":"自动画质",
     "quality.low":"快速",
     "quality.medium":"标准",
@@ -1950,6 +1965,8 @@ const I18N = {
     "msg.timeout.connect":"等了 {0}仍没有收到模型的任何输出。",
     "msg.timeout.stall":"响应停顿（较长时间没有新 token）。",
     "attach.label":"【附件: {0}】",
+    "attach.heic.converting":"正在转换 HEIC 图片…",
+    "attach.heic.failed":"这张 HEIC 图片无法自动转换，请先导出为 JPEG 或 PNG 再试。",
     "context.divider":"上下文已清除 —— 之前的消息不会再发送给模型",
     "context.divider.remove":"移除这条分隔线 —— 恢复之前的上下文",
     "context.empty":"无需清除 —— 上下文已是新的。",
@@ -2073,6 +2090,7 @@ const I18N = {
     "msg.error.moderated":"这条消息没有通过 Totoro API 的内容审核，请调整措辞后重新发送。",
     "msg.error.safety":"模型服务商的安全审核拦截了这次请求。审核会看整段对话（包括较早的消息），换个说法、新开对话或换个模型通常可以解决。",
     "msg.error.contextMaybe":"对话可能太长了，超出了模型的上下文：新开一个对话、点 ✂ 清除上下文，或去掉较大的附件。",
+    "msg.error.emptyInput":"请求里没有可用的消息内容。请输入提示词或添加附件后再试。",
     "msg.error.noModel":"这个模型已不可用，请在模型菜单里重新选择。",
     "key.title":"欢迎使用 Totoro Chat",
     "key.subtitle":"粘贴你的 Totoro API Key，即可畅聊 Claude、GPT、Gemini 等模型。",
@@ -2466,9 +2484,12 @@ function fillSelectionImg(img, rec, maxSide){
 }
 async function recordBlob(rec){
   if(!rec) return null;
-  if(rec.blobId) return getBlob(rec.blobId);
-  if(rec.dataUrl) return dataUrlToBlob(rec.dataUrl);
-  if(rec.url){ try{ const r = await fetch(rec.url); if(r.ok) return r.blob(); }catch{} }
+  if(rec.blobId){
+    const blob = await getBlob(rec.blobId);
+    return blob ? normalizeImageBlob(blob, rec.name) : null;
+  }
+  if(rec.dataUrl) return normalizeImageBlob(await dataUrlToBlob(rec.dataUrl), rec.name);
+  if(rec.url){ try{ const r = await fetch(rec.url); if(r.ok) return normalizeImageBlob(await r.blob(), rec.name); }catch{} }
   return null;
 }
 /* Synchronous data: URL for request builders (filled beforehand by hydrateRequestImages). */
@@ -3628,9 +3649,13 @@ function modelDisplayName(model){ const m = getAllModels().find(x=>x.model===mod
      POST {base}/v1/images/edits        multipart  image | image[] (+ mask for the first image)
    Streaming is requested so the gateway's keep-alive events keep the connection warm;
    a plain JSON answer (or a JSON error inside a 200) is handled as well. */
-const IMAGE_SIZES = ["auto", "1024x1024", "1536x1024", "1024x1536"];
+const IMAGE_SIZES = ["auto", "1024x1024", "1536x1024", "1024x1536", "2048x2048", "2048x1152", "1152x2048", "4096x4096", "3840x2160", "2160x3840"];
 const IMAGE_QUALITIES = ["auto", "low", "medium", "high"];
-const IMAGE_SIZE_KEYS = { "auto":"size.auto", "1024x1024":"size.square", "1536x1024":"size.landscape", "1024x1536":"size.portrait" };
+const IMAGE_SIZE_KEYS = {
+  "auto":"size.auto", "1024x1024":"size.square", "1536x1024":"size.landscape", "1024x1536":"size.portrait",
+  "2048x2048":"size.2k.square", "2048x1152":"size.2k.landscape", "1152x2048":"size.2k.portrait",
+  "4096x4096":"size.4k.square", "3840x2160":"size.4k.landscape", "2160x3840":"size.4k.portrait"
+};
 const IMAGE_QUALITY_KEYS = { "auto":"quality.auto", "low":"quality.low", "medium":"quality.medium", "high":"quality.high" };
 const sleep = (ms)=>new Promise(r=>setTimeout(r, ms));
 function imageExt(mime){ return /jpe?g/.test(mime||"") ? "jpg" : /webp/.test(mime||"") ? "webp" : "png"; }
@@ -3663,11 +3688,11 @@ async function readImagesResponse(r, onActivity, onPartial){
   const push = async (item, ctx)=>{
     if(item.b64_json){
       const fmt = String(item.output_format || ctx.output_format || "png").replace("jpg", "jpeg");
-      out.push({ blob: await dataUrlToBlob(`data:image/${fmt};base64,${item.b64_json}`), revisedPrompt: item.revised_prompt || "" });
+      out.push({ blob: await dataUrlToBlob(`data:image/${fmt};base64,${item.b64_json}`), revisedPrompt: item.revised_prompt || "", size: item.size || ctx.size || "" });
     }else if(item.url){
       let blob = null;
       try{ const rr = await fetch(item.url); if(rr.ok) blob = await rr.blob(); }catch{}
-      out.push(blob ? { blob, revisedPrompt: item.revised_prompt || "" } : { url: item.url, revisedPrompt: item.revised_prompt || "" });
+      out.push(blob ? { blob, revisedPrompt: item.revised_prompt || "", size: item.size || ctx.size || "" } : { url: item.url, revisedPrompt: item.revised_prompt || "", size: item.size || ctx.size || "" });
     }
   };
   const ct = (r.headers.get("content-type") || "").toLowerCase();
@@ -3788,6 +3813,8 @@ async function imageIsOpaque(blob){
 }
 async function storeGeneratedImage(im, meta){
   const rec = { kind:"image", prompt: meta.prompt || "", model: meta.model || "" };
+  if(meta.requestedSize) rec.requestedSize = meta.requestedSize;
+  if(im.size) rec.outputSize = im.size;
   if(im.revisedPrompt) rec.revisedPrompt = im.revisedPrompt;
   if(im.blob){
     rec.mime = im.blob.type || "image/png";
@@ -3915,7 +3942,7 @@ async function runImageJob(chat, aiMsg, { target, prompt, refs, size, quality })
   try{
     const imgs = await generateImages({ target, prompt, refs, size, quality, signal: ctrl.signal,
       onPartial: (b64, fmt)=>showPartialImage(chat, aiMsg, b64, fmt) });
-    for(const im of imgs) aiMsg.images.push(await storeGeneratedImage(im, { prompt, model: target.model }));
+    for(const im of imgs) aiMsg.images.push(await storeGeneratedImage(im, { prompt, model: target.model, requestedSize: size }));
   }catch(e){
     if(e.name === "AbortError") aiMsg.content = t("msg.aborted");
     else aiMsg.content = `> ❌ **${t("msg.error.label")}**: ${e.message}\n\n${errorHint(e)}`;
@@ -3973,6 +4000,7 @@ function renderGenImages(slot, m){
       const fig = document.createElement("figure");
       fig.className = "gen-img";
       if(rec.w && rec.h) fig.style.aspectRatio = `${rec.w} / ${rec.h}`;
+      if(rec.w && rec.h) fig.title = `${rec.w}×${rec.h}`;
       const img = document.createElement("img");
       img.alt = rec.prompt || "";
       img.decoding = "async";
@@ -4286,22 +4314,24 @@ function prettyModelName(id){
   return out.join(" ");
 }
 
-/* All models across all keys (first key wins on duplicates). Pass a config draft to
+/* All models across all keys (later keys win on duplicates). Pass a config draft to
    preview unsaved settings. */
 function getAllModels(cfg){
   const c = cfg || state.config;
   const hidden = new Set(c.hiddenModels || []);
-  const seen = new Set(), list = [];
+  const order = [], byModel = new Map();
   for(const k of (c.keys||[])){
     if(!(k.key||"").trim()) continue;
     for(const m of (k.models||[])){
-      if(!m || !m.id || seen.has(m.id)) continue;
-      seen.add(m.id);
-      list.push({ id:`${k.id}::${m.id}`, keyId:k.id, model:m.id, name:m.name || prettyModelName(m.id),
-                  family:modelFamily(m.id), hidden:hidden.has(m.id), kind: isImageModel(m.id) ? "image" : "chat" });
+      if(!m || !m.id) continue;
+      // A later key is the explicit override. Keep the first-seen order for a
+      // stable menu, while replacing the routing target with the lower key.
+      if(!byModel.has(m.id)) order.push(m.id);
+      byModel.set(m.id, { id:`${k.id}::${m.id}`, keyId:k.id, model:m.id, name:m.name || prettyModelName(m.id),
+                          family:modelFamily(m.id), hidden:hidden.has(m.id), kind: isImageModel(m.id) ? "image" : "chat" });
     }
   }
-  return list;
+  return order.map(id=>byModel.get(id));
 }
 function visibleModels(){ return getAllModels().filter(m=>!m.hidden && m.kind !== "image"); }
 function groupModels(list){
@@ -4333,11 +4363,11 @@ function pickDefaultModel(list){
 function findModel(modelId, list){
   if(!modelId) return null;
   list = list || visibleModels();
-  const hit = list.find(m=>m.id===modelId);
-  if(hit) return hit;
   const i = modelId.indexOf("::");
   const name = i >= 0 ? modelId.slice(i+2) : modelId;
-  return list.find(m=>m.model===name) || null;
+  // Resolve by bare model name first so a saved selection pointing at an older
+  // duplicate key is upgraded to the current lower-key preference.
+  return list.find(m=>m.model===name) || list.find(m=>m.id===modelId) || null;
 }
 /* Model for the active chat: its own → the last used → the recommended default. */
 function selectedModel(){
@@ -5043,6 +5073,44 @@ function imagePreset(){
   return IMAGE_PRESETS[state.general.imageDetail] || IMAGE_PRESETS.standard;
 }
 
+const HEIC_RE = /\.(?:heic|heif)$/i;
+let _heic2anyPromise = null;
+function isHeicFile(file){
+  return !!file && (/(?:^|\/)heic|(?:^|\/)heif/i.test(file.type || "") || HEIC_RE.test(file.name || ""));
+}
+function isHeicBlob(blob){
+  return !!blob && (/(?:^|\/)heic|(?:^|\/)heif/i.test(blob.type || ""));
+}
+async function loadHeic2Any(){
+  if(typeof window.heic2any === "function") return window.heic2any;
+  if(_heic2anyPromise) return _heic2anyPromise;
+  _heic2anyPromise = new Promise((resolve, reject)=>{
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js";
+    script.crossOrigin = "anonymous";
+    script.onload = ()=>typeof window.heic2any === "function" ? resolve(window.heic2any) : reject(new Error("HEIC converter unavailable"));
+    script.onerror = ()=>reject(new Error("HEIC converter failed to load"));
+    document.head.appendChild(script);
+  });
+  try{ return await _heic2anyPromise; }
+  catch(e){ _heic2anyPromise = null; throw e; }
+}
+async function normalizeImageBlob(blob, name){
+  if(!isHeicBlob(blob)) return blob;
+  const convert = await loadHeic2Any();
+  const result = await convert({ blob, toType:"image/jpeg", quality:0.92 });
+  const converted = Array.isArray(result) ? result[0] : result;
+  if(!(converted instanceof Blob) || !converted.size) throw new Error("HEIC conversion returned no image");
+  return converted.type === "image/jpeg" ? converted : new Blob([converted], {type:"image/jpeg"});
+}
+async function normalizeImageFile(file){
+  if(!isHeicFile(file)) return file;
+  const source = isHeicBlob(file) ? file : new Blob([file], {type:"image/heic"});
+  const blob = await normalizeImageBlob(source);
+  const name = String(file.name || "image").replace(HEIC_RE, ".jpg");
+  return new File([blob], name, {type:"image/jpeg", lastModified:file.lastModified || Date.now()});
+}
+
 async function compressImage(file, preset){
   preset = preset || imagePreset();
   const { maxSide, maxPixels, quality } = preset;
@@ -5072,12 +5140,19 @@ async function compressImage(file, preset){
 async function handleFiles(files){
   const preset = isDrawMode() ? IMAGE_PRESETS.edit : imagePreset();
   for(const file of files){
-    if(file.type.startsWith("image/")){
+    if(file.type.startsWith("image/") || isHeicFile(file)){
       let blob;
-      try{ blob = await compressImage(file, preset); }
-      catch{ blob = file; }
+      try{
+        if(isHeicFile(file)) flashStatus(t("attach.heic.converting"), 2500);
+        const source = await normalizeImageFile(file);
+        blob = await compressImage(source, preset);
+      }catch(e){
+        if(isHeicFile(file)){ flashStatus(t("attach.heic.failed"), 5000); continue; }
+        blob = file;
+      }
       const { w, h } = await imageDims(blob);
-      const rec = { kind:"image", name:file.name, mime: blob.type || "image/jpeg", detail:preset.detail, w, h };
+      const rec = { kind:"image", name:isHeicFile(file) ? String(file.name).replace(HEIC_RE, ".jpg") : file.name,
+                    mime: blob.type || "image/jpeg", detail:preset.detail, w, h };
       if(DB) rec.blobId = await putBlob(blob); else rec.dataUrl = await blobToDataUrl(blob);
       pendingAttachments.push(rec);
     }else{
@@ -5533,7 +5608,7 @@ async function streamResponse(chat, aiMsg, modelId, opts){
       const imgs = await generateImages({ target: itarget, prompt, refs, size, quality: state.general.imageQuality, signal, onActivity,
         onPartial: (b64, fmt)=>{ if(aiMsg.imageJob){ aiMsg.imageJob.preview = `data:image/${String(fmt||"png").replace("jpg","jpeg")};base64,${b64}`; refreshImages(); } } });
       const added = [];
-      for(const img of imgs){ const rec = await storeGeneratedImage(img, { prompt, model: itarget.model }); aiMsg.images.push(rec); added.push(rec); }
+      for(const img of imgs){ const rec = await storeGeneratedImage(img, { prompt, model: itarget.model, requestedSize: size }); aiMsg.images.push(rec); added.push(rec); }
       aiMsg.imageModel = itarget.model;
       const labels = added.map(r=>chatImageIndex(chat).byRec.get(r)).filter(Boolean);
       return { status:"ok", image_ids: labels,
@@ -5837,7 +5912,26 @@ async function selectionCanvas(rec, maxSide, flatten){
 async function hydrateRequestImages(chat, imgIndex){
   const msgs = lastN(chat.messages, chat);
   const images = sentImageSet(msgs);
-  for(const a of images) if(a.blobId && !a.dataUrl) await blobDataUrl(a.blobId);
+  for(const a of images){
+    if(a.blobId && !a.dataUrl){
+      const raw = await getBlob(a.blobId);
+      if(raw && isHeicBlob(raw)){
+        const converted = await normalizeImageBlob(raw, a.name);
+        a.blobId = await putBlob(converted);
+        a.mime = converted.type || "image/jpeg";
+        a.name = String(a.name || "image").replace(HEIC_RE, ".jpg");
+      }
+      if(a.blobId) await blobDataUrl(a.blobId);
+    }else if(a.dataUrl){
+      const raw = await dataUrlToBlob(a.dataUrl);
+      if(isHeicBlob(raw)){
+        const converted = await normalizeImageBlob(raw, a.name);
+        a.dataUrl = await blobToDataUrl(converted);
+        a.mime = converted.type || "image/jpeg";
+        a.name = String(a.name || "image").replace(HEIC_RE, ".jpg");
+      }
+    }
+  }
   if(imgIndex){
     imgIndex.previews = new Map();
     const current = msgs.findLast(m=>m.role==="user");
@@ -5884,10 +5978,23 @@ function isOpenAIReasoningModel(model){
   const m = String(model||"").toLowerCase();
   return /^(o\d|gpt-5|gpt-[6-9]|codex)/.test(m) && !/chat-latest|gpt-5-chat/.test(m);
 }
+function hasUsableOpenAIMessage(messages){
+  return (messages || []).some(m=>{
+    if(!m || (m.role !== "user" && m.role !== "assistant")) return false;
+    if(Array.isArray(m.content)) return m.content.some(p=>p && (p.text || p.image_url));
+    return String(m.content || "").trim().length > 0 || Array.isArray(m.tool_calls) && m.tool_calls.length > 0;
+  });
+}
 async function callOpenAICompat({base, key, model, chat, signal, onContent, onReasoning, onOrphanThink, onActivity, onUsage, think, tools, forceTool, extra, imgIndex}){
   const url = base + "/v1/chat/completions";
+  const messages = buildOpenAIMessages(chat, imgIndex).concat(extra || []);
+  if(!hasUsableOpenAIMessage(messages)){
+    const e = new Error(t("msg.error.emptyInput"));
+    e.status = 400; e.detail = e.message;
+    throw e;
+  }
   // include_usage: the last chunk reports the real token counts (used to size the context).
-  const body = { model, messages: buildOpenAIMessages(chat, imgIndex).concat(extra || []), stream:true, stream_options:{ include_usage:true } };
+  const body = { model, messages, stream:true, stream_options:{ include_usage:true } };
   const reasoning = isOpenAIReasoningModel(model);
   const temp = userTemp();
   if(temp !== null && !reasoning) body.temperature = temp;

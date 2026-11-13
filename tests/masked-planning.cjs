@@ -21,6 +21,11 @@ function fixture() {
     effectiveSystemPrompt: chat => chat.systemPrompt,
     attDataUrl: rec => rec.dataUrl || urls.get(rec.blobId) || '',
     blobDataUrl: async id => urls.set(id, 'data:image/png;base64,' + id),
+    getBlob: async () => null,
+    isHeicBlob: () => false,
+    normalizeImageBlob: async blob => blob,
+    HEIC_RE: /\\.(?:heic|heif)$/i,
+    blobToDataUrl: async blob => 'data:image/png;base64,converted',
     optNum: () => null, userTemp: () => null,
     IMAGE_TOOL: { name: 'generate_image' }, readSSE: async () => {},
   });
