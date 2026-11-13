@@ -5094,8 +5094,29 @@ async function loadHeic2Any(){
   try{ return await _heic2anyPromise; }
   catch(e){ _heic2anyPromise = null; throw e; }
 }
+async function normalizeHeicWithImageDecoder(blob){
+  const Decoder = window.ImageDecoder;
+  if(typeof Decoder !== "function") return null;
+  let decoder, image;
+  try{
+    decoder = new Decoder({data: await blob.arrayBuffer(), type: blob.type || "image/heic"});
+    await decoder.tracks.ready;
+    const decoded = await decoder.decode({frameIndex:0});
+    image = decoded.image;
+    const maxSide = 2048;
+    const scale = Math.min(1, maxSide / Math.max(image.displayWidth || image.codedWidth, image.displayHeight || image.codedHeight));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round((image.displayWidth || image.codedWidth) * scale));
+    canvas.height = Math.max(1, Math.round((image.displayHeight || image.codedHeight) * scale));
+    canvas.getContext("2d").drawImage(image, 0, 0, canvas.width, canvas.height);
+    return await new Promise((resolve, reject)=>canvas.toBlob(b=>b ? resolve(b) : reject(new Error("ImageDecoder JPEG encode failed")), "image/jpeg", 0.92));
+  }catch{ return null; }
+  finally{ image?.close?.(); decoder?.close?.(); }
+}
 async function normalizeImageBlob(blob){
   if(!isHeicBlob(blob)) return blob;
+  const native = await normalizeHeicWithImageDecoder(blob);
+  if(native) return native;
   const convert = await loadHeic2Any();
   const result = await convert({ blob, toType:"image/jpeg", quality:0.92 });
   const converted = Array.isArray(result) ? result[0] : result;
@@ -5145,7 +5166,12 @@ async function handleFiles(files){
         if(isHeicFile(file)) flashStatus(t("attach.heic.converting"), 2500);
         source = await normalizeImageFile(file);
       }catch(e){
-        if(isHeicFile(file)){ flashStatus(t("attach.heic.failed"), 5000); continue; }
+        if(isHeicFile(file)){
+          const detail = String(e?.message || e || "").replace(/^Error:\s*/i, "").slice(0, 160);
+          console.warn("[HEIC] conversion failed", {name:file.name, size:file.size, type:file.type, error:e});
+          flashStatus(`${t("attach.heic.failed")}${detail ? ` (${detail})` : ""}`, 7000);
+          continue;
+        }
         source = file;
       }
       try{ blob = await compressImage(source, preset); }
